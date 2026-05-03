@@ -231,16 +231,28 @@ async function submit() {
 async function fetchResults() {
   try {
     const readClient = createClient({ chain: studionet })
-    const [v, d] = await Promise.all([
-      readClient.readContract({ address:CONTRACT, functionName:'get_verdict', args:[] }),
-      readClient.readContract({ address:CONTRACT, functionName:'get_differential', args:[] }),
-    ])
+    const v = await readClient.readContract({
+      address: CONTRACT,
+      functionName: 'get_verdict',
+      args: []
+    })
     const vStr = String(v||'').replace(/^"|"$/g,'')
     const parts = vStr.split(' | ')
     const rec = parts.at(-1)?.trim()
     state.verdict = parts.slice(0,-1).join(' | ')||vStr
     state.rec = URGENCY[rec]?rec:'MONITOR'
-    state.differential = parseDiff(String(d||''))
+
+    try {
+      const d = await readClient.readContract({
+        address: CONTRACT,
+        functionName: 'get_differential',
+        args: []
+      })
+      state.differential = parseDiff(String(d||''))
+    } catch(e) {
+      state.differential = []
+    }
+
     state.phase='result'; render()
   } catch(e) {
     state.error='Could not fetch results: '+e.message; state.phase='error'; render()
