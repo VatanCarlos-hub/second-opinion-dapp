@@ -127,6 +127,40 @@
       }
     }
 
+    async function ensureStudionet() {
+      if (!window.ethereum) return false;
+      try {
+        const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
+        if (currentChain !== '0xf22f') {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0xf22f' }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xf22f',
+                  chainName: 'GenLayer Studio',
+                  nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
+                  rpcUrls: ['https://studio.genlayer.com/api'],
+                }],
+              });
+            } else {
+              throw switchError;
+            }
+          }
+        }
+        return true;
+      } catch (e) {
+        status.className = 'status error';
+        status.textContent = '❌ Could not switch to GenLayer Studio: ' + (e.message || e);
+        return false;
+      }
+    }
+
     async function loadLastVerdict() {
       try {
         const tempClient = createClient({ chain: studionet });
@@ -153,6 +187,9 @@
         const connected = await connectWallet();
         if (!connected) return;
       }
+
+      const onStudionet = await ensureStudionet();
+      if (!onStudionet) return;
 
       btn.disabled = true;
       resultBox.classList.remove('visible');
