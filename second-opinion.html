@@ -19,6 +19,7 @@ body{font-family:var(--sans);background:var(--g50);color:var(--g900);min-height:
 .mono{font-family:var(--mono)}
 .label{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--g500);letter-spacing:.06em;display:block;margin-bottom:8px}
 .btn{padding:13px 20px;font-size:14px;font-weight:500;background:var(--g900);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans);width:100%}
+.btn:disabled{opacity:.4;cursor:default}
 textarea,input{font-family:var(--sans);border:none;outline:none;background:transparent;color:var(--g900)}
 .step{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:6px;background:var(--g100);color:var(--g500);transition:all .4s}
 .step.done{background:var(--teal-light);color:var(--teal)}
@@ -37,17 +38,17 @@ a{color:var(--teal)}
     </div>
     <h1 style="font-size:28px;font-weight:500;letter-spacing:-.02em">Second Opinion</h1>
     <p style="font-size:14px;color:var(--g500);margin-top:4px">AI consensus diagnosis · Decentralized validator network</p>
+    <p id="walletStatus" style="font-size:12px;color:var(--g500);margin-top:6px;font-family:var(--mono)">⚪ Wallet not connected</p>
   </div>
   <div id="screen"></div>
 </div>
 
 <script type="module">
-import { createClient, createAccount } from 'https://esm.sh/genlayer-js@latest'
+import { createClient } from 'https://esm.sh/genlayer-js@latest'
 import { studionet } from 'https://esm.sh/genlayer-js@latest/chains'
+import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types'
 
 const CONTRACT = '0x4128Ee89B991B80C442333c65AfC267d35BE9Acf'
-const account = createAccount()
-const client = createClient({ chain: studionet, account })
 
 const URGENCY = {
   URGENT:  {bg:'var(--red-light)',   border:'#F09595',badge:'var(--red)',   label:'Go to ER now'},
@@ -55,8 +56,9 @@ const URGENCY = {
   MONITOR: {bg:'var(--teal-light)',  border:'#5DCAA5',badge:'var(--teal)',  label:'Monitor at home'},
 }
 
-let state = { phase:'idle', symptoms:'', age:'', txHash:null, txStep:0, verdict:'', differential:[], rec:'MONITOR', error:'' }
-let pollTimer = null
+let client = null
+let userAddress = null
+let state = { phase:'idle', symptoms:'', age:'', txHash:null, verdict:'', differential:[], rec:'MONITOR', error:'' }
 
 function parseDiff(raw) {
   if(!raw) return []
@@ -64,6 +66,44 @@ function parseDiff(raw) {
     const m = e.match(/^\d+\.\s(.+?)\s\((\d+%)\)\s[—-]\s(.+)$/)
     return m ? {d:m[1],p:m[2],r:m[3]} : {d:e,p:'?',r:''}
   }).filter(x=>x.d)
+}
+
+function setWalletStatus(addr) {
+  const el = document.getElementById('walletStatus')
+  if(addr) el.innerHTML = `<span style="color:var(--teal)">⬢ Connected: ${addr.slice(0,6)}...${addr.slice(-4)}</span>`
+  else el.textContent = '⚪ Wallet not connected'
+}
+
+async function connectWallet() {
+  if(!window.ethereum) {
+    state.error = 'MetaMask not found. Please install MetaMask extension.'
+    state.phase = 'error'
+    render()
+    return false
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    userAddress = accounts[0]
+    client = createClient({ chain: studionet, account: userAddress })
+    setWalletStatus(userAddress)
+    return true
+  } catch(e) {
+    state.error = 'Wallet connection rejected.'
+    state.phase = 'error'
+    render()
+    return false
+  }
+}
+
+// Auto-connect if already authorized
+if(window.ethereum) {
+  window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+    if(accounts.length > 0) {
+      userAddress = accounts[0]
+      client = createClient({ chain: studionet, account: userAddress })
+      setWalletStatus(userAddress)
+    }
+  })
 }
 
 function render() {
@@ -94,11 +134,12 @@ function render() {
 
   else if(s.phase==='submitting'||s.phase==='polling') {
     const steps = ['PENDING','PROPOSING','COMMITTING','REVEALING','FINALIZED']
+    const stepIdx = ['pending','proposing','committing','revealing','finalized'].indexOf(s.txStep)
     scr.innerHTML = `
       <div class="card" style="text-align:center;padding:2rem 1.5rem">
-        <p style="font-size:13px;color:var(--g500);margin-bottom:1.25rem">${s.phase==='submitting'?'Submitting transaction...':'Validators processing your case...'}</p>
+        <p style="font-size:13px;color:var(--g500);margin-bottom:1.25rem">${s.phase==='submitting'?'Confirm in MetaMask...':'Validators processing your case...'}</p>
         <div style="display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap">
-          ${steps.map((st,i)=>`<span class="step ${i<s.txStep?'done':i===s.txStep?'active':''}">${st}</span>${i<steps.length-1?'<span style="color:var(--g300);font-size:11px">→</span>':''}`).join('')}
+          ${steps.map((st,i)=>`<span class="step ${i<stepIdx?'done':i===stepIdx?'active':''}">${st}</span>${i<steps.length-1?'<span style="color:var(--g300);font-size:11px">→</span>':''}`).join('')}
         </div>
         ${s.txHash?`<p class="mono" style="font-size:11px;color:var(--g500);margin-top:1rem">${s.txHash.slice(0,20)}...${s.txHash.slice(-8)}</p>`:''}
       </div>
@@ -157,39 +198,34 @@ function render() {
 
 async function submit() {
   if(!state.symptoms.trim()||!state.age.trim()) return
-  state.phase='submitting'; state.txStep=0; render()
+  if(!client) {
+    const ok = await connectWallet()
+    if(!ok) return
+  }
+  state.phase='submitting'; state.txStep='pending'; render()
   try {
-    const hash = await client.writeContract({
+    const txHash = await client.writeContract({
       address: CONTRACT,
       functionName: 'submit_consultation',
       args: [state.symptoms.trim(), state.age.trim()],
+      value: 0n
     })
-    state.txHash = hash; state.phase='polling'; state.txStep=1; render()
-    poll(hash)
+    state.txHash = txHash; state.phase='polling'; state.txStep='proposing'; render()
+
+    await client.waitForTransactionReceipt({
+      hash: txHash,
+      status: TransactionStatus.FINALIZED,
+      retries: 60,
+      interval: 5000
+    })
+
+    state.txStep='finalized'; render()
+    setTimeout(fetchResults, 1200)
+
   } catch(e) {
-    state.error = e?.message||'Transaction failed.'
+    state.error = e?.shortMessage||e?.message||'Transaction failed.'
     state.phase='error'; render()
   }
-}
-
-function poll(hash) {
-  pollTimer = setInterval(async()=>{
-    try {
-      const tx = await client.getTransaction({ hash })
-      if(!tx) return
-      const s = (tx.status||'').toLowerCase()
-      if(s.includes('propos')) { state.txStep=1; render() }
-      else if(s.includes('commit')) { state.txStep=2; render() }
-      else if(s.includes('reveal')) { state.txStep=3; render() }
-      else if(s.includes('accept')||s.includes('final')) {
-        clearInterval(pollTimer); state.txStep=4; render()
-        setTimeout(fetchResults, 1200)
-      } else if(s.includes('error')||s.includes('fail')) {
-        clearInterval(pollTimer)
-        state.error='Transaction failed during consensus.'; state.phase='error'; render()
-      }
-    } catch(e){}
-  }, 2500)
 }
 
 async function fetchResults() {
@@ -211,8 +247,7 @@ async function fetchResults() {
 }
 
 function reset() {
-  clearInterval(pollTimer)
-  state = {phase:'idle',symptoms:'',age:'',txHash:null,txStep:0,verdict:'',differential:[],rec:'MONITOR',error:''}
+  state = {phase:'idle',symptoms:'',age:'',txHash:null,verdict:'',differential:[],rec:'MONITOR',error:''}
   render()
 }
 
