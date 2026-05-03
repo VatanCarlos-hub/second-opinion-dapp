@@ -230,9 +230,10 @@ async function submit() {
 
 async function fetchResults() {
   try {
+    const readClient = createClient({ chain: studionet })
     const [v, d] = await Promise.all([
-      client.readContract({ address:CONTRACT, functionName:'get_verdict', args:[] }),
-      client.readContract({ address:CONTRACT, functionName:'get_differential', args:[] }),
+      readClient.readContract({ address:CONTRACT, functionName:'get_verdict', args:[] }),
+      readClient.readContract({ address:CONTRACT, functionName:'get_differential', args:[] }),
     ])
     const vStr = String(v||'').replace(/^"|"$/g,'')
     const parts = vStr.split(' | ')
