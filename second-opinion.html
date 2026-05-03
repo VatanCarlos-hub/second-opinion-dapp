@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Opinion — GenLayer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0F6E56;--teal-light:#E1F5EE;--teal-mid:#1D9E75;
+  --red:#A32D2D;--red-light:#FCEBEB;--amber:#854F0B;--amber-light:#FAEEDA;
+  --g50:#F8F8F7;--g100:#EFEFED;--g300:#D0CFC8;--g500:#888780;--g900:#1A1A19;
+  --sans:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--sans);background:var(--g50);color:var(--g900);min-height:100vh;display:flex;justify-content:center;padding:2rem 1rem}
+#app{width:100%;max-width:600px}
+.card{background:#fff;border:0.5px solid var(--g300);border-radius:14px;padding:1.1rem 1.25rem}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--g500);letter-spacing:.06em;display:block;margin-bottom:8px}
+.btn{padding:13px 20px;font-size:14px;font-weight:500;background:var(--g900);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans);width:100%}
+textarea,input{font-family:var(--sans);border:none;outline:none;background:transparent;color:var(--g900)}
+.step{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:6px;background:var(--g100);color:var(--g500);transition:all .4s}
+.step.done{background:var(--teal-light);color:var(--teal)}
+.step.active{background:var(--teal-light);color:var(--teal);font-weight:500}
+.bar-wrap{height:4px;background:var(--g100);border-radius:2px;overflow:hidden;margin:5px 0}
+.bar{height:100%;border-radius:2px;transition:width .8s ease;width:0%}
+a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div style="margin-bottom:2rem">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:7px;height:7px;border-radius:50%;background:var(--teal-mid)"></div>
+      <span class="mono" style="font-size:11px;color:var(--g500);letter-spacing:.08em">GENLAYER STUDIONET · 0x4128Ee89...9Acf</span>
+    </div>
+    <h1 style="font-size:28px;font-weight:500;letter-spacing:-.02em">Second Opinion</h1>
+    <p style="font-size:14px;color:var(--g500);margin-top:4px">AI consensus diagnosis · Decentralized validator network</p>
+  </div>
+  <div id="screen"></div>
+</div>
+
+<script type="module">
+import { createClient, createAccount } from 'https://esm.sh/genlayer-js@latest'
+import { studionet } from 'https://esm.sh/genlayer-js@latest/chains'
+
+const CONTRACT = '0x4128Ee89B991B80C442333c65AfC267d35BE9Acf'
+const account = createAccount()
+const client = createClient({ chain: studionet, account })
+
+const URGENCY = {
+  URGENT:  {bg:'var(--red-light)',   border:'#F09595',badge:'var(--red)',   label:'Go to ER now'},
+  SOON:    {bg:'var(--amber-light)', border:'#EF9F27',badge:'var(--amber)', label:'See a doctor soon'},
+  MONITOR: {bg:'var(--teal-light)',  border:'#5DCAA5',badge:'var(--teal)',  label:'Monitor at home'},
+}
+
+let state = { phase:'idle', symptoms:'', age:'', txHash:null, txStep:0, verdict:'', differential:[], rec:'MONITOR', error:'' }
+let pollTimer = null
+
+function parseDiff(raw) {
+  if(!raw) return []
+  return String(raw).replace(/^"|"$/g,'').split(' | ').map(e=>{
+    const m = e.match(/^\d+\.\s(.+?)\s\((\d+%)\)\s[—-]\s(.+)$/)
+    return m ? {d:m[1],p:m[2],r:m[3]} : {d:e,p:'?',r:''}
+  }).filter(x=>x.d)
+}
+
+function render() {
+  const s = state
+  const scr = document.getElementById('screen')
+
+  if(s.phase==='idle') {
+    scr.innerHTML = `
+      <div class="card" style="margin-bottom:12px">
+        <span class="label">SYMPTOMS</span>
+        <textarea id="sym" placeholder="Describe your symptoms in detail..." style="width:100%;min-height:100px;font-size:14px;line-height:1.7;resize:vertical">${s.symptoms}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;margin-bottom:12px">
+        <div class="card">
+          <span class="label">AGE</span>
+          <input id="age" type="number" placeholder="30" value="${s.age}" style="font-size:22px;font-weight:500;width:100%">
+        </div>
+        <div class="card" style="background:var(--g100);border-color:var(--g300)">
+          <p style="font-size:13px;color:var(--g500);line-height:1.6">Multiple AI validators reach consensus on your case via GenLayer Optimistic Democracy.</p>
+        </div>
+      </div>
+      <button class="btn" id="submitBtn">Submit for consensus</button>
+    `
+    document.getElementById('sym').oninput = e => state.symptoms = e.target.value
+    document.getElementById('age').oninput = e => state.age = e.target.value
+    document.getElementById('submitBtn').onclick = submit
+  }
+
+  else if(s.phase==='submitting'||s.phase==='polling') {
+    const steps = ['PENDING','PROPOSING','COMMITTING','REVEALING','FINALIZED']
+    scr.innerHTML = `
+      <div class="card" style="text-align:center;padding:2rem 1.5rem">
+        <p style="font-size:13px;color:var(--g500);margin-bottom:1.25rem">${s.phase==='submitting'?'Submitting transaction...':'Validators processing your case...'}</p>
+        <div style="display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap">
+          ${steps.map((st,i)=>`<span class="step ${i<s.txStep?'done':i===s.txStep?'active':''}">${st}</span>${i<steps.length-1?'<span style="color:var(--g300);font-size:11px">→</span>':''}`).join('')}
+        </div>
+        ${s.txHash?`<p class="mono" style="font-size:11px;color:var(--g500);margin-top:1rem">${s.txHash.slice(0,20)}...${s.txHash.slice(-8)}</p>`:''}
+      </div>
+    `
+  }
+
+  else if(s.phase==='result') {
+    const urg = URGENCY[s.rec]||URGENCY.MONITOR
+    const diff = s.differential
+    const barColors = ['var(--teal-mid)','var(--g500)','var(--g300)']
+    scr.innerHTML = `
+      <div class="card" style="margin-bottom:12px;background:${urg.bg};border-color:${urg.border}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span class="mono" style="font-size:11px;color:var(--g500);letter-spacing:.06em">CONSENSUS VERDICT</span>
+          <span class="mono" style="font-size:12px;font-weight:500;padding:3px 12px;border-radius:6px;background:${urg.badge};color:#fff">${s.rec} — ${urg.label}</span>
+        </div>
+        <p style="font-size:15px;line-height:1.7">${s.verdict}</p>
+      </div>
+      ${diff.length ? `
+      <div class="card" style="margin-bottom:12px">
+        <span class="mono" style="font-size:11px;color:var(--g500);letter-spacing:.06em;display:block;margin-bottom:1rem">DIFFERENTIAL DIAGNOSIS</span>
+        ${diff.map((d,i)=>`
+          <div style="margin-bottom:${i<diff.length-1?'16px':'0'}">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:14px;font-weight:500">${d.d}</span>
+              <span class="mono" style="font-size:13px;color:var(--g500)">${d.p}</span>
+            </div>
+            <div class="bar-wrap"><div class="bar" style="width:${parseInt(d.p)||0}%;background:${barColors[i]}"></div></div>
+            <p style="font-size:12px;color:var(--g500);line-height:1.5">${d.r}</p>
+          </div>
+        `).join('')}
+      </div>` : ''}
+      <div style="background:var(--g100);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+        <p style="font-size:12px;color:var(--g500);line-height:1.5">AI second opinion only. Always consult a licensed physician. Powered by <a href="https://genlayer.com">GenLayer</a>.</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn" id="resetBtn" style="background:var(--g500)">New consultation</button>
+        <button class="btn" id="copyBtn">Copy result</button>
+      </div>
+    `
+    document.getElementById('resetBtn').onclick = reset
+    document.getElementById('copyBtn').onclick = copy
+  }
+
+  else if(s.phase==='error') {
+    scr.innerHTML = `
+      <div class="card" style="border-color:#F09595;background:var(--red-light);margin-bottom:12px">
+        <p style="font-size:14px;color:var(--red);margin-bottom:4px">Something went wrong</p>
+        <p style="font-size:12px;color:var(--red);opacity:.8">${s.error}</p>
+      </div>
+      <button class="btn" id="resetBtn">Try again</button>
+    `
+    document.getElementById('resetBtn').onclick = reset
+  }
+}
+
+async function submit() {
+  if(!state.symptoms.trim()||!state.age.trim()) return
+  state.phase='submitting'; state.txStep=0; render()
+  try {
+    const hash = await client.writeContract({
+      address: CONTRACT,
+      functionName: 'submit_consultation',
+      args: [state.symptoms.trim(), state.age.trim()],
+    })
+    state.txHash = hash; state.phase='polling'; state.txStep=1; render()
+    poll(hash)
+  } catch(e) {
+    state.error = e?.message||'Transaction failed.'
+    state.phase='error'; render()
+  }
+}
+
+function poll(hash) {
+  pollTimer = setInterval(async()=>{
+    try {
+      const tx = await client.getTransaction({ hash })
+      if(!tx) return
+      const s = (tx.status||'').toLowerCase()
+      if(s.includes('propos')) { state.txStep=1; render() }
+      else if(s.includes('commit')) { state.txStep=2; render() }
+      else if(s.includes('reveal')) { state.txStep=3; render() }
+      else if(s.includes('accept')||s.includes('final')) {
+        clearInterval(pollTimer); state.txStep=4; render()
+        setTimeout(fetchResults, 1200)
+      } else if(s.includes('error')||s.includes('fail')) {
+        clearInterval(pollTimer)
+        state.error='Transaction failed during consensus.'; state.phase='error'; render()
+      }
+    } catch(e){}
+  }, 2500)
+}
+
+async function fetchResults() {
+  try {
+    const [v, d] = await Promise.all([
+      client.readContract({ address:CONTRACT, functionName:'get_verdict', args:[] }),
+      client.readContract({ address:CONTRACT, functionName:'get_differential', args:[] }),
+    ])
+    const vStr = String(v||'').replace(/^"|"$/g,'')
+    const parts = vStr.split(' | ')
+    const rec = parts.at(-1)?.trim()
+    state.verdict = parts.slice(0,-1).join(' | ')||vStr
+    state.rec = URGENCY[rec]?rec:'MONITOR'
+    state.differential = parseDiff(String(d||''))
+    state.phase='result'; render()
+  } catch(e) {
+    state.error='Could not fetch results: '+e.message; state.phase='error'; render()
+  }
+}
+
+function reset() {
+  clearInterval(pollTimer)
+  state = {phase:'idle',symptoms:'',age:'',txHash:null,txStep:0,verdict:'',differential:[],rec:'MONITOR',error:''}
+  render()
+}
+
+function copy() {
+  const text = [
+    'Second Opinion — GenLayer Consensus','',
+    `Recommendation: ${state.rec}`,`Verdict: ${state.verdict}`,'',
+    'Differential Diagnosis:',
+    ...state.differential.map((d,i)=>`${i+1}. ${d.d} (${d.p}) — ${d.r}`),'',
+    'Always consult a licensed physician.',`Contract: ${CONTRACT}`
+  ].join('\n')
+  navigator.clipboard.writeText(text)
+  const btn = document.getElementById('copyBtn')
+  btn.textContent='Copied!'
+  setTimeout(()=>btn.textContent='Copy result',2000)
+}
+
+render()
+</script>
+</body>
+</html>
