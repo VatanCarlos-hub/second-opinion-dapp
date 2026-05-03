@@ -212,15 +212,21 @@ async function submit() {
     })
     state.txHash = txHash; state.phase='polling'; state.txStep='proposing'; render()
 
-    await client.waitForTransactionReceipt({
-      hash: txHash,
-      status: TransactionStatus.FINALIZED,
-      retries: 60,
-      interval: 5000
-    })
-
-    state.txStep='finalized'; render()
-    setTimeout(fetchResults, 1200)
+    let finalized = false
+    for(let i=0; i<80; i++) {
+      await new Promise(r=>setTimeout(r,5000))
+      try {
+        const tx = await client.getTransaction({ hash: txHash })
+        const s = (tx?.status||tx?.consensus_data?.status||'').toLowerCase()
+        if(s.includes('commit')) { state.txStep='committing'; render() }
+        else if(s.includes('reveal')) { state.txStep='revealing'; render() }
+        else if(s.includes('accept')||s.includes('final')) {
+          state.txStep='finalized'; finalized=true; render(); break
+        }
+      } catch(e2) {}
+    }
+    if(finalized) setTimeout(fetchResults, 1200)
+    else { state.error='Timeout waiting for consensus.'; state.phase='error'; render() }
 
   } catch(e) {
     state.error = e?.shortMessage||e?.message||'Transaction failed.'
