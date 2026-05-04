@@ -295,25 +295,23 @@
         status.textContent = '⏳ AI validators reaching consensus... (~1-2 min)';
 
         // Wait for consensus (GenLayer Studionet ~90-120s)
-        status.textContent = '⏳ Waiting for validator consensus... (90-120 seconds)';
-        await new Promise(r => setTimeout(r, 120000));
+        status.textContent = '⏳ Validators reaching consensus... (2 minutes)';
+        await new Promise(r => setTimeout(r, 130000));
 
-        // Read verdict - try tx result first, fallback to readContract
+        // Poll readContract until verdict changes from empty
         let verdict = '';
-        try {
-          const receipt = await client.getTransactionReceipt({ hash: txHash });
-          if (receipt && receipt.result) {
-            verdict = String(receipt.result);
-          }
-        } catch(e) {}
-
-        if (!verdict || verdict.length < 5) {
-          const v = await client.readContract({
-            address: CONTRACT,
-            functionName: 'get_verdict',
-            args: []
-          });
-          verdict = String(v || '');
+        for (let i = 0; i < 10; i++) {
+          try {
+            const tempClient = createClient({ chain: studionet });
+            const v = await tempClient.readContract({
+              address: CONTRACT,
+              functionName: 'get_verdict',
+              args: []
+            });
+            verdict = String(v || '').replace(/^"|"$/g, '');
+            if (verdict && verdict.length > 10) break;
+          } catch(e) {}
+          await new Promise(r => setTimeout(r, 10000));
         }
 
         renderVerdict(verdict);
