@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -67,75 +68,78 @@
       <p class="subtitle">100% Native <span>GenLayer</span> — AI Validators Diagnose Onchain</p>
     </header>
 
-    <div class="card">
-      <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
+```
+<div class="card">
+  <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
 
-      <p class="card-label">Patient Profile</p>
+  <p class="card-label">Patient Profile</p>
 
-      <div class="grid-3">
-        <div>
-          <span class="field-label">Age</span>
-          <input id="ageInput" type="number" placeholder="30" />
-        </div>
-        <div>
-          <span class="field-label">Weight (kg)</span>
-          <input id="weightInput" type="number" placeholder="70" />
-        </div>
-        <div>
-          <span class="field-label">Height (cm)</span>
-          <input id="heightInput" type="number" placeholder="175" />
-        </div>
-      </div>
-
-      <div class="field">
-        <span class="field-label">Gender</span>
-        <select id="genderInput">
-          <option value="" disabled selected>Select gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Non-binary">Non-binary</option>
-          <option value="Prefer not to say">Prefer not to say</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <span class="field-label">Allergies</span>
-        <input id="allergiesInput" type="text" placeholder="e.g. Penicillin, Pollen, Nuts (leave blank if none)" />
-      </div>
-
-      <div class="field">
-        <span class="field-label">Pre-existing Conditions</span>
-        <input id="preConditionsInput" type="text" placeholder="e.g. Diabetes Type 2, Hypertension (leave blank if none)" />
-      </div>
-
-      <div class="field">
-        <span class="field-label">Symptoms</span>
-        <textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea>
-      </div>
-
-      <div class="field">
-        <span class="field-label">Medical Document (optional)</span>
-        <div class="upload-area" id="uploadArea">
-          <input type="file" id="fileInput" accept=".txt,.pdf,.png,.jpg,.jpeg" />
-          <p>📎 Upload a medical document, lab result or image</p>
-          <p class="file-name" id="fileName"></p>
-        </div>
-      </div>
-
-      <button id="submitBtn">🩺 GET SECOND OPINION</button>
-      <p class="status" id="statusMsg"></p>
-
-      <div class="verdict-box" id="verdictResult">
-        <div class="verdict-label">AI Consensus Verdict</div>
-        <p class="verdict-text" id="verdictText"></p>
-        <span class="onchain-badge">⛓ Stored on GenLayer Studionet · Optimistic Democracy</span>
-        <p class="disclaimer">⚠ This is an AI second opinion only and does not replace professional medical advice. Always consult a licensed physician for diagnosis and treatment.</p>
-      </div>
+  <div class="grid-3">
+    <div>
+      <span class="field-label">Age</span>
+      <input id="ageInput" type="number" placeholder="30" />
     </div>
+    <div>
+      <span class="field-label">Weight (kg)</span>
+      <input id="weightInput" type="number" placeholder="70" />
+    </div>
+    <div>
+      <span class="field-label">Height (cm)</span>
+      <input id="heightInput" type="number" placeholder="175" />
+    </div>
+  </div>
 
-    <footer>
-      Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis
-    </footer>
+  <div class="field">
+    <span class="field-label">Gender</span>
+    <select id="genderInput">
+      <option value="" disabled selected>Select gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Non-binary">Non-binary</option>
+      <option value="Prefer not to say">Prefer not to say</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <span class="field-label">Allergies</span>
+    <input id="allergiesInput" type="text" placeholder="e.g. Penicillin, Pollen, Nuts (leave blank if none)" />
+  </div>
+
+  <div class="field">
+    <span class="field-label">Pre-existing Conditions</span>
+    <input id="preConditionsInput" type="text" placeholder="e.g. Diabetes Type 2, Hypertension (leave blank if none)" />
+  </div>
+
+  <div class="field">
+    <span class="field-label">Symptoms</span>
+    <textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea>
+  </div>
+
+  <div class="field">
+    <span class="field-label">Medical Document (optional)</span>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept=".txt,.pdf,.png,.jpg,.jpeg" />
+      <p>📎 Upload a medical document, lab result or image</p>
+      <p class="file-name" id="fileName"></p>
+    </div>
+  </div>
+
+  <button id="submitBtn">🩺 GET SECOND OPINION</button>
+  <p class="status" id="statusMsg"></p>
+
+  <div class="verdict-box" id="verdictResult">
+    <div class="verdict-label">AI Consensus Verdict</div>
+    <p class="verdict-text" id="verdictText"></p>
+    <span class="onchain-badge">⛓ Stored on GenLayer Studionet · Optimistic Democracy</span>
+    <p class="disclaimer">⚠ This is an AI second opinion only and does not replace professional medical advice. Always consult a licensed physician for diagnosis and treatment.</p>
+  </div>
+</div>
+
+<footer>
+  Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis
+</footer>
+```
+
   </div>
 
   <script type="module">
@@ -342,5 +346,6 @@
 
     loadLastVerdict();
   </script>
+
 </body>
 </html>
