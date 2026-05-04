@@ -143,7 +143,7 @@
     import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
     import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
 
-    const CONTRACT = '0x16eE65B059D8FbA44eADE38b75aE9EBf859e5185';
+    const CONTRACT = '0x4a9543F8BE251B6D9C8B2e2e2A5691ba535c5357';
     let client = null;
     let userAddress = null;
     let documentText = '';
@@ -294,15 +294,27 @@
 
         status.textContent = '⏳ AI validators reaching consensus... (~1-2 min)';
 
-        // Wait for consensus (GenLayer Studionet ~60-90s)
-        status.textContent = '⏳ Waiting for validator consensus... (60-90 seconds)';
-        await new Promise(r => setTimeout(r, 90000));
+        // Wait for consensus (GenLayer Studionet ~90-120s)
+        status.textContent = '⏳ Waiting for validator consensus... (90-120 seconds)';
+        await new Promise(r => setTimeout(r, 120000));
 
-        const verdict = await client.readContract({
-          address: CONTRACT,
-          functionName: 'get_verdict',
-          args: []
-        });
+        // Read verdict - try tx result first, fallback to readContract
+        let verdict = '';
+        try {
+          const receipt = await client.getTransactionReceipt({ hash: txHash });
+          if (receipt && receipt.result) {
+            verdict = String(receipt.result);
+          }
+        } catch(e) {}
+
+        if (!verdict || verdict.length < 5) {
+          const v = await client.readContract({
+            address: CONTRACT,
+            functionName: 'get_verdict',
+            args: []
+          });
+          verdict = String(v || '');
+        }
 
         renderVerdict(verdict);
         resultBox.classList.add('visible');
