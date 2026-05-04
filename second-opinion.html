@@ -143,7 +143,7 @@
     import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
     import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
 
-    const CONTRACT = '0x4a9543F8BE251B6D9C8B2e2e2A5691ba535c5357';
+    const CONTRACT = '0xca0d8E282C635A6B4CCB49970A78CFB30a94d7D6';
     let client = null;
     let userAddress = null;
     let documentText = '';
@@ -242,10 +242,12 @@
     async function loadLastVerdict() {
       try {
         const tempClient = createClient({ chain: studionet });
+        const accounts = await window.ethereum?.request({ method: 'eth_accounts' }) || [];
+        const addr = accounts[0] || '';
         const verdict = await tempClient.readContract({
           address: CONTRACT,
           functionName: 'get_verdict',
-          args: []
+          args: [addr]
         });
         if (verdict && typeof verdict === 'string' && verdict.length > 5) {
           renderVerdict(verdict);
@@ -306,7 +308,7 @@
             const v = await tempClient.readContract({
               address: CONTRACT,
               functionName: 'get_verdict',
-              args: []
+              args: [userAddress]
             });
             verdict = String(v || '').replace(/^"|"$/g, '');
             if (verdict && verdict.length > 10) break;
