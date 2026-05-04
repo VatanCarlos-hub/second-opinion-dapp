@@ -296,7 +296,7 @@
 
         await client.waitForTransactionReceipt({
           hash: txHash,
-          status: TransactionStatus.FINALIZED,
+          // status: TransactionStatus.FINALIZED,
           retries: 60,
           interval: 5000
         });
