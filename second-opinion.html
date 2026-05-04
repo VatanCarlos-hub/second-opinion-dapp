@@ -294,12 +294,9 @@
 
         status.textContent = '⏳ AI validators reaching consensus... (~1-2 min)';
 
-        await client.waitForTransactionReceipt({
-          hash: txHash,
-          // status: TransactionStatus.FINALIZED,
-          retries: 60,
-          interval: 5000
-        });
+        // Wait for consensus (GenLayer Studionet ~60-90s)
+        status.textContent = '⏳ Waiting for validator consensus... (60-90 seconds)';
+        await new Promise(r => setTimeout(r, 90000));
 
         const verdict = await client.readContract({
           address: CONTRACT,
