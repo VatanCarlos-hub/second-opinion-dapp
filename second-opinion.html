@@ -111,41 +111,74 @@ document.getElementById('file').addEventListener('change',async e=>{
   document.getElementById('fn').textContent='✓ '+f.name;
   docText=await f.text();
 });
-function st(msg,cls='loading'){const e=document.getElementById('st');e.textContent=msg;e.className='status '+cls}
-document.getElementById('btn').addEventListener('click',async()=>{
-  const symptoms=document.getElementById('symptoms').value.trim();
-  const age=document.getElementById('age').value.trim();
-  const gender=document.getElementById('gender').value;
-  if(!symptoms||!age||!gender){st('❌ Please fill in age, gender and symptoms.','error');return}
-  const btn=document.getElementById('btn');
-  btn.disabled=true;
-  document.getElementById('vbox').classList.remove('visible');
-  st('⏳ AI is analyzing your case...');
-  const prompt=`You are a medical second opinion AI.
-CRITICAL: Respond in the SAME LANGUAGE as the symptoms. German = German. English = English.
-Patient: Age ${age}, Gender ${gender}, Weight ${document.getElementById('weight').value||'?'}kg, Height ${document.getElementById('height').value||'?'}cm
-Allergies: ${document.getElementById('allergies').value||'none'}
-Pre-existing: ${document.getElementById('precond').value||'none'}
-Symptoms: ${symptoms}${docText?'\nDocument: '+docText.slice(0,500):''}
-Respond ONLY with valid JSON no markdown:
-{"verdict":"1-2 sentence summary","recommendation":"URGENT or SOON or MONITOR","differential":[{"diagnosis":"name","probability":"65%","reasoning":"one sentence"},{"diagnosis":"name","probability":"25%","reasoning":"one sentence"},{"diagnosis":"name","probability":"10%","reasoning":"one sentence"}]}`;
-  try{
-    const res=await fetch('https://text.pollinations.ai/openai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'openai',messages:[{role:'user',content:prompt}],jsonMode:true,seed:Math.floor(Math.random()*9999)})
-    });
-    const text=await res.text();
-    const p=JSON.parse(text.replace(/```json|```/g,'').trim());
-    const r=p.recommendation;
-    document.getElementById('rec').innerHTML=`<span class="rec ${r}">${r}</span>`;
-    document.getElementById('vt').textContent='"'+p.verdict+'"';
-    document.getElementById('dl').innerHTML=p.differential.map(d=>`<div class="di"><div class="dh"><span class="dn">${d.diagnosis}</span><span class="dp">${d.probability}</span></div><p class="dr">${d.reasoning}</p></div>`).join('');
-    document.getElementById('vbox').classList.add('visible');
-    st('✅ Analysis complete','success');
-  }catch(e){st('❌ '+(e.message||'Something went wrong'),'error')}
-  btn.disabled=false;
+function setSt(msg,cls='loading'){const e=document.getElementById('st');e.textContent=msg;e.className='status '+cls}
+
+document.getElementById(‘btn’).addEventListener(‘click’,async()=>{
+const symptoms=document.getElementById(‘symptoms’).value.trim();
+const age=document.getElementById(‘age’).value.trim();
+const gender=document.getElementById(‘gender’).value;
+if(!symptoms||!age||!gender){setSt(‘❌ Please fill in age, gender and symptoms.’,‘error’);return}
+const btn=document.getElementById(‘btn’);
+btn.disabled=true;
+document.getElementById(‘vbox’).classList.remove(‘visible’);
+setSt(‘⏳ AI is analyzing your case…’);
+
+const prompt=`You are a medical second opinion AI. Respond in the SAME LANGUAGE as the symptoms (German symptoms = German response).
+
+Patient: Age ${age}, Gender ${gender}, Weight ${document.getElementById(‘weight’).value||’?’}kg, Height ${document.getElementById(‘height’).value||’?’}cm
+Allergies: ${document.getElementById(‘allergies’).value||‘none’}
+Pre-existing: ${document.getElementById(‘precond’).value||‘none’}
+Symptoms: ${symptoms}${docText?’\nDocument: ‘+docText.slice(0,500):’’}
+
+Return ONLY a JSON object with exactly this structure (no markdown, no explanation):
+{“verdict”:“your summary here”,“recommendation”:“MONITOR”,“differential”:[{“diagnosis”:“name”,“probability”:“60%”,“reasoning”:“reason”},{“diagnosis”:“name”,“probability”:“30%”,“reasoning”:“reason”},{“diagnosis”:“name”,“probability”:“10%”,“reasoning”:“reason”}]}
+
+The recommendation must be exactly one of: URGENT, SOON, or MONITOR`;
+
+try {
+const res = await fetch(‘https://text.pollinations.ai/openai’, {
+method: ‘POST’,
+headers: {‘Content-Type’:‘application/json’},
+body: JSON.stringify({
+model: ‘openai’,
+messages: [{role:‘system’,content:‘You are a medical AI. Always respond with valid JSON only, no markdown.’},{role:‘user’,content:prompt}],
+jsonMode: true
+})
+});
+
+```
+let text = await res.text();
+// Strip any markdown if present
+text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+// Find JSON object
+const start = text.indexOf('{');
+const end = text.lastIndexOf('}');
+if(start === -1 || end === -1) throw new Error('No JSON in response');
+const p = JSON.parse(text.slice(start, end+1));
+
+if(!p.verdict) throw new Error('Invalid response structure');
+
+const r = p.recommendation || 'MONITOR';
+document.getElementById('rec').innerHTML=`<span class="rec ${r}">${r}</span>`;
+document.getElementById('vt').textContent='"'+p.verdict+'"';
+
+const diff = Array.isArray(p.differential) ? p.differential : [];
+document.getElementById('dl').innerHTML = diff.map(d=>`
+  <div class="di">
+    <div class="dh"><span class="dn">${d.diagnosis||''}</span><span class="dp">${d.probability||''}</span></div>
+    <p class="dr">${d.reasoning||''}</p>
+  </div>`).join('');
+
+document.getElementById('vbox').classList.add('visible');
+setSt('✅ Analysis complete','success');
+```
+
+} catch(e) {
+setSt(’❌ ’+(e.message||‘Something went wrong’),‘error’);
+}
+btn.disabled=false;
 });
 </script>
+
 </body>
 </html>
