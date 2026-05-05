@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -67,55 +66,52 @@
       <p class="subtitle">100% Native <span>GenLayer</span> — AI Validators Diagnose Onchain</p>
     </header>
 
-```
-<div class="card">
-  <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
+    <div class="card">
+      <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
 
-  <div class="g3">
-    <div><span class="fl">Age</span><input id="ageInput" type="number" placeholder="30"/></div>
-    <div><span class="fl">Weight (kg)</span><input id="weightInput" type="number" placeholder="70"/></div>
-    <div><span class="fl">Height (cm)</span><input id="heightInput" type="number" placeholder="175"/></div>
-  </div>
+      <div class="g3">
+        <div><span class="fl">Age</span><input id="ageInput" type="number" placeholder="30"/></div>
+        <div><span class="fl">Weight (kg)</span><input id="weightInput" type="number" placeholder="70"/></div>
+        <div><span class="fl">Height (cm)</span><input id="heightInput" type="number" placeholder="175"/></div>
+      </div>
 
-  <div class="field">
-    <span class="fl">Gender</span>
-    <select id="genderInput">
-      <option value="" disabled selected>Select gender</option>
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-      <option value="Non-binary">Non-binary</option>
-      <option value="Prefer not to say">Prefer not to say</option>
-    </select>
-  </div>
+      <div class="field">
+        <span class="fl">Gender</span>
+        <select id="genderInput">
+          <option value="" disabled selected>Select gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Non-binary">Non-binary</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+        </select>
+      </div>
 
-  <div class="field"><span class="fl">Allergies</span><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
-  <div class="field"><span class="fl">Pre-existing Conditions</span><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
-  <div class="field"><span class="fl">Symptoms</span><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea></div>
+      <div class="field"><span class="fl">Allergies</span><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
+      <div class="field"><span class="fl">Pre-existing Conditions</span><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
+      <div class="field"><span class="fl">Symptoms</span><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea></div>
 
-  <div class="field">
-    <span class="fl">Medical Document (optional)</span>
-    <div class="upload">
-      <input type="file" id="fileInput" accept=".txt"/>
-      <p>📎 Upload a medical document (.txt)</p>
-      <p class="fn" id="fileName"></p>
+      <div class="field">
+        <span class="fl">Medical Document (optional)</span>
+        <div class="upload">
+          <input type="file" id="fileInput" accept=".txt"/>
+          <p>📎 Upload a medical document (.txt)</p>
+          <p class="fn" id="fileName"></p>
+        </div>
+      </div>
+
+      <button id="submitBtn">🩺 GET SECOND OPINION</button>
+      <p class="status" id="statusMsg"></p>
+
+      <div class="verdict-box" id="verdictResult">
+        <div class="vlabel">AI Consensus Verdict</div>
+        <p class="vtext" id="verdictText"></p>
+        <div id="recBadge"></div>
+        <span class="badge">⛓ Stored permanently on GenLayer Studionet</span>
+        <p class="disc">⚠ This is an AI second opinion only. Always consult a licensed physician for diagnosis and treatment.</p>
+      </div>
     </div>
-  </div>
 
-  <button id="submitBtn">🩺 GET SECOND OPINION</button>
-  <p class="status" id="statusMsg"></p>
-
-  <div class="verdict-box" id="verdictResult">
-    <div class="vlabel">AI Consensus Verdict</div>
-    <p class="vtext" id="verdictText"></p>
-    <div id="recBadge"></div>
-    <span class="badge">⛓ Stored permanently on GenLayer Studionet</span>
-    <p class="disc">⚠ This is an AI second opinion only. Always consult a licensed physician for diagnosis and treatment.</p>
-  </div>
-</div>
-
-<footer>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
-```
-
+    <footer>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
   </div>
 
   <script type="module">
@@ -123,7 +119,7 @@
     import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
     import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
 
-    const CONTRACT = '0x4a9543F8BE251B6D9C8B2e2e2A5691ba535c5357';
+    const CONTRACT = '0x9108fc9F8923717552248381e24f765603d63009';
     let client = null;
     let userAddress = null;
     let documentText = '';
@@ -247,19 +243,21 @@
         setStatus('⏳ Validators reaching consensus... (~2 minutes)');
         await new Promise(r => setTimeout(r, 130000));
 
-        const tempClient = createClient({ chain: studionet });
+        // Read verdict from TX receipt - each user gets their own result
         let verdict = '';
-        for (let i = 0; i < 8; i++) {
+        try {
+          const receipt = await client.getTransactionReceipt({ hash: txHash });
+          if (receipt && receipt.result) {
+            verdict = String(receipt.result).replace(/^"|"$/g, '');
+          }
+        } catch(e) {}
+
+        // Fallback: try getLogs or direct receipt result field
+        if (!verdict || verdict.length < 5) {
           try {
-            const v = await tempClient.readContract({
-              address: CONTRACT,
-              functionName: 'get_verdict',
-              args: []
-            });
-            verdict = String(v || '').replace(/^"|"$/g, '');
-            if (verdict && verdict.length > 10) break;
+            const tx = await client.getTransaction({ hash: txHash });
+            if (tx && tx.result) verdict = String(tx.result).replace(/^"|"$/g, '');
           } catch(e) {}
-          await new Promise(r => setTimeout(r, 10000));
         }
 
         renderVerdict(verdict);
@@ -284,6 +282,5 @@
 
     loadLastVerdict();
   </script>
-
 </body>
 </html>
