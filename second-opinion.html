@@ -119,7 +119,7 @@
     import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
     import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
 
-    const CONTRACT = '0x9108fc9F8923717552248381e24f765603d63009';
+    const CONTRACT = '0x10E121e5e0D6f2c58e2A1cF935d43a8Cf900d0b2';
     let client = null;
     let userAddress = null;
     let documentText = '';
@@ -196,7 +196,7 @@
         const verdict = await tempClient.readContract({
           address: CONTRACT,
           functionName: 'get_verdict',
-          args: []
+          args: [userAddress]
         });
         if (verdict && typeof verdict === 'string' && verdict.length > 5) {
           renderVerdict(verdict);
@@ -243,21 +243,20 @@
         setStatus('⏳ Validators reaching consensus... (~2 minutes)');
         await new Promise(r => setTimeout(r, 130000));
 
-        // Read verdict from TX receipt - each user gets their own result
+        // Poll readContract with user's wallet address
         let verdict = '';
-        try {
-          const receipt = await client.getTransactionReceipt({ hash: txHash });
-          if (receipt && receipt.result) {
-            verdict = String(receipt.result).replace(/^"|"$/g, '');
-          }
-        } catch(e) {}
-
-        // Fallback: try getLogs or direct receipt result field
-        if (!verdict || verdict.length < 5) {
+        for (let i = 0; i < 10; i++) {
           try {
-            const tx = await client.getTransaction({ hash: txHash });
-            if (tx && tx.result) verdict = String(tx.result).replace(/^"|"$/g, '');
+            const tempClient = createClient({ chain: studionet });
+            const v = await tempClient.readContract({
+              address: CONTRACT,
+              functionName: 'get_verdict',
+              args: [userAddress]
+            });
+            verdict = String(v || '').replace(/^"|"$/g, '');
+            if (verdict && verdict.length > 10) break;
           } catch(e) {}
+          await new Promise(r => setTimeout(r, 10000));
         }
 
         renderVerdict(verdict);
