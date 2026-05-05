@@ -196,7 +196,7 @@
         const verdict = await tempClient.readContract({
           address: CONTRACT,
           functionName: 'get_verdict',
-          args: [userAddress]
+          args: [userAddress.toLowerCase()]
         });
         if (verdict && typeof verdict === 'string' && verdict.length > 5) {
           renderVerdict(verdict);
@@ -251,7 +251,7 @@
             const v = await tempClient.readContract({
               address: CONTRACT,
               functionName: 'get_verdict',
-              args: [userAddress]
+              args: [userAddress.toLowerCase()]
             });
             verdict = String(v || '').replace(/^"|"$/g, '');
             if (verdict && verdict.length > 10) break;
