@@ -244,18 +244,23 @@
 
         setStatus('⏳ AI validators reaching consensus... (~1-2 min)');
 
-        await client.waitForTransactionReceipt({
-          hash: txHash,
-          status: TransactionStatus.FINALIZED,
-          retries: 120,
-          interval: 5000
-        });
+        setStatus('⏳ Validators reaching consensus... (~2 minutes)');
+        await new Promise(r => setTimeout(r, 130000));
 
-        const verdict = await client.readContract({
-          address: CONTRACT,
-          functionName: 'get_verdict',
-          args: []
-        });
+        const tempClient = createClient({ chain: studionet });
+        let verdict = '';
+        for (let i = 0; i < 8; i++) {
+          try {
+            const v = await tempClient.readContract({
+              address: CONTRACT,
+              functionName: 'get_verdict',
+              args: []
+            });
+            verdict = String(v || '').replace(/^"|"$/g, '');
+            if (verdict && verdict.length > 10) break;
+          } catch(e) {}
+          await new Promise(r => setTimeout(r, 10000));
+        }
 
         renderVerdict(verdict);
         setStatus('✅ Diagnosis finalized onchain', 'success');
