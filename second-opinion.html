@@ -1,351 +1,172 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Second Opinion 🩺</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
-  <style>
-    :root { --teal: #0F6E56; --teal2: #1D9E75; --bg: #0a0a0a; --card: #111111; --border: #222; --text: #f0f0f0; --muted: #555; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
-    body::before { content: ''; position: fixed; top: -50%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(29,158,117,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-    .container { max-width: 700px; width: 100%; position: relative; z-index: 1; }
-    header { text-align: center; margin-bottom: 50px; }
-    .icon { font-size: 64px; display: block; animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 10vw, 80px); letter-spacing: 4px; background: linear-gradient(135deg, var(--teal), var(--teal2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 12px; }
-    .subtitle { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
-    .subtitle span { color: var(--teal2); }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 32px; margin-bottom: 24px; }
-    .card-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--teal2); margin-bottom: 16px; }
-    .field-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
-    textarea, input, select { width: 100%; background: #0d0d0d; border: 1px solid var(--border); border-radius: 2px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; padding: 12px 14px; outline: none; transition: border-color 0.2s; }
-    textarea { resize: none; height: 100px; }
-    textarea:focus, input:focus, select:focus { border-color: var(--teal2); }
-    textarea::placeholder, input::placeholder { color: var(--muted); }
-    select option { background: #111; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .field { margin-bottom: 12px; }
-    .upload-area { border: 1px dashed var(--border); border-radius: 2px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative; }
-    .upload-area:hover { border-color: var(--teal2); }
-    .upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .upload-area p { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-    .upload-area .file-name { color: var(--teal2); margin-top: 6px; font-size: 11px; }
-    button { width: 100%; margin-top: 16px; padding: 18px; background: var(--teal); border: none; border-radius: 2px; color: white; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; }
-    button:hover:not(:disabled) { background: var(--teal2); transform: translateY(-1px); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .status { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; min-height: 18px; }
-    .status.loading { color: var(--teal2); animation: blink 1.5s ease-in-out infinite; }
-    .status.error { color: #ff3333; }
-    .status.success { color: #44ff88; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .verdict-box { display: none; background: #0d0d0d; border: 1px solid var(--teal); border-radius: 2px; padding: 24px; margin-top: 24px; }
-    .verdict-box.visible { display: block; animation: fadeIn 0.5s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .verdict-label { font-size: 10px; letter-spacing: 3px; color: var(--teal2); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .verdict-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .verdict-text { font-size: 15px; line-height: 1.8; color: #e0e0e0; }
-    .recommendation { display: inline-block; margin-top: 12px; padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 2px; border-radius: 2px; }
-    .recommendation.URGENT { background: #A32D2D; color: #fff; }
-    .recommendation.SOON { background: #854F0B; color: #fff; }
-    .recommendation.MONITOR { background: var(--teal); color: #fff; }
-    .onchain-badge { display: block; margin-top: 16px; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-    .disclaimer { font-size: 10px; color: var(--muted); margin-top: 12px; line-height: 1.6; letter-spacing: 1px; text-align: center; border-top: 1px solid var(--border); padding-top: 12px; }
-    .wallet-status { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
-    .wallet-status .connected { color: #44ff88; }
-    footer { margin-top: 60px; text-align: center; font-size: 11px; color: #333; letter-spacing: 2px; }
-    footer a { color: var(--teal2); text-decoration: none; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Medical Triage</title>
+
+<style>
+body {
+  background:#0a0a0a;
+  color:#f0f0f0;
+  font-family: monospace;
+  padding:20px;
+  max-width:700px;
+  margin:auto;
+}
+input, textarea, select {
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  background:#111;
+  color:#fff;
+  border:1px solid #333;
+}
+button {
+  width:100%;
+  padding:14px;
+  background:#0F6E56;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+.status { margin-top:10px; font-size:13px; }
+.result { margin-top:20px; padding:15px; border:1px solid #0F6E56; }
+.badge { padding:5px 10px; display:inline-block; margin-top:10px; }
+.URGENT { background:red; }
+.SOON { background:orange; }
+.MONITOR { background:green; }
+.warning {
+  font-size:12px;
+  color:#aaa;
+  border-top:1px solid #222;
+  margin-top:15px;
+  padding-top:10px;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <span class="icon">🩺</span>
-      <h1>Second Opinion</h1>
-      <p class="subtitle">100% Native <span>GenLayer</span> — AI Validators Diagnose Onchain</p>
-    </header>
 
-```
-<div class="card">
-  <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
+<h2>AI Medical Triage (Non-Diagnostic)</h2>
 
-  <p class="card-label">Patient Profile</p>
+<p style="font-size:12px;color:#888;">
+This tool provides a risk-oriented AI triage only. It does NOT provide medical diagnosis.
+</p>
 
-  <div class="grid-3">
-    <div>
-      <span class="field-label">Age</span>
-      <input id="ageInput" type="number" placeholder="30" />
-    </div>
-    <div>
-      <span class="field-label">Weight (kg)</span>
-      <input id="weightInput" type="number" placeholder="70" />
-    </div>
-    <div>
-      <span class="field-label">Height (cm)</span>
-      <input id="heightInput" type="number" placeholder="175" />
-    </div>
-  </div>
+<input id="age" type="number" placeholder="Age (1–120)">
+<select id="gender">
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
 
-  <div class="field">
-    <span class="field-label">Gender</span>
-    <select id="genderInput">
-      <option value="" disabled selected>Select gender</option>
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-      <option value="Non-binary">Non-binary</option>
-      <option value="Prefer not to say">Prefer not to say</option>
-    </select>
-  </div>
+<textarea id="symptoms" placeholder="Describe symptoms clearly..."></textarea>
 
-  <div class="field">
-    <span class="field-label">Allergies</span>
-    <input id="allergiesInput" type="text" placeholder="e.g. Penicillin, Pollen, Nuts (leave blank if none)" />
-  </div>
+<button id="btn">Run Triage</button>
 
-  <div class="field">
-    <span class="field-label">Pre-existing Conditions</span>
-    <input id="preConditionsInput" type="text" placeholder="e.g. Diabetes Type 2, Hypertension (leave blank if none)" />
-  </div>
+<div class="status" id="status"></div>
 
-  <div class="field">
-    <span class="field-label">Symptoms</span>
-    <textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea>
-  </div>
-
-  <div class="field">
-    <span class="field-label">Medical Document (optional)</span>
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept=".txt,.pdf,.png,.jpg,.jpeg" />
-      <p>📎 Upload a medical document, lab result or image</p>
-      <p class="file-name" id="fileName"></p>
-    </div>
-  </div>
-
-  <button id="submitBtn">🩺 GET SECOND OPINION</button>
-  <p class="status" id="statusMsg"></p>
-
-  <div class="verdict-box" id="verdictResult">
-    <div class="verdict-label">AI Consensus Verdict</div>
-    <p class="verdict-text" id="verdictText"></p>
-    <span class="onchain-badge">⛓ Stored on GenLayer Studionet · Optimistic Democracy</span>
-    <p class="disclaimer">⚠ This is an AI second opinion only and does not replace professional medical advice. Always consult a licensed physician for diagnosis and treatment.</p>
-  </div>
+<div class="result" id="result" style="display:none;">
+  <div id="text"></div>
+  <div id="level"></div>
+  <div id="tx"></div>
 </div>
 
-<footer>
-  Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis
-</footer>
-```
+<div class="warning">
+⚠ This system uses probabilistic AI outputs. Results may be incomplete or incorrect.  
+Always consult a licensed physician.
+</div>
 
-  </div>
+<script type="module">
+import { createClient } from 'https://esm.sh/genlayer-js@latest';
+import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/genlayer-js@latest';
-    import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
-    import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
+const CONTRACT = '0x0d384ff1Ae51d6d4DefD30e49B8891FF3d802202';
 
-    const CONTRACT = '0x0d384ff1Ae51d6d4DefD30e49B8891FF3d802202';
-    let client = null;
-    let userAddress = null;
-    let documentText = '';
+let client, user;
 
-    const btn = document.getElementById('submitBtn');
-    const status = document.getElementById('statusMsg');
-    const walletStatus = document.getElementById('walletStatus');
-    const resultBox = document.getElementById('verdictResult');
-    const verdictText = document.getElementById('verdictText');
-    const fileInput = document.getElementById('fileInput');
-    const fileName = document.getElementById('fileName');
+const status = document.getElementById('status');
+const resultBox = document.getElementById('result');
 
-    // File upload handler
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      fileName.textContent = '✓ ' + file.name;
-      try {
-        if (file.type === 'text/plain') {
-          documentText = await file.text();
-        } else if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = async (ev) => {
-            const base64 = ev.target.result.split(',')[1];
-            documentText = '[Image uploaded: ' + file.name + ' — AI will analyze based on symptoms and other data]';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          documentText = '[Document uploaded: ' + file.name + ']';
-        }
-      } catch(e) {
-        documentText = '[Document: ' + file.name + ']';
-      }
-    });
+function validate(age, symptoms) {
+  if (!age || age < 1 || age > 120) return "Invalid age";
+  if (!symptoms || symptoms.length < 10) return "Symptoms too short";
+  return null;
+}
 
-    function renderVerdict(raw) {
-      const vStr = String(raw || '').replace(/^"|"$/g, '');
-      const parts = vStr.split(' | ');
-      const rec = parts.at(-1)?.trim();
-      const text = parts.slice(0, -1).join(' | ') || vStr;
-      const validRec = ['URGENT','SOON','MONITOR'].includes(rec) ? rec : 'MONITOR';
-      verdictText.innerHTML = '"' + text + '"<br><br><span class="recommendation ' + validRec + '">' + validRec + '</span>';
-    }
+async function connect() {
+  if (!window.ethereum) throw "MetaMask required";
+  const acc = await ethereum.request({ method:'eth_requestAccounts' });
+  user = acc[0];
+  client = createClient({ chain: studionet, account:user });
+}
 
-    async function connectWallet() {
-      if (!window.ethereum) {
-        status.className = 'status error';
-        status.textContent = '❌ MetaMask not found. Please install MetaMask.';
-        return false;
-      }
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        userAddress = accounts[0];
-        client = createClient({ chain: studionet, account: userAddress });
-        walletStatus.innerHTML = `<span class="connected">⬢ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>`;
-        return true;
-      } catch (e) {
-        status.className = 'status error';
-        status.textContent = '❌ Wallet connection rejected';
-        return false;
-      }
-    }
-
-    async function ensureStudionet() {
-      if (!window.ethereum) return false;
-      try {
-        const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
-        if (currentChain !== '0xf22f') {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0xf22f' }],
-            });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0xf22f',
-                  chainName: 'GenLayer Studio',
-                  nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
-                  rpcUrls: ['https://studio.genlayer.com/api'],
-                }],
-              });
-            } else throw switchError;
-          }
-        }
-        return true;
-      } catch (e) {
-        status.className = 'status error';
-        status.textContent = '❌ Could not switch to GenLayer Studio: ' + (e.message || e);
-        return false;
-      }
-    }
-
-    async function loadLastVerdict() {
-      try {
-        const tempClient = createClient({ chain: studionet });
-        const accounts = await window.ethereum?.request({ method: 'eth_accounts' }) || [];
-        const addr = accounts[0] || '';
-        const verdict = await tempClient.readContract({
-          address: CONTRACT,
-          functionName: 'get_verdict',
-          args: [addr]
-        });
-        if (verdict && typeof verdict === 'string' && verdict.length > 5) {
-          renderVerdict(verdict);
-          resultBox.classList.add('visible');
-        }
-      } catch (e) {
-        console.log('No previous verdict yet');
-      }
-    }
-
-    btn.addEventListener('click', async () => {
-      const symptoms = document.getElementById('symptomsInput').value.trim();
-      const age = document.getElementById('ageInput').value.trim();
-      const gender = document.getElementById('genderInput').value;
-      const weight = document.getElementById('weightInput').value.trim();
-      const height = document.getElementById('heightInput').value.trim();
-      const allergies = document.getElementById('allergiesInput').value.trim();
-      const preConditions = document.getElementById('preConditionsInput').value.trim();
-
-      if (!symptoms || !age || !gender) {
-        status.className = 'status error';
-        status.textContent = '❌ Please fill in age, gender and symptoms.';
-        return;
-      }
-
-      if (!client) {
-        const connected = await connectWallet();
-        if (!connected) return;
-      }
-
-      const onStudionet = await ensureStudionet();
-      if (!onStudionet) return;
-
-      btn.disabled = true;
-      resultBox.classList.remove('visible');
-      status.className = 'status loading';
-      status.textContent = '⏳ Sending transaction... confirm in MetaMask';
-
-      try {
-        const txHash = await client.writeContract({
-          address: CONTRACT,
-          functionName: 'submit_consultation',
-          args: [symptoms, age, gender, weight || '0', height || '0', allergies, preConditions, documentText],
-          value: 0n
-        });
-
-        status.textContent = '⏳ AI validators reaching consensus... (~1-2 min)';
-
-        // Wait for consensus (GenLayer Studionet ~90-120s)
-        status.textContent = '⏳ Validators reaching consensus... (2 minutes)';
-        await new Promise(r => setTimeout(r, 130000));
-
-        // Poll readContract until verdict changes from empty
-        let verdict = '';
-        for (let i = 0; i < 10; i++) {
-          try {
-            const tempClient = createClient({ chain: studionet });
-            const v = await tempClient.readContract({
-              address: CONTRACT,
-              functionName: 'get_verdict',
-              args: [userAddress]
-            });
-            verdict = String(v || '').replace(/^"|"$/g, '');
-            if (verdict && verdict.length > 10) break;
-          } catch(e) {}
-          await new Promise(r => setTimeout(r, 10000));
-        }
-
-        renderVerdict(verdict);
-        resultBox.classList.add('visible');
-        status.className = 'status success';
-        status.innerHTML = `✅ Diagnosis finalized onchain`;
-
-      } catch (e) {
-        console.error(e);
-        status.className = 'status error';
-        status.textContent = '❌ ' + (e.shortMessage || e.message || 'Transaction failed');
-      }
-
-      btn.disabled = false;
-    });
-
-    if (window.ethereum) {
-      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
-        if (accounts.length > 0) {
-          userAddress = accounts[0];
-          client = createClient({ chain: studionet, account: userAddress });
-          walletStatus.innerHTML = `<span class="connected">⬢ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>`;
-        }
+async function pollResult() {
+  for (let i=0;i<15;i++) {
+    try {
+      const v = await client.readContract({
+        address: CONTRACT,
+        functionName: 'get_verdict',
+        args: [user]
       });
-    }
 
-    loadLastVerdict();
-  </script>
+      if (v && v.startsWith("{")) {
+        return JSON.parse(v);
+      }
+    } catch(e){}
+    await new Promise(r=>setTimeout(r,5000));
+  }
+  throw "Timeout waiting for result";
+}
+
+document.getElementById('btn').onclick = async () => {
+  const age = Number(document.getElementById('age').value);
+  const gender = document.getElementById('gender').value;
+  const symptoms = document.getElementById('symptoms').value;
+
+  const err = validate(age, symptoms);
+  if (err) {
+    status.textContent = "❌ " + err;
+    return;
+  }
+
+  try {
+    await connect();
+
+    status.textContent = "Sending...";
+
+    const tx = await client.writeContract({
+      address: CONTRACT,
+      functionName: 'submit_consultation',
+      args: [symptoms, String(age), gender, "0","0","","",""],
+      value: 0n
+    });
+
+    status.textContent = "Waiting for AI consensus...";
+
+    const verdict = await pollResult();
+
+    // Erwartetes Format:
+    // { "summary": "...", "risk": "URGENT|SOON|MONITOR" }
+
+    document.getElementById('text').innerText = verdict.summary;
+
+    const lvl = document.getElementById('level');
+    lvl.innerHTML = verdict.risk;
+    lvl.className = "badge " + verdict.risk;
+
+    document.getElementById('tx').innerHTML =
+      "Onchain TX: " + tx;
+
+    resultBox.style.display = "block";
+    status.textContent = "✅ Done";
+
+  } catch(e) {
+    status.textContent = "❌ " + e;
+  }
+};
+</script>
 
 </body>
 </html>
