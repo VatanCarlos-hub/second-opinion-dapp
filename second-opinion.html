@@ -1,450 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Second Opinion 🩺</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <title>Second Opinion — AI Medical Consensus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    :root { --teal: #0F6E56; --teal2: #1D9E75; --bg: #0a0a0a; --card: #111111; --border: #222; --text: #f0f0f0; --muted: #555; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
-    body::before { content: ''; position: fixed; top: -50%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(29,158,117,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-    .container { max-width: 700px; width: 100%; position: relative; z-index: 1; }
-    header { text-align: center; margin-bottom: 50px; }
-    .icon { font-size: 64px; display: block; animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 10vw, 80px); letter-spacing: 4px; background: linear-gradient(135deg, var(--teal), var(--teal2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 12px; }
-    .subtitle { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
-    .subtitle span { color: var(--teal2); }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 32px; margin-bottom: 24px; }
-    .card-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--teal2); margin-bottom: 16px; }
-    .field { margin-bottom: 14px; }
-    .fl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
-    textarea, input, select { width: 100%; background: #0d0d0d; border: 1px solid var(--border); border-radius: 2px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; padding: 12px 14px; outline: none; transition: border-color 0.2s; }
-    textarea { resize: none; height: 110px; }
-    textarea:focus, input:focus, select:focus { border-color: var(--teal2); }
-    textarea::placeholder, input::placeholder { color: var(--muted); }
-    select option { background: #111; }
-    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    .upload { border: 1px dashed var(--border); border-radius: 2px; padding: 18px; text-align: center; cursor: pointer; position: relative; transition: border-color 0.2s; }
-    .upload:hover { border-color: var(--teal2); }
-    .upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .upload p { font-size: 11px; color: var(--muted); }
-    .fn { color: var(--teal2); margin-top: 6px; font-size: 11px; }
-    button.main-btn { width: 100%; margin-top: 16px; padding: 18px; background: var(--teal); border: none; border-radius: 2px; color: white; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; }
-    button.main-btn:hover:not(:disabled) { background: var(--teal2); transform: translateY(-1px); }
-    button.main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .status { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; min-height: 18px; }
-    .status.loading { color: var(--teal2); animation: blink 1.5s ease-in-out infinite; }
-    .status.error { color: #ff3333; }
-    .status.success { color: #44ff88; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-    /* ── Wallet status bar ── */
-    .wallet-status { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
-    .connected { color: #44ff88; }
-
-    /* ── Connect wallet button ── */
-    #connectWalletBtn {
-      width: 100%; margin-bottom: 20px; padding: 14px;
-      background: transparent; border: 1px solid var(--teal2);
-      border-radius: 2px; color: var(--teal2);
-      font-family: 'Space Mono', monospace; font-size: 12px;
-      letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
-      touch-action: manipulation;
-    }
-    #connectWalletBtn:hover { background: var(--teal); color: #fff; border-color: var(--teal); }
-    #connectWalletBtn.connected-btn { background: rgba(29,158,117,0.1); color: #44ff88; border-color: #44ff88; cursor: default; }
-
-    /* ── Wallet Modal ── */
-    .wallet-modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.92); z-index: 9999;
-      align-items: center; justify-content: center; padding: 24px;
-    }
-    .wallet-modal-box {
-      background: #111; border: 1px solid #333;
-      border-radius: 4px; max-width: 400px; width: 100%;
-      padding: 32px; position: relative;
-    }
-    .wallet-modal-title {
-      font-size: 10px; letter-spacing: 3px; color: var(--teal2);
-      text-transform: uppercase; margin-bottom: 20px;
-    }
-    .wallet-option {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 16px; border: 1px solid #222;
-      border-radius: 2px; cursor: pointer; margin-bottom: 10px;
-      background: #0d0d0d; transition: all 0.18s;
-      touch-action: manipulation;
-    }
-    .wallet-option:hover { border-color: var(--teal2); background: rgba(29,158,117,0.07); }
-    .wallet-option:last-child { margin-bottom: 0; }
-    .wallet-option-icon { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .wallet-option-name { font-size: 12px; letter-spacing: 1px; color: var(--text); font-weight: 700; }
-    .wallet-option-desc { font-size: 10px; color: var(--muted); margin-top: 2px; }
-    .wallet-modal-footer { margin-top: 16px; font-size: 10px; color: #333; text-align: center; letter-spacing: 1px; line-height: 1.6; }
-    .wallet-modal-close { position: absolute; top: 14px; right: 16px; font-size: 18px; background: none; border: none; cursor: pointer; color: var(--muted); }
-
-    .verdict-box { display: none; background: #0d0d0d; border: 1px solid var(--teal); border-radius: 2px; padding: 24px; margin-top: 24px; }
-    .verdict-box.visible { display: block; animation: fadeIn 0.5s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .vlabel { font-size: 10px; letter-spacing: 3px; color: var(--teal2); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .vlabel::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .vtext { font-size: 16px; line-height: 1.8; color: #e0e0e0; font-style: italic; }
-    .rec { display: inline-block; margin-top: 16px; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 14px; border-radius: 2px; }
-    .URGENT { background: #A32D2D; color: #fff; }
-    .SOON { background: #854F0B; color: #fff; }
-    .MONITOR { background: var(--teal); color: #fff; }
-    .badge { display: block; margin-top: 14px; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-    .disc { font-size: 10px; color: var(--muted); margin-top: 12px; line-height: 1.6; text-align: center; border-top: 1px solid var(--border); padding-top: 12px; }
-    footer { margin-top: 60px; text-align: center; font-size: 11px; color: #333; letter-spacing: 2px; }
-    footer a { color: var(--teal2); text-decoration: none; }
-    @media(max-width:580px){ .g3{grid-template-columns:1fr 1fr;} }
+    :root{--teal:#0F6E56;--teal2:#1D9E75;--teal3:#2dc88f;--bg:#0a0a0a;--card:#111;--card2:#0d0d0d;--border:#222;--text:#f0f0f0;--text2:#ccc;--text3:#888;--muted:#555;--green:#44ff88;--red:#ff4444;}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px 100px;line-height:1.6}
+    body::before{content:'';position:fixed;top:-50%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(29,158,117,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+    .wrap{max-width:680px;width:100%;position:relative;z-index:1}
+    header{text-align:center;margin-bottom:56px;animation:fadeUp .8s ease both}
+    .icon{font-size:60px;display:block;margin-bottom:12px;animation:pulse 2.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,84px);letter-spacing:4px;background:linear-gradient(135deg,var(--teal2),var(--teal3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px}
+    .subtitle{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+    .subtitle span{color:var(--teal2)}
+    .header-disc-btn{margin-top:14px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);background:none;border:1px solid #222;padding:5px 14px;cursor:pointer;border-radius:2px;touch-action:manipulation}
+    .lang-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:14px}
+    .lang-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;background:#111;border:1px solid #222;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s;display:inline-flex;align-items:center;gap:5px;touch-action:manipulation}
+    .lang-btn img{border-radius:1px;display:block;flex-shrink:0}
+    .lang-btn:hover,.lang-btn.active{border-color:var(--teal2);color:var(--teal2);background:rgba(29,158,117,0.08)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:32px;margin-bottom:20px;animation:fadeUp .7s ease both}
+    .card-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--teal2);margin-bottom:22px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+    .card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+    .wallet-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:18px 24px;margin-bottom:20px;animation:fadeUp .7s .04s ease both}
+    .wallet-info{display:flex;flex-direction:column;gap:3px}
+    .wallet-lbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted)}
+    .wallet-dot{width:8px;height:8px;border-radius:50%;background:#333;display:inline-block;margin-right:6px;transition:all .3s}
+    .wallet-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(68,255,136,0.15)}
+    .wallet-addr{font-family:'Space Mono',monospace;font-size:12px;color:var(--text2)}
+    .btn-connect{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:10px 20px;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:2px;transition:all .2s;touch-action:manipulation}
+    .btn-connect:hover{background:var(--teal2)}
+    .btn-connect.connected{background:rgba(68,255,136,0.1);color:var(--green);border:1px solid rgba(68,255,136,0.3);cursor:default}
+    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+    .field{margin-bottom:14px}
+    .fl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block}
+    input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Space Mono',monospace;font-size:12px;padding:11px 14px;outline:none;transition:border-color .2s}
+    input:focus,select:focus,textarea:focus{border-color:var(--teal2)}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    textarea{resize:none;height:110px}
+    select option{background:#111}
+    .upload{border:1px dashed var(--border);border-radius:2px;padding:18px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s}
+    .upload:hover{border-color:var(--teal2)}
+    .upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload p{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+    .fn{color:var(--teal2);margin-top:6px;font-size:11px;font-family:'Space Mono',monospace}
+    .btn-submit{width:100%;margin-top:18px;padding:20px;background:var(--teal);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;cursor:pointer;transition:all .25s;touch-action:manipulation}
+    .btn-submit:hover:not(:disabled){background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(29,158,117,0.25)}
+    .btn-submit:disabled{background:#1a1a1a;color:var(--muted);cursor:not-allowed;transform:none}
+    .status-msg{margin-top:14px;padding:12px 16px;border-left:3px solid var(--teal2);background:rgba(29,158,117,0.07);font-size:12px;color:var(--text2);display:none;border-radius:0 2px 2px 0;font-family:'Space Mono',monospace}
+    .status-msg.error{border-color:var(--red);background:rgba(255,68,68,0.07);color:var(--red)}
+    .loading{margin-top:40px;text-align:center;display:none;animation:fadeUp .5s ease both}
+    .spinner-wrap{width:70px;height:70px;margin:0 auto 24px;position:relative}
+    .sp-outer{width:70px;height:70px;border:2px solid #222;border-top-color:var(--teal2);border-radius:50%;position:absolute;animation:spin 2s linear infinite}
+    .sp-inner{width:52px;height:52px;border:1.5px solid #1a1a1a;border-bottom-color:var(--teal3);border-radius:50%;position:absolute;top:9px;left:9px;animation:spin 1.4s linear infinite reverse}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--text);margin-bottom:6px}
+    .loading-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:18px}
+    .timer{font-family:'Space Mono',monospace;font-size:40px;font-weight:400;color:var(--teal2);letter-spacing:4px;margin-bottom:10px}
+    .loading-phase{font-size:13px;color:var(--text3);font-style:italic}
+    #result{margin-top:32px;display:none}
+    .result-hero{background:linear-gradient(135deg,#0d1f18,#0a1a12);border:1px solid rgba(29,158,117,0.4);border-radius:4px;padding:36px;margin-bottom:20px;animation:fadeUp .7s ease both;position:relative;overflow:hidden}
+    .result-hero::before{content:'';position:absolute;top:0;right:0;width:250px;height:100%;background:radial-gradient(circle at 100% 50%,rgba(29,158,117,0.07),transparent 70%)}
+    .rh-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:rgba(29,158,117,0.6);margin-bottom:12px}
+    .urgency-badge{display:inline-flex;align-items:center;gap:10px;padding:10px 22px;border-radius:2px;margin-bottom:20px}
+    .urgency-badge.URGENT{background:rgba(163,45,45,0.2);border:1px solid rgba(163,45,45,0.5)}
+    .urgency-badge.SOON{background:rgba(133,79,11,0.2);border:1px solid rgba(133,79,11,0.5)}
+    .urgency-badge.MONITOR{background:rgba(15,110,86,0.2);border:1px solid rgba(15,110,86,0.5)}
+    .urgency-icon{font-size:20px}
+    .urgency-text{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:3px}
+    .urgency-badge.URGENT .urgency-text{color:#ff8080}
+    .urgency-badge.SOON .urgency-text{color:#ffb866}
+    .urgency-badge.MONITOR .urgency-text{color:var(--teal3)}
+    .verdict-main{font-size:16px;line-height:1.8;color:#e0e0e0;font-style:italic;margin-top:4px}
+    .verdict-main::before{content:'\201C';color:var(--teal2);font-family:'Bebas Neue';font-size:42px;line-height:0;vertical-align:-14px;margin-right:4px}
+    .verdict-main::after{content:'\201D';color:var(--teal2);font-family:'Bebas Neue';font-size:42px;line-height:0;vertical-align:-14px;margin-left:4px}
+    .onchain-note{margin-top:18px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted)}
+    .step-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+    .step-item:last-child{border-bottom:none;padding-bottom:0}
+    .step-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--teal2);line-height:1;flex-shrink:0;width:24px}
+    .step-text{font-size:13px;color:var(--text2);line-height:1.6}
+    .step-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);display:block;margin-bottom:3px}
+    .transparency{border:1px solid var(--border);border-radius:4px;padding:18px 22px;margin-bottom:20px;animation:fadeUp .7s .1s ease both}
+    .trans-text{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);line-height:1.8}
+    .result-footer{text-align:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+    .result-footer p{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:#333}
+    /* Wallet Modal */
+    .wm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;padding:24px}
+    .wm-box{background:#111;border:1px solid #2a2a2a;border-radius:4px;max-width:400px;width:100%;padding:32px;position:relative}
+    .wm-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--teal2);margin-bottom:20px}
+    .wm-close{position:absolute;top:14px;right:16px;font-size:18px;background:none;border:none;cursor:pointer;color:var(--muted)}
+    .wm-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid #1e1e1e;border-radius:2px;cursor:pointer;margin-bottom:10px;background:var(--card2);transition:all .18s;touch-action:manipulation}
+    .wm-opt:hover{border-color:var(--teal2);background:rgba(29,158,117,0.07)}
+    .wm-opt:last-child{margin-bottom:0}
+    .wm-icon{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .wm-name{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text)}
+    .wm-desc{font-size:10px;color:var(--muted);margin-top:2px}
+    .wm-foot{margin-top:14px;font-family:'Space Mono',monospace;font-size:9px;color:#333;text-align:center;letter-spacing:1px;line-height:1.6}
+    /* Disclaimer Modal */
+    .disc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9998;align-items:center;justify-content:center;padding:24px}
+    .disc-box{background:#111;border:1px solid #2a2a2a;border-radius:4px;max-width:520px;width:100%;padding:36px;position:relative}
+    .disc-close{position:absolute;top:14px;right:16px;font-size:18px;background:none;border:none;cursor:pointer;color:var(--muted)}
+    .disc-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--red);margin-bottom:14px}
+    .disc-h{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--text);margin-bottom:14px}
+    .disc-p{font-size:13px;color:#aaa;line-height:1.8;margin-bottom:10px}
+    .disc-btn{width:100%;margin-top:8px;padding:14px;background:var(--teal);color:#fff;border:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;cursor:pointer;border-radius:2px}
+    footer{margin-top:60px;text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:#2a2a2a;letter-spacing:2px}
+    footer a{color:var(--teal2);text-decoration:none}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1a1a1a}
+    @media(max-width:560px){.g3{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <span class="icon">🩺</span>
-      <h1>Second Opinion</h1>
-      <p class="subtitle">100% Native <span>GenLayer</span> — AI Validators Diagnose Onchain</p>
-    </header>
+<div class="wrap">
+
+  <header>
+    <span class="icon">🩺</span>
+    <h1>Second Opinion</h1>
+    <p class="subtitle">100% Native <span>GenLayer</span> — AI Validators Diagnose Onchain</p>
+    <button class="header-disc-btn" onclick="document.getElementById('disc-modal').style.display='flex'">⚠ DISCLAIMER</button>
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="en"><img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt="EN"> EN</button>
+      <button class="lang-btn" data-lang="de"><img src="https://flagcdn.com/20x15/de.png" width="20" height="15" alt="DE"> DE</button>
+      <button class="lang-btn" data-lang="tr"><img src="https://flagcdn.com/20x15/tr.png" width="20" height="15" alt="TR"> TR</button>
+      <button class="lang-btn" data-lang="ar"><img src="https://flagcdn.com/20x15/sa.png" width="20" height="15" alt="AR"> AR</button>
+      <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt="ES"> ES</button>
+      <button class="lang-btn" data-lang="fr"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt="FR"> FR</button>
+      <button class="lang-btn" data-lang="ru"><img src="https://flagcdn.com/20x15/ru.png" width="20" height="15" alt="RU"> RU</button>
+      <button class="lang-btn" data-lang="zh"><img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt="ZH"> ZH</button>
+    </div>
+  </header>
+
+  <div class="wallet-bar">
+    <div class="wallet-info">
+      <span class="wallet-lbl">WALLET</span>
+      <div style="display:flex;align-items:center;margin-top:3px">
+        <span class="wallet-dot" id="wallet-dot"></span>
+        <span class="wallet-addr" id="wallet-addr">Not connected</span>
+      </div>
+    </div>
+    <button class="btn-connect" id="wallet-btn">CONNECT WALLET</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="form-title">PATIENT INFORMATION</div>
+    <div class="g3">
+      <div><span class="fl">Age</span><input id="ageInput" type="number" placeholder="30"/></div>
+      <div><span class="fl">Weight (kg)</span><input id="weightInput" type="number" placeholder="70"/></div>
+      <div><span class="fl">Height (cm)</span><input id="heightInput" type="number" placeholder="175"/></div>
+    </div>
+    <div class="field">
+      <span class="fl">Gender</span>
+      <select id="genderInput">
+        <option value="" disabled selected>Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select>
+    </div>
+    <div class="field"><span class="fl">Allergies</span><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
+    <div class="field"><span class="fl">Pre-existing Conditions</span><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
+    <div class="field"><span class="fl">Symptoms</span><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea></div>
+    <div class="field">
+      <span class="fl">Medical Document (optional)</span>
+      <div class="upload">
+        <input type="file" id="fileInput" accept=".txt"/>
+        <p>📎 Upload a medical document (.txt)</p>
+        <p class="fn" id="fileName"></p>
+      </div>
+    </div>
+    <button class="btn-submit" id="submitBtn">🩺 GET SECOND OPINION</button>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner-wrap"><div class="sp-outer"></div><div class="sp-inner"></div></div>
+    <div class="loading-title" id="loading-title">AI Jury Deliberating</div>
+    <div class="loading-sub" id="loading-sub">GENLAYER CONSENSUS IN PROGRESS</div>
+    <div class="timer" id="timer">00:00</div>
+    <div class="loading-phase" id="loading-phase">Sending to GenLayer validators...</div>
+  </div>
+
+  <div id="result">
+    <div class="result-hero">
+      <div class="rh-label">AI CONSENSUS VERDICT</div>
+      <div class="urgency-badge MONITOR" id="urgency-badge">
+        <span class="urgency-icon" id="urgency-icon">🟢</span>
+        <span class="urgency-text" id="urgency-text">MONITOR</span>
+      </div>
+      <div class="verdict-main" id="verdict-main">—</div>
+      <div class="onchain-note">⛓ <span id="onchain-label">Stored permanently on GenLayer Studionet</span></div>
+    </div>
 
     <div class="card">
-      <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
-      <button id="connectWalletBtn">⬢ CONNECT WALLET</button>
-
-      <div class="g3">
-        <div><span class="fl">Age</span><input id="ageInput" type="number" placeholder="30"/></div>
-        <div><span class="fl">Weight (kg)</span><input id="weightInput" type="number" placeholder="70"/></div>
-        <div><span class="fl">Height (cm)</span><input id="heightInput" type="number" placeholder="175"/></div>
+      <div class="card-title" id="next-title">RECOMMENDED NEXT STEPS</div>
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text"><span class="step-label" id="step1-label">IMMEDIATE ACTION</span><span id="step1-text">Contact your healthcare provider and share this AI assessment.</span></div>
       </div>
-
-      <div class="field">
-        <span class="fl">Gender</span>
-        <select id="genderInput">
-          <option value="" disabled selected>Select gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Non-binary">Non-binary</option>
-          <option value="Prefer not to say">Prefer not to say</option>
-        </select>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text"><span class="step-label" id="step2-label">DOCUMENTATION</span><span id="step2-text">Write down all your symptoms, their duration and severity before your appointment.</span></div>
       </div>
-
-      <div class="field"><span class="fl">Allergies</span><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
-      <div class="field"><span class="fl">Pre-existing Conditions</span><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
-      <div class="field"><span class="fl">Symptoms</span><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..."></textarea></div>
-
-      <div class="field">
-        <span class="fl">Medical Document (optional)</span>
-        <div class="upload">
-          <input type="file" id="fileInput" accept=".txt"/>
-          <p>📎 Upload a medical document (.txt)</p>
-          <p class="fn" id="fileName"></p>
-        </div>
-      </div>
-
-      <button class="main-btn" id="submitBtn">🩺 GET SECOND OPINION</button>
-      <p class="status" id="statusMsg"></p>
-
-      <div class="verdict-box" id="verdictResult">
-        <div class="vlabel">AI Consensus Verdict</div>
-        <p class="vtext" id="verdictText"></p>
-        <div id="recBadge"></div>
-        <span class="badge">⛓ Stored permanently on GenLayer Studionet</span>
-        <p class="disc">⚠ This is an AI second opinion only. Always consult a licensed physician for diagnosis and treatment.</p>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text"><span class="step-label" id="step3-label">REMINDER</span><span id="step3-text">This AI opinion does not replace professional medical diagnosis. Always consult a licensed physician.</span></div>
       </div>
     </div>
 
-    <footer>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
-  </div>
+    <div class="transparency">
+      <div class="trans-text" id="trans-text">HOW THIS WORKS · Multiple independent AI validators on GenLayer each analyze your symptoms separately and reach consensus via Optimistic Democracy. No single AI decides — disagreements are resolved by the network. This is a probabilistic assessment based on the information provided.</div>
+    </div>
 
-  <!-- Wallet Modal -->
-  <div id="wallet-modal" class="wallet-modal-overlay">
-    <div class="wallet-modal-box">
-      <button class="wallet-modal-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
-      <div class="wallet-modal-title">⬢ CONNECT WALLET</div>
-      <div id="wallet-options-list"></div>
-      <div class="wallet-modal-footer">
-        Connects to GenLayer Studionet.<br>
-        This tool stores AI verdicts on-chain.
-      </div>
+    <div class="result-footer">
+      <p id="footer-text">NOT MEDICAL ADVICE · GENLAYER AI JURY · STUDIONET</p>
+      <button onclick="document.getElementById('disc-modal').style.display='flex'" style="margin-top:10px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);background:none;border:1px solid #222;padding:5px 14px;cursor:pointer;border-radius:2px">⚠ DISCLAIMER</button>
     </div>
   </div>
+</div>
 
-  <script>
-    const CONTRACT    = '0x7a97eD49560Be4283280F29475026eA21D49E5b7';
-    const STUDIO_RPC  = 'https://studio.genlayer.com/api';
-    const WC_PROJECT_ID = 'e40d93e27b32349a99a47db1758f665f';
+<!-- Wallet Modal -->
+<div id="wallet-modal" class="wm-overlay">
+  <div class="wm-box">
+    <button class="wm-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
+    <div class="wm-title">⬢ CONNECT WALLET</div>
+    <div id="wallet-options-list"></div>
+    <div class="wm-foot">Connects to GenLayer Studionet.<br>AI verdicts are stored on-chain.</div>
+  </div>
+</div>
 
-    let client       = null;
-    let userAddress  = null;
-    let activeProvider = null;
-    let documentText = '';
+<!-- Disclaimer Modal -->
+<div id="disc-modal" class="disc-overlay">
+  <div class="disc-box">
+    <button class="disc-close" onclick="document.getElementById('disc-modal').style.display='none'">✕</button>
+    <div class="disc-tag">⚠ DISCLAIMER</div>
+    <div class="disc-h" id="disc-title">Not Medical Advice</div>
+    <p class="disc-p" id="disc-p1">Second Opinion is an experimental AI tool powered by GenLayer for informational purposes only.</p>
+    <p class="disc-p" id="disc-p2">Nothing here constitutes medical diagnosis or treatment advice. AI consensus verdicts are based on the information you provide and may be incomplete or inaccurate.</p>
+    <p class="disc-p" id="disc-p3">Always consult a licensed physician. In case of emergency contact emergency services immediately.</p>
+    <button class="disc-btn" id="disc-btn" onclick="document.getElementById('disc-modal').style.display='none'">I UNDERSTAND</button>
+  </div>
+</div>
 
-    const btn        = document.getElementById('submitBtn');
-    const statusEl   = document.getElementById('statusMsg');
-    const walletEl   = document.getElementById('walletStatus');
-    const resultBox  = document.getElementById('verdictResult');
-    const verdictTxt = document.getElementById('verdictText');
-    const recBadge   = document.getElementById('recBadge');
-    const connectBtn = document.getElementById('connectWalletBtn');
+<footer>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
 
-    // ── File upload ──────────────────────────────────────────
-    document.getElementById('fileInput').addEventListener('change', async function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      document.getElementById('fileName').textContent = '✓ ' + file.name;
-      documentText = await file.text();
-    });
+<script>
+const CONTRACT='0x7a97eD49560Be4283280F29475026eA21D49E5b7';
+const STUDIO_RPC='https://studio.genlayer.com/api';
+const WC_PROJECT_ID='e40d93e27b32349a99a47db1758f665f';
 
-    // ── Status helper ────────────────────────────────────────
-    function setStatus(msg, cls) {
-      statusEl.textContent = msg;
-      statusEl.className = 'status ' + (cls || 'loading');
+let client=null,userAddress=null,activeProvider=null;
+let timerInterval=null,elapsed=0;
+let documentText='';
+window.currentLang='en';
+
+function $(id){return document.getElementById(id);}
+function setText(id,t){const e=$(id);if(e)e.textContent=t;}
+function startTimer(){elapsed=0;clearInterval(timerInterval);timerInterval=setInterval(function(){elapsed++;$('timer').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');},1000);}
+function stopTimer(){clearInterval(timerInterval);}
+function setPhase(m){$('loading-phase').textContent=m;}
+function showStatus(msg,isErr){const el=$('status-msg');if(!msg){el.style.display='none';return;}el.textContent=msg;el.className='status-msg'+(isErr?' error':'');el.style.display='block';}
+
+$('fileInput').addEventListener('change',async function(e){const f=e.target.files[0];if(!f)return;$('fileName').textContent='✓ '+f.name;documentText=await f.text();});
+
+// EIP-6963
+var eip6963Wallets=[];
+window.addEventListener('eip6963:announceProvider',function(e){if(e.detail&&e.detail.provider)eip6963Wallets.push(e.detail);});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+
+async function onWalletConnected(provider,accounts){
+  activeProvider=provider;window.ethereum=provider;
+  userAddress=accounts[0];window.userAddress=userAddress;
+  $('wallet-addr').textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+  $('wallet-dot').classList.add('on');
+  const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
+  const btn=$('wallet-btn');btn.textContent=T.connected_btn;btn.classList.add('connected');
+  document.getElementById('wallet-modal').style.display='none';
+  try{
+    const glMod=await import('https://esm.sh/genlayer-js@latest');
+    const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
+    client=glMod.createClient({chain:chainsMod.studionet,account:userAddress});
+    try{await client.connect('studionet');}catch(ce){console.warn('[Connect]',ce.message);}
+    const hex='0x'+chainsMod.studionet.id.toString(16);
+    await provider.request({method:'wallet_addEthereumChain',params:[{chainId:hex,chainName:'GenLayer Studio',rpcUrls:[STUDIO_RPC],nativeCurrency:{name:'GEN',symbol:'GEN',decimals:18}}]});
+    await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:hex}]});
+  }catch(e){console.warn('[Chain]',e.message);}
+  loadLastVerdict();
+}
+
+async function connectInjected(info){
+  try{const prov=info?info.provider:window.ethereum;if(!prov)throw new Error('No wallet found');const accounts=await prov.request({method:'eth_requestAccounts'});await onWalletConnected(prov,accounts);}
+  catch(e){showStatus('Connection failed: '+(e.message||e),true);}
+}
+
+async function connectWalletConnect(){
+  try{
+    setPhase('Loading WalletConnect...');
+    const {EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2');
+    const wcp=await EthereumProvider.init({projectId:WC_PROJECT_ID,chains:[61166],showQrModal:true,metadata:{name:'Second Opinion',description:'AI Medical Consensus on GenLayer',url:window.location.origin,icons:[window.location.origin+'/favicon.ico']}});
+    await wcp.connect();await onWalletConnected(wcp,wcp.accounts);
+  }catch(e){showStatus('WalletConnect: '+(e.message||'Failed'),true);}
+}
+
+function openWalletModal(){
+  const list=document.getElementById('wallet-options-list');list.innerHTML='';
+  var opts=[];
+  eip6963Wallets.forEach(function(w){opts.push({name:w.info.name,desc:'Detected wallet',icon:w.info.icon?'<img src="'+w.info.icon+'" style="width:28px;height:28px;border-radius:6px">':'🔗',action:function(){connectInjected(w);}});});
+  if(eip6963Wallets.length===0&&window.ethereum){opts.push({name:'MetaMask',desc:'Browser extension',icon:'<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:28px;height:28px">',action:function(){connectInjected(null);}});}
+  opts.push({name:'WalletConnect',desc:'Scan QR · Mobile · 400+ wallets',icon:'<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37L14.7 2.74a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z" fill="white"/></svg></div>',action:function(){connectWalletConnect();}});
+  opts.push({name:'Coinbase Wallet',desc:'Mobile or extension',icon:'<div style="width:28px;height:28px;background:#0052FF;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px">C</div>',action:function(){if(window.coinbaseWalletExtension)connectInjected({provider:window.coinbaseWalletExtension});else window.open('https://www.coinbase.com/wallet','_blank');}});
+  opts.forEach(function(opt){var div=document.createElement('div');div.className='wm-opt';div.innerHTML='<div class="wm-icon">'+opt.icon+'</div><div><div class="wm-name">'+opt.name+'</div><div class="wm-desc">'+opt.desc+'</div></div>';div.onclick=opt.action;list.appendChild(div);});
+  document.getElementById('wallet-modal').style.display='flex';
+}
+
+$('wallet-btn').addEventListener('click',function(){if(userAddress)return;openWalletModal();});
+
+// Render verdict
+function renderVerdict(raw){
+  const vStr=String(raw||'').replace(/^"|"$/g,'');
+  const parts=vStr.split(' | ');
+  const rec=parts.at(-1)?.trim();
+  const text=parts.slice(0,-1).join(' | ')||vStr;
+  const urgency=['URGENT','SOON','MONITOR'].includes(rec)?rec:'MONITOR';
+  const icons={URGENT:'🔴',SOON:'🟡',MONITOR:'🟢'};
+  const badge=$('urgency-badge');
+  badge.className='urgency-badge '+urgency;
+  setText('urgency-icon',icons[urgency]||'🟢');
+  setText('urgency-text',urgency);
+  setText('verdict-main',text);
+  const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
+  const steps=T.steps[urgency]||T.steps.MONITOR;
+  setText('step1-text',steps[0]);
+  setText('step2-text',steps[1]);
+  setText('step3-text',steps[2]);
+  $('result').style.display='block';
+  setTimeout(function(){$('result').scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+
+async function loadLastVerdict(){
+  if(!userAddress)return;
+  try{
+    const glMod=await import('https://esm.sh/genlayer-js@latest');
+    const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
+    const tc=glMod.createClient({chain:chainsMod.studionet});
+    const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
+    if(v&&typeof v==='string'&&v.length>5)renderVerdict(v);
+  }catch(e){}
+}
+
+$('submitBtn').addEventListener('click',async function(){
+  const symptoms=$('symptomsInput').value.trim();
+  const age=$('ageInput').value.trim();
+  const gender=$('genderInput').value;
+  if(!symptoms||!age||!gender){showStatus('Please fill in age, gender and symptoms.',true);return;}
+  if(!client){openWalletModal();return;}
+  const btn=$('submitBtn');
+  const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
+  btn.disabled=true;btn.textContent='PROCESSING...';
+  $('result').style.display='none';$('loading').style.display='block';
+  showStatus('');startTimer();
+  var oldRetry=document.getElementById('retry-btn');if(oldRetry)oldRetry.remove();
+  setTimeout(function(){$('loading').scrollIntoView({behavior:'smooth',block:'center'});},100);
+  try{
+    setPhase('Sending to GenLayer validators...');
+    const weight=$('weightInput').value.trim()||'0';
+    const height=$('heightInput').value.trim()||'0';
+    const allergies=$('allergiesInput').value.trim();
+    const preCond=$('preCondInput').value.trim();
+    await client.writeContract({address:CONTRACT,functionName:'submit_consultation',args:[symptoms,age,gender,weight,height,allergies,preCond,documentText],value:BigInt(0)});
+    setPhase('Transaction confirmed — AI jury deliberating...');
+    let verdict='';
+    const glMod=await import('https://esm.sh/genlayer-js@latest');
+    const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
+    for(let i=1;i<=60;i++){
+      const waitMs=i<=6?5000:8000;
+      await new Promise(function(r){setTimeout(r,waitMs);});
+      const el2=Math.round(i*(i<=6?5000:8000)/1000);
+      setPhase('AI jury deliberating — '+el2+'s ('+i+'/60)...');
+      try{
+        const tc=glMod.createClient({chain:chainsMod.studionet});
+        const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
+        verdict=String(v||'').replace(/^"|"$/g,'');
+        if(verdict&&verdict.length>10)break;
+      }catch(e){console.warn('[Poll '+i+']',e.message);}
     }
+    stopTimer();$('loading').style.display='none';
+    if(!verdict||verdict.length<5)throw new Error('Analysis timed out — please try again.');
+    renderVerdict(verdict);showStatus('');
+  }catch(e){
+    stopTimer();$('loading').style.display='none';
+    showStatus('Error: '+(e.message||String(e)),true);
+    var retryBtn=document.createElement('button');
+    retryBtn.id='retry-btn';retryBtn.textContent='↺ RETRY';
+    retryBtn.style.cssText='margin-top:10px;width:100%;padding:12px;font-family:Space Mono,monospace;font-size:11px;letter-spacing:3px;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:2px;touch-action:manipulation';
+    retryBtn.onclick=function(){retryBtn.remove();$('submitBtn').click();};
+    $('status-msg').after(retryBtn);
+  }
+  btn.disabled=false;btn.textContent=T.submit_btn||'🩺 GET SECOND OPINION';
+});
 
-    // ── Verdict renderer ─────────────────────────────────────
-    function renderVerdict(raw) {
-      const vStr  = String(raw || '').replace(/^"|"$/g, '');
-      const parts = vStr.split(' | ');
-      const rec   = parts.at(-1)?.trim();
-      const text  = parts.slice(0, -1).join(' | ') || vStr;
-      const validRec = ['URGENT','SOON','MONITOR'].includes(rec) ? rec : 'MONITOR';
-      verdictTxt.textContent = '"' + text + '"';
-      recBadge.innerHTML = '<span class="rec ' + validRec + '">' + validRec + '</span>';
-      resultBox.classList.add('visible');
-    }
+// First visit disclaimer
+(function(){
+  var shown=false;
+  try{shown=!!sessionStorage.getItem('so_disc');}catch(e){}
+  if(!shown){try{shown=!!localStorage.getItem('so_disclaimer');}catch(e){}}
+  if(!shown){setTimeout(function(){var m=$('disc-modal');if(m)m.style.display='flex';},700);try{sessionStorage.setItem('so_disc','1');}catch(e){}try{localStorage.setItem('so_disclaimer','1');}catch(e){}}
+})();
 
-    // ── EIP-6963 wallet discovery ─────────────────────────────
-    var eip6963Wallets = [];
-    window.addEventListener('eip6963:announceProvider', function(e) {
-      if (e.detail && e.detail.provider) eip6963Wallets.push(e.detail);
-    });
-    window.dispatchEvent(new Event('eip6963:requestProvider'));
+// Auto-detect wallet
+if(window.ethereum){window.ethereum.request({method:'eth_accounts'}).then(function(accounts){if(accounts.length>0)onWalletConnected(window.ethereum,accounts);}).catch(function(){});}
 
-    // ── After wallet connected ────────────────────────────────
-    async function onWalletConnected(provider, accounts) {
-      activeProvider = provider;
-      window.ethereum = provider;
-      userAddress = accounts[0];
+// Translations
+var TRANSLATIONS={
+  en:{connect_btn:'CONNECT WALLET',connected_btn:'CONNECTED',submit_btn:'🩺 GET SECOND OPINION',loading_title:'AI Jury Deliberating',loading_sub:'GENLAYER CONSENSUS IN PROGRESS',form_title:'PATIENT INFORMATION',next_title:'RECOMMENDED NEXT STEPS',onchain:'Stored permanently on GenLayer Studionet',footer:'NOT MEDICAL ADVICE · GENLAYER AI JURY · STUDIONET',disc_title:'Not Medical Advice',disc_p1:'Second Opinion is an experimental AI tool for informational purposes only.',disc_p2:'AI verdicts do not constitute medical diagnosis or treatment advice.',disc_p3:'Always consult a licensed physician. In emergency call emergency services.',disc_btn:'I UNDERSTAND',trans:'HOW THIS WORKS · Multiple independent AI validators on GenLayer analyze your symptoms and reach consensus via Optimistic Democracy. No single AI decides.',steps:{URGENT:['Seek immediate medical attention or go to the emergency room.','List all symptoms, medications and allergies for the physician.','Do NOT delay — the AI assessment indicates urgent evaluation is needed.'],SOON:['Schedule a doctor appointment within the next 1-3 days.','Write down all symptoms, duration and any changes you have noticed.','This AI opinion does not replace professional medical diagnosis.'],MONITOR:['Monitor your symptoms over the next few days.','If symptoms worsen or new symptoms appear, consult a doctor.','This AI opinion does not replace professional medical diagnosis.']}},
+  de:{connect_btn:'WALLET VERBINDEN',connected_btn:'VERBUNDEN',submit_btn:'🩺 ZWEITMEINUNG ANFRAGEN',loading_title:'KI-Jury berät',loading_sub:'GENLAYER KONSENS LÄUFT',form_title:'PATIENTENINFORMATIONEN',next_title:'EMPFOHLENE NÄCHSTE SCHRITTE',onchain:'Dauerhaft auf GenLayer Studionet gespeichert',footer:'KEIN MEDIZINISCHER RAT · GENLAYER KI-JURY · STUDIONET',disc_title:'Kein Medizinischer Rat',disc_p1:'Second Opinion ist ein experimentelles KI-Tool nur zu Informationszwecken.',disc_p2:'KI-Urteile sind keine medizinische Diagnose oder Behandlungsempfehlung.',disc_p3:'Konsultiere immer einen Arzt. Im Notfall den Notruf anrufen.',disc_btn:'VERSTANDEN',trans:'WIE ES FUNKTIONIERT · Mehrere unabhängige KI-Validatoren auf GenLayer analysieren deine Symptome und einigen sich per Optimistic Democracy.',steps:{URGENT:['Sofort ärztliche Hilfe suchen oder in die Notaufnahme gehen.','Alle Symptome, Medikamente und Allergien für den Arzt auflisten.','Nicht warten — die KI-Bewertung zeigt dringenden Handlungsbedarf.'],SOON:['Innerhalb von 1-3 Tagen einen Arzttermin vereinbaren.','Alle Symptome, Dauer und Veränderungen aufschreiben.','Diese KI-Meinung ersetzt keine professionelle Diagnose.'],MONITOR:['Symptome in den nächsten Tagen beobachten.','Bei Verschlechterung oder neuen Symptomen zum Arzt gehen.','Diese KI-Meinung ersetzt keine professionelle Diagnose.']}},
+  tr:{connect_btn:'CÜZDAN BAĞLA',connected_btn:'BAĞLANDI',submit_btn:'🩺 İKİNCİ GÖRÜŞ AL',loading_title:'YZ Jürisi Karar Veriyor',loading_sub:'GENLAYER KONSENSÜS DEVAM EDİYOR',form_title:'HASTA BİLGİLERİ',next_title:'ÖNERİLEN SONRAKI ADIMLAR',onchain:"GenLayer Studionet'te kalıcı olarak saklandı",footer:'TIBBİ TAVSİYE DEĞİL · GENLAYER YZ JÜRİSİ · STUDIONET',disc_title:'Tıbbi Tavsiye Değildir',disc_p1:'Second Opinion yalnızca bilgilendirme amaçlı deneysel bir YZ aracıdır.',disc_p2:'YZ kararları tıbbi teşhis veya tedavi tavsiyesi değildir.',disc_p3:'Her zaman lisanslı bir doktora danışın. Acil durumlarda 112\'yi arayın.',disc_btn:'ANLADIM',trans:"NASIL ÇALIŞIR · GenLayer'daki birden fazla bağımsız YZ doğrulayıcısı semptomlarınızı analiz eder ve Optimistic Democracy ile fikir birliğine varır.",steps:{URGENT:['Hemen acil servise gidin veya 112\'yi arayın.','Tüm belirtileri, ilaçları ve alerjileri doktor için listeleyin.','Geciktirmeyin — YZ değerlendirmesi acil müdahale gerektiğini gösteriyor.'],SOON:['1-3 gün içinde doktor randevusu alın.','Tüm semptomları, süresini ve değişimleri not edin.','Bu YZ görüşü profesyonel tıbbi tanının yerini tutmaz.'],MONITOR:['Belirtileri birkaç gün boyunca takip edin.','Belirtiler kötüleşirse veya yeni belirtiler çıkarsa doktora gidin.','Bu YZ görüşü profesyonel tıbbi tanının yerini tutmaz.']}},
+  ar:{connect_btn:'ربط المحفظة',connected_btn:'متصل',submit_btn:'🩺 احصل على رأي ثانٍ',loading_title:'هيئة المحلفين تداول',loading_sub:'إجماع GENLAYER جارٍ',form_title:'معلومات المريض',next_title:'الخطوات التالية الموصى بها',onchain:'مخزن بشكل دائم على GenLayer Studionet',footer:'ليس نصيحة طبية · هيئة محلفين GENLAYER · STUDIONET',disc_title:'ليس نصيحة طبية',disc_p1:'Second Opinion أداة ذكاء اصطناعي تجريبية لأغراض معلوماتية فقط.',disc_p2:'أحكام الذكاء الاصطناعي لا تمثل تشخيصاً طبياً أو نصيحة علاجية.',disc_p3:'استشر دائماً طبيباً مرخصاً. في حالات الطوارئ اتصل بالإسعاف.',disc_btn:'فهمت',trans:'كيف يعمل · يحلل عدة مدققي ذكاء اصطناعي مستقلين على GenLayer أعراضك ويتوصلون إلى إجماع عبر الديمقراطية التفاؤلية.',steps:{URGENT:['اطلب الرعاية الطبية الفورية أو اذهب إلى غرفة الطوارئ.','اسرد جميع الأعراض والأدوية والحساسية للطبيب.','لا تتأخر — يشير تقييم الذكاء الاصطناعي إلى الحاجة لتقييم عاجل.'],SOON:['احجز موعداً مع الطبيب خلال 1-3 أيام.','دوّن جميع الأعراض ومدتها وأي تغييرات لاحظتها.','هذا الرأي لا يحل محل التشخيص الطبي المهني.'],MONITOR:['راقب الأعراض على مدى الأيام القليلة القادمة.','إذا ساءت الأعراض استشر الطبيب.','هذا الرأي لا يحل محل التشخيص الطبي المهني.']}},
+  es:{connect_btn:'CONECTAR CARTERA',connected_btn:'CONECTADO',submit_btn:'🩺 OBTENER SEGUNDA OPINIÓN',loading_title:'El Jurado IA delibera',loading_sub:'CONSENSO GENLAYER EN PROGRESO',form_title:'INFORMACIÓN DEL PACIENTE',next_title:'PRÓXIMOS PASOS RECOMENDADOS',onchain:'Almacenado permanentemente en GenLayer Studionet',footer:'NO ES CONSEJO MÉDICO · JURADO IA GENLAYER · STUDIONET',disc_title:'No es Consejo Médico',disc_p1:'Second Opinion es una herramienta experimental de IA solo informativa.',disc_p2:'Los veredictos IA no constituyen diagnóstico médico ni consejo de tratamiento.',disc_p3:'Siempre consulta a un médico licenciado. En emergencias llama al servicio de emergencias.',disc_btn:'ENTENDIDO',trans:'CÓMO FUNCIONA · Múltiples validadores de IA independientes en GenLayer analizan tus síntomas y llegan a consenso mediante Democracia Optimista.',steps:{URGENT:['Busca atención médica inmediata o ve a urgencias.','Lista todos los síntomas, medicamentos y alergias para el médico.','No lo demores — la evaluación de IA indica evaluación urgente.'],SOON:['Programa una cita médica en los próximos 1-3 días.','Anota todos los síntomas y cualquier cambio observado.','Esta opinión de IA no reemplaza el diagnóstico médico profesional.'],MONITOR:['Monitorea tus síntomas durante los próximos días.','Si los síntomas empeoran consulta a un médico.','Esta opinión de IA no reemplaza el diagnóstico médico profesional.']}},
+  fr:{connect_btn:'CONNECTER PORTEFEUILLE',connected_btn:'CONNECTÉ',submit_btn:'🩺 OBTENIR UN SECOND AVIS',loading_title:'Le Jury IA délibère',loading_sub:'CONSENSUS GENLAYER EN COURS',form_title:'INFORMATIONS PATIENT',next_title:'PROCHAINES ÉTAPES RECOMMANDÉES',onchain:'Stocké définitivement sur GenLayer Studionet',footer:'PAS UN CONSEIL MÉDICAL · JURY IA GENLAYER · STUDIONET',disc_title:'Pas un Conseil Médical',disc_p1:"Second Opinion est un outil IA expérimental à des fins d'information uniquement.",disc_p2:"Les verdicts IA ne constituent pas un diagnostic ou conseil de traitement médical.",disc_p3:"Consultez toujours un médecin agréé. En cas d'urgence appelez le 15.",disc_btn:"J'AI COMPRIS",trans:"COMMENT ÇA MARCHE · Plusieurs validateurs IA indépendants sur GenLayer analysent vos symptômes et atteignent un consensus via la Démocratie Optimiste.",steps:{URGENT:["Cherchez une aide médicale immédiate ou allez aux urgences.","Listez tous les symptômes, médicaments et allergies pour le médecin.","Ne tardez pas — l'évaluation IA indique une évaluation urgente."],SOON:["Prenez rendez-vous chez le médecin dans les 1-3 prochains jours.","Notez tous les symptômes et leur durée.","Cet avis IA ne remplace pas un diagnostic médical professionnel."],MONITOR:["Surveillez vos symptômes pendant les prochains jours.","Si les symptômes s'aggravent consultez un médecin.","Cet avis IA ne remplace pas un diagnostic médical professionnel."]}},
+  ru:{connect_btn:'ПОДКЛЮЧИТЬ КОШЕЛЁК',connected_btn:'ПОДКЛЮЧЁН',submit_btn:'🩺 ПОЛУЧИТЬ ВТОРОЕ МНЕНИЕ',loading_title:'Жюри ИИ совещается',loading_sub:'КОНСЕНСУС GENLAYER В ПРОЦЕССЕ',form_title:'ДАННЫЕ ПАЦИЕНТА',next_title:'РЕКОМЕНДУЕМЫЕ СЛЕДУЮЩИЕ ШАГИ',onchain:'Навсегда сохранено на GenLayer Studionet',footer:'НЕ МЕДИЦИНСКИЙ СОВЕТ · ЖЮРИ ИИ GENLAYER · STUDIONET',disc_title:'Не Медицинский Совет',disc_p1:'Second Opinion — экспериментальный ИИ-инструмент только в информационных целях.',disc_p2:'Вердикты ИИ не являются медицинским диагнозом или рекомендацией по лечению.',disc_p3:'Всегда консультируйтесь с врачом. В экстренных случаях звоните 112.',disc_btn:'ПОНЯТНО',trans:'КАК ЭТО РАБОТАЕТ · Несколько независимых ИИ-валидаторов на GenLayer анализируют ваши симптомы и достигают консенсуса через Оптимистичную Демократию.',steps:{URGENT:['Немедленно обратитесь за медицинской помощью или в скорую.','Перечислите все симптомы, лекарства и аллергии для врача.','Не откладывайте — оценка ИИ указывает на необходимость срочной помощи.'],SOON:['Запишитесь к врачу в течение ближайших 1-3 дней.','Запишите все симптомы и изменения.','Это мнение ИИ не заменяет профессиональный медицинский диагноз.'],MONITOR:['Следите за симптомами в ближайшие дни.','Если симптомы ухудшатся, обратитесь к врачу.','Это мнение ИИ не заменяет профессиональный медицинский диагноз.']}},
+  zh:{connect_btn:'连接钱包',connected_btn:'已连接',submit_btn:'🩺 获取第二意见',loading_title:'AI陪审团审议中',loading_sub:'GENLAYER共识进行中',form_title:'患者信息',next_title:'建议的后续步骤',onchain:'永久存储在GenLayer Studionet上',footer:'非医疗建议 · GENLAYER AI陪审团 · STUDIONET',disc_title:'非医疗建议',disc_p1:'Second Opinion是一款仅供参考的实验性AI工具。',disc_p2:'AI裁决不构成医疗诊断或治疗建议。',disc_p3:'请始终咨询执照医生。紧急情况请拨打急救电话。',disc_btn:'我明白了',trans:'工作原理 · GenLayer上的多个独立AI验证者分别分析您的症状，通过乐观民主机制达成共识。',steps:{URGENT:['立即寻求医疗救助或前往急诊室。','为主治医生列出所有症状、药物和过敏情况。','请勿拖延——AI评估显示需要紧急评估。'],SOON:['在未来1-3天内预约医生。','记下所有症状和变化。','此AI意见不能替代专业医疗诊断。'],MONITOR:['在接下来几天内监测您的症状。','如果症状加重请咨询医生。','此AI意见不能替代专业医疗诊断。']}}
+};
 
-      // Dynamically import genlayer-js
-      const glMod     = await import('https://esm.sh/genlayer-js@latest');
-      const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
-      client = glMod.createClient({ chain: chainsMod.studionet, account: userAddress });
+function applyLang(lang){
+  var t=TRANSLATIONS[lang]||TRANSLATIONS.en;
+  window.currentLang=lang;
+  document.body.style.direction=(lang==='ar')?'rtl':'ltr';
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});
+  var wb=$('wallet-btn');if(wb)wb.textContent=wb.classList.contains('connected')?t.connected_btn:t.connect_btn;
+  var sb=$('submitBtn');if(sb&&!sb.disabled)sb.textContent=t.submit_btn;
+  setText('loading-title',t.loading_title);setText('loading-sub',t.loading_sub);
+  setText('form-title',t.form_title);setText('next-title',t.next_title);
+  setText('onchain-label',t.onchain);setText('footer-text',t.footer);
+  setText('disc-title',t.disc_title);setText('disc-p1',t.disc_p1);setText('disc-p2',t.disc_p2);setText('disc-p3',t.disc_p3);setText('disc-btn',t.disc_btn);
+  setText('trans-text',t.trans);
+}
 
-      walletEl.innerHTML = '<span class="connected">⬢ Connected: ' + userAddress.slice(0,6) + '...' + userAddress.slice(-4) + '</span>';
-      connectBtn.textContent = '⬢ ' + userAddress.slice(0,6) + '...' + userAddress.slice(-4);
-      connectBtn.classList.add('connected-btn');
-      connectBtn.onclick = null; // disable re-open when connected
-
-      document.getElementById('wallet-modal').style.display = 'none';
-
-      // Switch to studionet
-      try {
-        const chainHex = '0x' + (61166).toString(16);
-        await provider.request({ method: 'wallet_addEthereumChain', params: [{
-          chainId: chainHex, chainName: 'GenLayer Studio',
-          rpcUrls: [STUDIO_RPC],
-          nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 }
-        }]});
-        await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainHex }] });
-      } catch(e) { console.warn('[ChainSwitch]', e.message); }
-
-      loadLastVerdict();
-    }
-
-    // ── Injected wallet connect ───────────────────────────────
-    async function connectInjected(providerInfo) {
-      try {
-        const prov = providerInfo ? providerInfo.provider : window.ethereum;
-        if (!prov) throw new Error('No injected wallet found');
-        const accounts = await prov.request({ method: 'eth_requestAccounts' });
-        await onWalletConnected(prov, accounts);
-      } catch(e) { setStatus('❌ ' + (e.message || 'Connection failed'), 'error'); }
-    }
-
-    // ── WalletConnect ─────────────────────────────────────────
-    async function connectWalletConnect() {
-      try {
-        setStatus('⏳ Loading WalletConnect...');
-        const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2');
-        const wcp = await EthereumProvider.init({
-          projectId: WC_PROJECT_ID,
-          chains: [61166],
-          showQrModal: true,
-          metadata: {
-            name: 'Second Opinion',
-            description: 'AI Medical Consensus on GenLayer',
-            url: window.location.origin,
-            icons: [window.location.origin + '/favicon.ico'],
-          },
-        });
-        await wcp.connect();
-        await onWalletConnected(wcp, wcp.accounts);
-        setStatus('');
-      } catch(e) { setStatus('❌ WalletConnect: ' + (e.message || 'Failed'), 'error'); }
-    }
-
-    // ── Open wallet modal ─────────────────────────────────────
-    function openWalletModal() {
-      const list = document.getElementById('wallet-options-list');
-      list.innerHTML = '';
-
-      var options = [];
-
-      // EIP-6963 detected wallets
-      eip6963Wallets.forEach(function(w) {
-        options.push({
-          name: w.info.name,
-          desc: 'Detected wallet',
-          icon: w.info.icon
-            ? '<img src="' + w.info.icon + '" style="width:28px;height:28px;border-radius:6px">'
-            : '🔗',
-          action: function() { connectInjected(w); }
-        });
-      });
-
-      // MetaMask fallback
-      if (eip6963Wallets.length === 0 && window.ethereum) {
-        options.push({
-          name: 'MetaMask',
-          desc: 'Browser extension',
-          icon: '<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:28px;height:28px">',
-          action: function() { connectInjected(null); }
-        });
-      }
-
-      // WalletConnect
-      options.push({
-        name: 'WalletConnect',
-        desc: 'Scan QR · Mobile wallets · 400+ wallets',
-        icon: '<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37L14.7 2.74a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z" fill="white"/></svg></div>',
-        action: function() { connectWalletConnect(); }
-      });
-
-      // Coinbase Wallet
-      options.push({
-        name: 'Coinbase Wallet',
-        desc: 'Get the Coinbase Wallet app',
-        icon: '<div style="width:28px;height:28px;background:#0052FF;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700">C</div>',
-        action: function() {
-          if (window.coinbaseWalletExtension) { connectInjected({ provider: window.coinbaseWalletExtension }); }
-          else { window.open('https://www.coinbase.com/wallet', '_blank'); }
-        }
-      });
-
-      options.forEach(function(opt) {
-        var div = document.createElement('div');
-        div.className = 'wallet-option';
-        div.innerHTML = '<div class="wallet-option-icon">' + opt.icon + '</div>'
-          + '<div><div class="wallet-option-name">' + opt.name + '</div>'
-          + '<div class="wallet-option-desc">' + opt.desc + '</div></div>';
-        div.onclick = opt.action;
-        list.appendChild(div);
-      });
-
-      document.getElementById('wallet-modal').style.display = 'flex';
-    }
-
-    // Connect button
-    connectBtn.addEventListener('click', function() {
-      if (userAddress) return;
-      openWalletModal();
-    });
-
-    // ── Load last verdict ─────────────────────────────────────
-    async function loadLastVerdict() {
-      if (!userAddress) return;
-      try {
-        const glMod     = await import('https://esm.sh/genlayer-js@latest');
-        const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
-        const tempClient = glMod.createClient({ chain: chainsMod.studionet });
-        const verdict = await tempClient.readContract({
-          address: CONTRACT,
-          functionName: 'get_verdict',
-          args: [userAddress.toLowerCase()]
-        });
-        if (verdict && typeof verdict === 'string' && verdict.length > 5) {
-          renderVerdict(verdict);
-        }
-      } catch(e) {}
-    }
-
-    // ── Submit consultation ───────────────────────────────────
-    btn.addEventListener('click', async function() {
-      const symptoms = document.getElementById('symptomsInput').value.trim();
-      const age      = document.getElementById('ageInput').value.trim();
-      const gender   = document.getElementById('genderInput').value;
-
-      if (!symptoms || !age || !gender) {
-        setStatus('❌ Please fill in age, gender and symptoms.', 'error');
-        return;
-      }
-
-      if (!client) {
-        openWalletModal();
-        return;
-      }
-
-      const weight      = document.getElementById('weightInput').value.trim() || '0';
-      const height      = document.getElementById('heightInput').value.trim() || '0';
-      const allergies   = document.getElementById('allergiesInput').value.trim();
-      const preCond     = document.getElementById('preCondInput').value.trim();
-
-      btn.disabled = true;
-      resultBox.classList.remove('visible');
-      setStatus('⏳ Sending transaction... confirm in wallet');
-
-      try {
-        await client.writeContract({
-          address:      CONTRACT,
-          functionName: 'submit_consultation',
-          args:         [symptoms, age, gender, weight, height, allergies, preCond, documentText],
-          value:        BigInt(0),
-        });
-
-        setStatus('⏳ AI validators reaching consensus... (~1-2 min)');
-        await new Promise(function(r) { setTimeout(r, 130000); });
-
-        // Poll
-        let verdict = '';
-        const glMod     = await import('https://esm.sh/genlayer-js@latest');
-        const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
-        for (let i = 0; i < 10; i++) {
-          try {
-            const tc = glMod.createClient({ chain: chainsMod.studionet });
-            const v  = await tc.readContract({
-              address:      CONTRACT,
-              functionName: 'get_verdict',
-              args:         [userAddress.toLowerCase()]
-            });
-            verdict = String(v || '').replace(/^"|"$/g, '');
-            if (verdict && verdict.length > 10) break;
-          } catch(e) {}
-          await new Promise(function(r) { setTimeout(r, 10000); });
-        }
-
-        renderVerdict(verdict);
-        setStatus('✅ Diagnosis finalized onchain', 'success');
-      } catch(e) {
-        setStatus('❌ ' + (e.shortMessage || e.message || 'Transaction failed'), 'error');
-      }
-
-      btn.disabled = false;
-    });
-
-    // Auto-detect already connected wallet on page load
-    if (window.ethereum) {
-      window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
-        if (accounts.length > 0) {
-          onWalletConnected(window.ethereum, accounts);
-        }
-      }).catch(function(){});
-    }
-  </script>
+document.querySelectorAll('.lang-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');applyLang(btn.dataset.lang);
+  });
+});
+</script>
 </body>
 </html>
