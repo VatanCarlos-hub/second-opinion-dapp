@@ -32,16 +32,61 @@
     .upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .upload p { font-size: 11px; color: var(--muted); }
     .fn { color: var(--teal2); margin-top: 6px; font-size: 11px; }
-    button { width: 100%; margin-top: 16px; padding: 18px; background: var(--teal); border: none; border-radius: 2px; color: white; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; }
-    button:hover:not(:disabled) { background: var(--teal2); transform: translateY(-1px); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.main-btn { width: 100%; margin-top: 16px; padding: 18px; background: var(--teal); border: none; border-radius: 2px; color: white; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; }
+    button.main-btn:hover:not(:disabled) { background: var(--teal2); transform: translateY(-1px); }
+    button.main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .status { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; min-height: 18px; }
     .status.loading { color: var(--teal2); animation: blink 1.5s ease-in-out infinite; }
     .status.error { color: #ff3333; }
     .status.success { color: #44ff88; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* ── Wallet status bar ── */
     .wallet-status { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
     .connected { color: #44ff88; }
+
+    /* ── Connect wallet button ── */
+    #connectWalletBtn {
+      width: 100%; margin-bottom: 20px; padding: 14px;
+      background: transparent; border: 1px solid var(--teal2);
+      border-radius: 2px; color: var(--teal2);
+      font-family: 'Space Mono', monospace; font-size: 12px;
+      letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
+      touch-action: manipulation;
+    }
+    #connectWalletBtn:hover { background: var(--teal); color: #fff; border-color: var(--teal); }
+    #connectWalletBtn.connected-btn { background: rgba(29,158,117,0.1); color: #44ff88; border-color: #44ff88; cursor: default; }
+
+    /* ── Wallet Modal ── */
+    .wallet-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92); z-index: 9999;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .wallet-modal-box {
+      background: #111; border: 1px solid #333;
+      border-radius: 4px; max-width: 400px; width: 100%;
+      padding: 32px; position: relative;
+    }
+    .wallet-modal-title {
+      font-size: 10px; letter-spacing: 3px; color: var(--teal2);
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+    .wallet-option {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; border: 1px solid #222;
+      border-radius: 2px; cursor: pointer; margin-bottom: 10px;
+      background: #0d0d0d; transition: all 0.18s;
+      touch-action: manipulation;
+    }
+    .wallet-option:hover { border-color: var(--teal2); background: rgba(29,158,117,0.07); }
+    .wallet-option:last-child { margin-bottom: 0; }
+    .wallet-option-icon { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .wallet-option-name { font-size: 12px; letter-spacing: 1px; color: var(--text); font-weight: 700; }
+    .wallet-option-desc { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .wallet-modal-footer { margin-top: 16px; font-size: 10px; color: #333; text-align: center; letter-spacing: 1px; line-height: 1.6; }
+    .wallet-modal-close { position: absolute; top: 14px; right: 16px; font-size: 18px; background: none; border: none; cursor: pointer; color: var(--muted); }
+
     .verdict-box { display: none; background: #0d0d0d; border: 1px solid var(--teal); border-radius: 2px; padding: 24px; margin-top: 24px; }
     .verdict-box.visible { display: block; animation: fadeIn 0.5s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -56,6 +101,7 @@
     .disc { font-size: 10px; color: var(--muted); margin-top: 12px; line-height: 1.6; text-align: center; border-top: 1px solid var(--border); padding-top: 12px; }
     footer { margin-top: 60px; text-align: center; font-size: 11px; color: #333; letter-spacing: 2px; }
     footer a { color: var(--teal2); text-decoration: none; }
+    @media(max-width:580px){ .g3{grid-template-columns:1fr 1fr;} }
   </style>
 </head>
 <body>
@@ -68,6 +114,7 @@
 
     <div class="card">
       <p class="wallet-status" id="walletStatus">⚪ Wallet not connected</p>
+      <button id="connectWalletBtn">⬢ CONNECT WALLET</button>
 
       <div class="g3">
         <div><span class="fl">Age</span><input id="ageInput" type="number" placeholder="30"/></div>
@@ -99,7 +146,7 @@
         </div>
       </div>
 
-      <button id="submitBtn">🩺 GET SECOND OPINION</button>
+      <button class="main-btn" id="submitBtn">🩺 GET SECOND OPINION</button>
       <p class="status" id="statusMsg"></p>
 
       <div class="verdict-box" id="verdictResult">
@@ -114,85 +161,208 @@
     <footer>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/genlayer-js@latest';
-    import { studionet } from 'https://esm.sh/genlayer-js@latest/chains';
-    import { TransactionStatus } from 'https://esm.sh/genlayer-js@latest/types';
+  <!-- Wallet Modal -->
+  <div id="wallet-modal" class="wallet-modal-overlay">
+    <div class="wallet-modal-box">
+      <button class="wallet-modal-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
+      <div class="wallet-modal-title">⬢ CONNECT WALLET</div>
+      <div id="wallet-options-list"></div>
+      <div class="wallet-modal-footer">
+        Connects to GenLayer Studionet.<br>
+        This tool stores AI verdicts on-chain.
+      </div>
+    </div>
+  </div>
 
-    const CONTRACT = '0x7a97eD49560Be4283280F29475026eA21D49E5b7';
-    let client = null;
-    let userAddress = null;
+  <script>
+    const CONTRACT    = '0x7a97eD49560Be4283280F29475026eA21D49E5b7';
+    const STUDIO_RPC  = 'https://studio.genlayer.com/api';
+    const WC_PROJECT_ID = 'e40d93e27b32349a99a47db1758f665f';
+
+    let client       = null;
+    let userAddress  = null;
+    let activeProvider = null;
     let documentText = '';
 
-    const btn = document.getElementById('submitBtn');
-    const statusEl = document.getElementById('statusMsg');
-    const walletStatus = document.getElementById('walletStatus');
-    const resultBox = document.getElementById('verdictResult');
-    const verdictText = document.getElementById('verdictText');
-    const recBadge = document.getElementById('recBadge');
+    const btn        = document.getElementById('submitBtn');
+    const statusEl   = document.getElementById('statusMsg');
+    const walletEl   = document.getElementById('walletStatus');
+    const resultBox  = document.getElementById('verdictResult');
+    const verdictTxt = document.getElementById('verdictText');
+    const recBadge   = document.getElementById('recBadge');
+    const connectBtn = document.getElementById('connectWalletBtn');
 
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
+    // ── File upload ──────────────────────────────────────────
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
       const file = e.target.files[0];
       if (!file) return;
       document.getElementById('fileName').textContent = '✓ ' + file.name;
       documentText = await file.text();
     });
 
-    function setStatus(msg, cls = 'loading') {
+    // ── Status helper ────────────────────────────────────────
+    function setStatus(msg, cls) {
       statusEl.textContent = msg;
-      statusEl.className = 'status ' + cls;
+      statusEl.className = 'status ' + (cls || 'loading');
     }
 
+    // ── Verdict renderer ─────────────────────────────────────
     function renderVerdict(raw) {
-      const vStr = String(raw || '').replace(/^"|"$/g, '');
+      const vStr  = String(raw || '').replace(/^"|"$/g, '');
       const parts = vStr.split(' | ');
-      const rec = parts.at(-1)?.trim();
-      const text = parts.slice(0, -1).join(' | ') || vStr;
+      const rec   = parts.at(-1)?.trim();
+      const text  = parts.slice(0, -1).join(' | ') || vStr;
       const validRec = ['URGENT','SOON','MONITOR'].includes(rec) ? rec : 'MONITOR';
-      verdictText.textContent = '"' + text + '"';
-      recBadge.innerHTML = `<span class="rec ${validRec}">${validRec}</span>`;
+      verdictTxt.textContent = '"' + text + '"';
+      recBadge.innerHTML = '<span class="rec ' + validRec + '">' + validRec + '</span>';
       resultBox.classList.add('visible');
     }
 
-    async function connectWallet() {
-      if (!window.ethereum) {
-        setStatus('❌ MetaMask not found. Please install MetaMask.', 'error');
-        return false;
-      }
+    // ── EIP-6963 wallet discovery ─────────────────────────────
+    var eip6963Wallets = [];
+    window.addEventListener('eip6963:announceProvider', function(e) {
+      if (e.detail && e.detail.provider) eip6963Wallets.push(e.detail);
+    });
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+
+    // ── After wallet connected ────────────────────────────────
+    async function onWalletConnected(provider, accounts) {
+      activeProvider = provider;
+      window.ethereum = provider;
+      userAddress = accounts[0];
+
+      // Dynamically import genlayer-js
+      const glMod     = await import('https://esm.sh/genlayer-js@latest');
+      const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
+      client = glMod.createClient({ chain: chainsMod.studionet, account: userAddress });
+
+      walletEl.innerHTML = '<span class="connected">⬢ Connected: ' + userAddress.slice(0,6) + '...' + userAddress.slice(-4) + '</span>';
+      connectBtn.textContent = '⬢ ' + userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+      connectBtn.classList.add('connected-btn');
+      connectBtn.onclick = null; // disable re-open when connected
+
+      document.getElementById('wallet-modal').style.display = 'none';
+
+      // Switch to studionet
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        userAddress = accounts[0];
-        client = createClient({ chain: studionet, account: userAddress });
-        walletStatus.innerHTML = `<span class="connected">⬢ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>`;
-        return true;
-      } catch (e) {
-        setStatus('❌ Wallet connection rejected', 'error');
-        return false;
-      }
+        const chainHex = '0x' + (61166).toString(16);
+        await provider.request({ method: 'wallet_addEthereumChain', params: [{
+          chainId: chainHex, chainName: 'GenLayer Studio',
+          rpcUrls: [STUDIO_RPC],
+          nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 }
+        }]});
+        await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainHex }] });
+      } catch(e) { console.warn('[ChainSwitch]', e.message); }
+
+      loadLastVerdict();
     }
 
-    async function ensureStudionet() {
+    // ── Injected wallet connect ───────────────────────────────
+    async function connectInjected(providerInfo) {
       try {
-        const current = await window.ethereum.request({ method: 'eth_chainId' });
-        if (current !== '0xf22f') {
-          try {
-            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xf22f' }] });
-          } catch (e) {
-            if (e.code === 4902) {
-              await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{
-                chainId: '0xf22f', chainName: 'GenLayer Studio',
-                nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
-                rpcUrls: ['https://studio.genlayer.com/api']
-              }]});
-            }
-          }
+        const prov = providerInfo ? providerInfo.provider : window.ethereum;
+        if (!prov) throw new Error('No injected wallet found');
+        const accounts = await prov.request({ method: 'eth_requestAccounts' });
+        await onWalletConnected(prov, accounts);
+      } catch(e) { setStatus('❌ ' + (e.message || 'Connection failed'), 'error'); }
+    }
+
+    // ── WalletConnect ─────────────────────────────────────────
+    async function connectWalletConnect() {
+      try {
+        setStatus('⏳ Loading WalletConnect...');
+        const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2');
+        const wcp = await EthereumProvider.init({
+          projectId: WC_PROJECT_ID,
+          chains: [61166],
+          showQrModal: true,
+          metadata: {
+            name: 'Second Opinion',
+            description: 'AI Medical Consensus on GenLayer',
+            url: window.location.origin,
+            icons: [window.location.origin + '/favicon.ico'],
+          },
+        });
+        await wcp.connect();
+        await onWalletConnected(wcp, wcp.accounts);
+        setStatus('');
+      } catch(e) { setStatus('❌ WalletConnect: ' + (e.message || 'Failed'), 'error'); }
+    }
+
+    // ── Open wallet modal ─────────────────────────────────────
+    function openWalletModal() {
+      const list = document.getElementById('wallet-options-list');
+      list.innerHTML = '';
+
+      var options = [];
+
+      // EIP-6963 detected wallets
+      eip6963Wallets.forEach(function(w) {
+        options.push({
+          name: w.info.name,
+          desc: 'Detected wallet',
+          icon: w.info.icon
+            ? '<img src="' + w.info.icon + '" style="width:28px;height:28px;border-radius:6px">'
+            : '🔗',
+          action: function() { connectInjected(w); }
+        });
+      });
+
+      // MetaMask fallback
+      if (eip6963Wallets.length === 0 && window.ethereum) {
+        options.push({
+          name: 'MetaMask',
+          desc: 'Browser extension',
+          icon: '<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:28px;height:28px">',
+          action: function() { connectInjected(null); }
+        });
+      }
+
+      // WalletConnect
+      options.push({
+        name: 'WalletConnect',
+        desc: 'Scan QR · Mobile wallets · 400+ wallets',
+        icon: '<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37L14.7 2.74a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z" fill="white"/></svg></div>',
+        action: function() { connectWalletConnect(); }
+      });
+
+      // Coinbase Wallet
+      options.push({
+        name: 'Coinbase Wallet',
+        desc: 'Get the Coinbase Wallet app',
+        icon: '<div style="width:28px;height:28px;background:#0052FF;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700">C</div>',
+        action: function() {
+          if (window.coinbaseWalletExtension) { connectInjected({ provider: window.coinbaseWalletExtension }); }
+          else { window.open('https://www.coinbase.com/wallet', '_blank'); }
         }
-      } catch(e) {}
+      });
+
+      options.forEach(function(opt) {
+        var div = document.createElement('div');
+        div.className = 'wallet-option';
+        div.innerHTML = '<div class="wallet-option-icon">' + opt.icon + '</div>'
+          + '<div><div class="wallet-option-name">' + opt.name + '</div>'
+          + '<div class="wallet-option-desc">' + opt.desc + '</div></div>';
+        div.onclick = opt.action;
+        list.appendChild(div);
+      });
+
+      document.getElementById('wallet-modal').style.display = 'flex';
     }
 
+    // Connect button
+    connectBtn.addEventListener('click', function() {
+      if (userAddress) return;
+      openWalletModal();
+    });
+
+    // ── Load last verdict ─────────────────────────────────────
     async function loadLastVerdict() {
+      if (!userAddress) return;
       try {
-        const tempClient = createClient({ chain: studionet });
+        const glMod     = await import('https://esm.sh/genlayer-js@latest');
+        const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
+        const tempClient = glMod.createClient({ chain: chainsMod.studionet });
         const verdict = await tempClient.readContract({
           address: CONTRACT,
           functionName: 'get_verdict',
@@ -201,13 +371,14 @@
         if (verdict && typeof verdict === 'string' && verdict.length > 5) {
           renderVerdict(verdict);
         }
-      } catch (e) {}
+      } catch(e) {}
     }
 
-    btn.addEventListener('click', async () => {
+    // ── Submit consultation ───────────────────────────────────
+    btn.addEventListener('click', async function() {
       const symptoms = document.getElementById('symptomsInput').value.trim();
-      const age = document.getElementById('ageInput').value.trim();
-      const gender = document.getElementById('genderInput').value;
+      const age      = document.getElementById('ageInput').value.trim();
+      const gender   = document.getElementById('genderInput').value;
 
       if (!symptoms || !age || !gender) {
         setStatus('❌ Please fill in age, gender and symptoms.', 'error');
@@ -215,71 +386,65 @@
       }
 
       if (!client) {
-        const ok = await connectWallet();
-        if (!ok) return;
+        openWalletModal();
+        return;
       }
 
-      await ensureStudionet();
-
-      const weight = document.getElementById('weightInput').value.trim() || '0';
-      const height = document.getElementById('heightInput').value.trim() || '0';
-      const allergies = document.getElementById('allergiesInput').value.trim();
-      const preConditions = document.getElementById('preCondInput').value.trim();
+      const weight      = document.getElementById('weightInput').value.trim() || '0';
+      const height      = document.getElementById('heightInput').value.trim() || '0';
+      const allergies   = document.getElementById('allergiesInput').value.trim();
+      const preCond     = document.getElementById('preCondInput').value.trim();
 
       btn.disabled = true;
       resultBox.classList.remove('visible');
-      setStatus('⏳ Sending transaction... confirm in MetaMask');
+      setStatus('⏳ Sending transaction... confirm in wallet');
 
       try {
-        const txHash = await client.writeContract({
-          address: CONTRACT,
+        await client.writeContract({
+          address:      CONTRACT,
           functionName: 'submit_consultation',
-          args: [symptoms, age, gender, weight, height, allergies, preConditions, documentText],
-          value: 0n
+          args:         [symptoms, age, gender, weight, height, allergies, preCond, documentText],
+          value:        BigInt(0),
         });
 
         setStatus('⏳ AI validators reaching consensus... (~1-2 min)');
+        await new Promise(function(r) { setTimeout(r, 130000); });
 
-        setStatus('⏳ Validators reaching consensus... (~2 minutes)');
-        await new Promise(r => setTimeout(r, 130000));
-
-        // Poll readContract with user's wallet address
+        // Poll
         let verdict = '';
+        const glMod     = await import('https://esm.sh/genlayer-js@latest');
+        const chainsMod = await import('https://esm.sh/genlayer-js@latest/chains');
         for (let i = 0; i < 10; i++) {
           try {
-            const tempClient = createClient({ chain: studionet });
-            const v = await tempClient.readContract({
-              address: CONTRACT,
+            const tc = glMod.createClient({ chain: chainsMod.studionet });
+            const v  = await tc.readContract({
+              address:      CONTRACT,
               functionName: 'get_verdict',
-              args: [userAddress.toLowerCase()]
+              args:         [userAddress.toLowerCase()]
             });
             verdict = String(v || '').replace(/^"|"$/g, '');
             if (verdict && verdict.length > 10) break;
           } catch(e) {}
-          await new Promise(r => setTimeout(r, 10000));
+          await new Promise(function(r) { setTimeout(r, 10000); });
         }
 
         renderVerdict(verdict);
         setStatus('✅ Diagnosis finalized onchain', 'success');
-
-      } catch (e) {
+      } catch(e) {
         setStatus('❌ ' + (e.shortMessage || e.message || 'Transaction failed'), 'error');
       }
 
       btn.disabled = false;
     });
 
+    // Auto-detect already connected wallet on page load
     if (window.ethereum) {
-      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+      window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
         if (accounts.length > 0) {
-          userAddress = accounts[0];
-          client = createClient({ chain: studionet, account: userAddress });
-          walletStatus.innerHTML = `<span class="connected">⬢ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>`;
+          onWalletConnected(window.ethereum, accounts);
         }
-      });
+      }).catch(function(){});
     }
-
-    loadLastVerdict();
   </script>
 </body>
 </html>
