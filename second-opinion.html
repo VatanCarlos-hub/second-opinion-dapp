@@ -1,445 +1,728 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#080c0a"/>
-  <title>Second Opinion — AI Medical Consensus</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    :root{
-      --ink:#0d1410;--paper:#f5f0e8;--cream:#ede8dc;--cream2:#e5dfd0;
-      --green:#1a5c3e;--green2:#226b49;--green3:#2d8c5e;--greenlt:#e8f2ec;
-      --amber:#7a4f1a;--amberlt:#fdf0e0;
-      --red:#7a1a1a;--redlt:#fce8e8;
-      --text:#1a1f1c;--text2:#3d4840;--text3:#6b7870;--muted:#9aaba4;
-      --border:#d4cfc3;--border2:#c5bfb0;
-      --card:#ffffff;--card2:#faf8f4;
-      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
-      --shadow2:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.08);
-      --radius:3px;--radius2:6px;
-      --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'Cormorant Garamond',serif;
-      --transition:180ms cubic-bezier(.4,0,.2,1);
-    }
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-    body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 20px 120px}
-    body::before{content:'';position:fixed;inset:0;background:
-      radial-gradient(ellipse 80% 40% at 50% -10%,rgba(45,140,94,.07) 0%,transparent 70%),
-      radial-gradient(ellipse 60% 30% at 100% 60%,rgba(26,92,62,.04) 0%,transparent 60%);
-      pointer-events:none;z-index:0}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Second Opinion — AI Medical Consensus</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Figtree:wght@300;400;500;600&family=Fira+Code:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#1c1f1d;
+  --ink2:#3a3d3b;
+  --ink3:#6b7069;
+  --paper:#f7f5f0;
+  --paper2:#f0ede6;
+  --paper3:#e8e4da;
+  --white:#ffffff;
+  --green:#1a5c3e;
+  --green2:#2e7d55;
+  --green3:#4caf7d;
+  --green-tint:#edf6f1;
+  --green-tint2:#daf0e6;
+  --red:#8b1c1c;
+  --red-tint:#fdf0f0;
+  --amber:#7a4a0a;
+  --amber-tint:#fdf5e8;
+  --border:#ddd9cf;
+  --border2:#c8c3b5;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --sans:'Figtree',system-ui,sans-serif;
+  --mono:'Fira Code',monospace;
+  --shadow-sm:0 1px 3px rgba(28,31,29,.06),0 2px 8px rgba(28,31,29,.05);
+  --shadow:0 2px 8px rgba(28,31,29,.07),0 8px 24px rgba(28,31,29,.07);
+  --shadow-lg:0 4px 16px rgba(28,31,29,.08),0 16px 48px rgba(28,31,29,.1);
+}
 
-    /* Noise texture overlay */
-    body::after{content:'';position:fixed;inset:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
 
-    .wrap{max-width:660px;width:100%;position:relative;z-index:1}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.65;
+  min-height:100vh;
+}
 
-    /* ─── HEADER ─────────────────────────────── */
-    header{text-align:center;margin-bottom:64px;animation:rise .9s cubic-bezier(.2,.8,.4,1) both}
-    .header-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:12px}
-    .header-eyebrow::before,.header-eyebrow::after{content:'';width:32px;height:1px;background:var(--border2)}
-    .header-icon{font-size:52px;display:block;margin-bottom:10px;filter:saturate(0.9)}
-    h1{font-family:var(--serif);font-size:clamp(54px,8vw,80px);font-weight:300;letter-spacing:-.01em;color:var(--ink);line-height:1;margin-bottom:14px;font-style:italic}
-    h1 span{font-style:normal;font-weight:500;color:var(--green2)}
-    .subtitle{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:20px}
-    .disc-link{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--muted);background:transparent;border:1px solid var(--border);padding:6px 16px;cursor:pointer;border-radius:2px;transition:all var(--transition);text-transform:uppercase}
-    .disc-link:hover{border-color:var(--green3);color:var(--green2)}
-    .disc-link:focus{outline:2px solid var(--green3);outline-offset:3px}
+/* ══ HEADER STRIP ══ */
+.top-strip{
+  background:var(--green);
+  padding:10px 0;
+  text-align:center;
+}
+.top-strip-inner{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.22em;
+  color:rgba(255,255,255,.6);
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+}
+.strip-dot{width:4px;height:4px;border-radius:50%;background:var(--green3);display:inline-block;}
 
-    /* Language row */
-    .lang-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:18px}
-    .lang-btn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:2px;transition:all var(--transition);display:inline-flex;align-items:center;gap:5px;min-height:36px;min-width:52px}
-    .lang-btn img{border-radius:1px;flex-shrink:0;display:block}
-    .lang-btn:hover{border-color:var(--green3);color:var(--green2);background:var(--greenlt)}
-    .lang-btn.active{border-color:var(--green2);color:var(--green2);background:var(--greenlt)}
-    .lang-btn:focus{outline:2px solid var(--green3);outline-offset:3px}
+/* ══ MAIN HEADER ══ */
+.site-header{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:28px 0;
+}
+.site-header-inner{
+  max-width:900px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  box-shadow:0 4px 12px rgba(26,92,62,.25);
+}
+.logo-text{
+  font-family:var(--serif);
+  font-size:22px;font-weight:700;
+  color:var(--ink);letter-spacing:-.02em;
+}
+.logo-sub{
+  font-family:var(--mono);
+  font-size:9px;letter-spacing:.2em;
+  color:var(--green2);text-transform:uppercase;
+  margin-top:1px;
+}
+.header-actions{display:flex;align-items:center;gap:12px;}
+.btn-outline{
+  font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  padding:8px 18px;background:transparent;border:1px solid var(--border2);
+  color:var(--ink3);cursor:pointer;border-radius:6px;transition:all .18s;
+}
+.btn-outline:hover{border-color:var(--green2);color:var(--green2);}
 
-    /* ─── WALLET BAR ─────────────────────────── */
-    .wallet-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:20px 28px;margin-bottom:24px;box-shadow:var(--shadow);animation:rise .7s .1s cubic-bezier(.2,.8,.4,1) both}
-    .wallet-info{display:flex;flex-direction:column;gap:4px}
-    .wallet-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
-    .wallet-status{display:flex;align-items:center;gap:8px;margin-top:2px}
-    .wallet-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:all .4s}
-    .wallet-dot.on{background:#2dbe70;box-shadow:0 0 0 3px rgba(45,190,112,.18)}
-    .wallet-addr{font-family:var(--mono);font-size:13px;color:var(--text2);letter-spacing:.02em}
-    .btn-connect{font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:12px 22px;background:var(--green);color:#fff;border:none;cursor:pointer;border-radius:var(--radius);transition:all var(--transition);text-transform:uppercase;min-height:44px}
-    .btn-connect:hover{background:var(--green2)}
-    .btn-connect.connected{background:var(--greenlt);color:var(--green2);border:1px solid rgba(45,140,94,.3);cursor:default}
-    .btn-connect:focus{outline:2px solid var(--green3);outline-offset:3px}
+/* Lang row */
+.lang-strip{
+  background:var(--paper2);
+  border-bottom:1px solid var(--border);
+  padding:8px 0;
+}
+.lang-inner{
+  max-width:900px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.lang-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin-right:6px;}
+.lang-btn{
+  font-family:var(--mono);font-size:10px;padding:4px 10px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--ink3);cursor:pointer;border-radius:4px;
+  transition:all .15s;display:inline-flex;align-items:center;gap:4px;
+  min-height:28px;
+}
+.lang-btn img{border-radius:1px;}
+.lang-btn:hover{border-color:var(--green2);color:var(--green2);background:var(--green-tint);}
+.lang-btn.active{border-color:var(--green);color:var(--green);background:var(--green-tint);font-weight:500;}
 
-    /* ─── CARD ───────────────────────────────── */
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:36px;margin-bottom:20px;box-shadow:var(--shadow);animation:rise .7s .15s cubic-bezier(.2,.8,.4,1) both}
-    .card-label{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green3);text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:12px}
-    .card-label::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ══ PAGE ══ */
+.page{max-width:900px;margin:0 auto;padding:48px 32px 120px;display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start;}
 
-    /* ─── FORM ───────────────────────────────── */
-    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
-    .field{margin-bottom:16px}
-    .fl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;display:block}
-    input,select,textarea{
-      width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);
-      color:var(--text);font-family:var(--sans);font-size:15px;padding:13px 16px;
-      outline:none;transition:border-color var(--transition),box-shadow var(--transition);
-      -webkit-appearance:none;appearance:none;line-height:1.5
-    }
-    input:focus,select:focus,textarea:focus{border-color:var(--green3);box-shadow:0 0 0 3px rgba(45,140,94,.12)}
-    input::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
-    textarea{resize:vertical;height:110px;line-height:1.65}
-    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239aaba4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
-    select option{background:var(--card)}
+/* ══ MAIN COLUMN ══ */
+.main-col{}
 
-    .upload{border:1px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;position:relative;transition:all var(--transition);background:var(--card2)}
-    .upload:hover{border-color:var(--green3);background:var(--greenlt)}
-    .upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .upload p{font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.02em}
-    .upload:focus-within{outline:2px solid var(--green3);outline-offset:3px}
-    .fn{color:var(--green2);margin-top:6px;font-size:12px;font-family:var(--mono)}
+/* ══ SECTION HEADER ══ */
+.section-intro{margin-bottom:32px;}
+.section-eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:.25em;
+  color:var(--green2);text-transform:uppercase;
+  margin-bottom:10px;display:flex;align-items:center;gap:10px;
+}
+.section-eyebrow::before{content:'';width:20px;height:1px;background:var(--green3);}
+.section-title{
+  font-family:var(--serif);font-size:clamp(28px,4vw,40px);
+  font-weight:700;letter-spacing:-.02em;line-height:1.2;
+  color:var(--ink);margin-bottom:12px;
+}
+.section-desc{font-size:15px;color:var(--ink3);line-height:1.7;max-width:520px;}
 
-    /* ─── SUBMIT BUTTON ──────────────────────── */
-    .btn-submit{
-      width:100%;margin-top:20px;padding:20px;
-      background:var(--green);border:none;border-radius:var(--radius);color:#fff;
-      font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;
-      cursor:pointer;transition:all var(--transition);min-height:56px;
-      position:relative;overflow:hidden
-    }
-    .btn-submit::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);pointer-events:none}
-    .btn-submit:hover:not(:disabled){background:var(--green2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(26,92,62,.25)}
-    .btn-submit:active:not(:disabled){transform:translateY(0)}
-    .btn-submit:disabled{background:var(--border2);color:var(--muted);cursor:not-allowed;transform:none}
-    .btn-submit:focus{outline:2px solid var(--green3);outline-offset:4px}
+/* ══ FORM CARD ══ */
+.form-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.form-card-head{
+  padding:20px 28px;
+  background:var(--paper2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.fch-dot{width:8px;height:8px;border-radius:50%;}
+.fch-dot:nth-child(1){background:#ff5f57;}
+.fch-dot:nth-child(2){background:#febc2e;}
+.fch-dot:nth-child(3){background:#28c840;}
+.fch-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--ink3);text-transform:uppercase;margin-left:auto;margin-right:auto;}
 
-    /* Status */
-    .status-msg{margin-top:14px;padding:14px 18px;border-left:3px solid var(--green3);background:var(--greenlt);font-size:13px;color:var(--text2);display:none;border-radius:0 var(--radius) var(--radius) 0;font-family:var(--sans)}
-    .status-msg.error{border-color:var(--red);background:var(--redlt);color:var(--red)}
-    .status-msg.visible{display:block}
+.form-body{padding:28px;}
 
-    /* ─── LOADING ────────────────────────────── */
-    .loading{margin-top:48px;text-align:center;display:none;animation:rise .5s ease both;padding:0 20px}
-    .hourglass{font-size:48px;display:block;margin:0 auto 24px;animation:hflip 2s ease-in-out infinite}
-    @keyframes hflip{0%,100%{transform:rotate(0deg)}45%,55%{transform:rotate(180deg)}}
-    .loading-title{font-family:var(--serif);font-size:clamp(28px,5vw,38px);font-weight:300;font-style:italic;color:var(--ink);margin-bottom:6px}
-    .loading-sub{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--muted);margin-bottom:28px;text-transform:uppercase}
-    .timer{font-family:var(--mono);font-size:52px;font-weight:300;color:var(--green2);letter-spacing:.1em;margin-bottom:12px;line-height:1}
-    .loading-phase{font-size:14px;color:var(--text3);font-style:italic;max-width:400px;margin:0 auto}
-    .progress-track{width:100%;max-width:320px;height:2px;background:var(--border);border-radius:1px;margin:24px auto 0;overflow:hidden}
-    .progress-fill{height:100%;background:var(--green3);width:0%;transition:width 1s linear;border-radius:1px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+.field{margin-bottom:16px;}
+.fl{
+  font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink3);
+  margin-bottom:6px;display:block;
+}
 
-    /* ─── RESULT ─────────────────────────────── */
-    #result{margin-top:32px;display:none}
+input,select,textarea{
+  width:100%;background:var(--paper);
+  border:1px solid var(--border);border-radius:6px;
+  color:var(--ink);font-family:var(--sans);font-size:15px;
+  padding:11px 14px;outline:none;
+  transition:border-color .18s,box-shadow .18s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--green2);
+  background:var(--white);
+  box-shadow:0 0 0 3px rgba(46,125,85,.1);
+}
+input::placeholder,textarea::placeholder{color:var(--border2);font-size:14px;}
+textarea{resize:vertical;height:100px;line-height:1.65;}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7069' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:36px;cursor:pointer;
+}
+select option{background:var(--white);}
 
-    .result-verdict{
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius2);padding:40px;margin-bottom:20px;
-      box-shadow:var(--shadow2);animation:rise .7s ease both;position:relative;overflow:hidden
-    }
-    .result-verdict::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-    .result-verdict.URGENT::before{background:linear-gradient(90deg,var(--red),#c0392b)}
-    .result-verdict.SOON::before{background:linear-gradient(90deg,#c07a1a,#e09020)}
-    .result-verdict.MONITOR::before{background:linear-gradient(90deg,var(--green),var(--green3))}
+.upload{
+  border:1.5px dashed var(--border2);border-radius:8px;
+  padding:18px;text-align:center;cursor:pointer;
+  position:relative;transition:all .18s;background:var(--paper);
+}
+.upload:hover{border-color:var(--green2);background:var(--green-tint);}
+.upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:24px;display:block;margin-bottom:6px;}
+.upload p{font-size:13px;color:var(--ink3);font-family:var(--mono);letter-spacing:.02em;}
+.fn{color:var(--green2);margin-top:4px;font-size:12px;font-family:var(--mono);}
 
-    .rv-label{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
-    .urgency-chip{display:inline-flex;align-items:center;gap:9px;padding:10px 20px;border-radius:2px;margin-bottom:24px}
-    .urgency-chip.URGENT{background:var(--redlt);border:1px solid rgba(122,26,26,.2)}
-    .urgency-chip.SOON{background:var(--amberlt);border:1px solid rgba(122,79,26,.2)}
-    .urgency-chip.MONITOR{background:var(--greenlt);border:1px solid rgba(26,92,62,.2)}
-    .urg-icon{font-size:18px;line-height:1}
-    .urg-text{font-family:var(--mono);font-size:12px;letter-spacing:.2em;font-weight:500;text-transform:uppercase}
-    .urgency-chip.URGENT .urg-text{color:var(--red)}
-    .urgency-chip.SOON .urg-text{color:var(--amber)}
-    .urgency-chip.MONITOR .urg-text{color:var(--green)}
+/* Submit */
+.btn-submit{
+  width:100%;margin-top:4px;
+  background:var(--green);border:none;
+  border-radius:8px;color:#fff;
+  font-family:var(--sans);font-size:16px;font-weight:600;
+  padding:18px 28px;cursor:pointer;
+  transition:all .22s;
+  box-shadow:0 4px 16px rgba(26,92,62,.25);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  min-height:56px;
+  letter-spacing:.01em;
+}
+.btn-submit:hover:not(:disabled){
+  background:var(--green2);
+  transform:translateY(-1px);
+  box-shadow:0 8px 28px rgba(26,92,62,.32);
+}
+.btn-submit:active:not(:disabled){transform:none;}
+.btn-submit:disabled{background:var(--border2);color:var(--ink3);cursor:not-allowed;transform:none;box-shadow:none;}
 
-    .verdict-quote{font-family:var(--serif);font-size:clamp(18px,3vw,22px);font-weight:300;font-style:italic;color:var(--ink);line-height:1.75;margin-bottom:24px;position:relative;padding-left:24px}
-    .verdict-quote::before{content:'"';position:absolute;left:0;top:-8px;font-size:52px;color:var(--green3);opacity:.3;line-height:1;font-family:var(--serif)}
+.status-msg{
+  margin-top:12px;padding:12px 16px;
+  border-left:3px solid var(--green3);
+  background:var(--green-tint);
+  font-size:13px;color:var(--ink2);
+  display:none;border-radius:0 6px 6px 0;
+}
+.status-msg.error{border-color:var(--red);background:var(--red-tint);color:var(--red);}
+.status-msg.visible{display:block;}
 
-    .onchain-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);display:flex;align-items:center;gap:6px}
-    .onchain-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green3);display:inline-block;flex-shrink:0}
+/* ══ SIDEBAR ══ */
+.sidebar{}
 
-    /* Steps card */
-    .steps-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius2);padding:32px;margin-bottom:20px;animation:rise .7s .08s ease both}
-    .step-row{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--border);align-items:flex-start}
-    .step-row:first-of-type{padding-top:0}
-    .step-row:last-of-type{border-bottom:none;padding-bottom:0}
-    .step-n{font-family:var(--serif);font-size:28px;color:var(--green3);opacity:.5;line-height:1;flex-shrink:0;width:28px;margin-top:2px}
-    .step-content{}
-    .step-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:3px}
-    .step-txt{font-size:14px;color:var(--text2);line-height:1.65}
+/* Wallet card */
+.wallet-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  box-shadow:var(--shadow-sm);
+}
+.wc-label{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--ink3);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.wc-label::before{content:'';width:14px;height:1px;background:var(--green3);}
+.wallet-status-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.wallet-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all .4s;flex-shrink:0;}
+.wallet-dot.on{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);}
+.wallet-addr{font-family:var(--mono);font-size:12px;color:var(--ink2);}
+.btn-connect{
+  width:100%;padding:12px;
+  background:var(--green);border:none;border-radius:8px;
+  color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .18s;min-height:44px;
+}
+.btn-connect:hover{background:var(--green2);}
+.btn-connect.connected{background:var(--green-tint);color:var(--green);border:1px solid rgba(46,125,85,.3);cursor:default;}
 
-    /* Transparency */
-    .how-card{border:1px solid var(--border);border-radius:var(--radius2);padding:22px 28px;margin-bottom:24px;background:transparent;animation:rise .7s .12s ease both}
-    .how-text{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);line-height:2}
+/* Info card */
+.info-card{
+  background:var(--green);border-radius:12px;
+  padding:24px;margin-bottom:20px;color:rgba(255,255,255,.85);
+  position:relative;overflow:hidden;
+}
+.info-card::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;border-radius:50%;
+  background:rgba(255,255,255,.05);
+}
+.info-card-title{
+  font-family:var(--serif);font-size:18px;font-weight:700;
+  color:#fff;margin-bottom:10px;font-style:italic;
+  position:relative;
+}
+.info-card-text{font-size:13px;line-height:1.75;position:relative;}
+.info-card-text strong{color:#fff;}
 
-    .result-foot{text-align:center;padding-top:16px;margin-bottom:8px}
-    .result-foot-txt{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--border2);text-transform:uppercase}
+/* Validators list */
+.validators-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:24px;
+  box-shadow:var(--shadow-sm);
+}
+.vc-label{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--ink3);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.vc-label::before{content:'';width:14px;height:1px;background:var(--green3);}
+.v-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.v-item:last-child{border-bottom:none;padding-bottom:0;}
+.v-icon{
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+  background:var(--paper2);
+}
+.v-name{font-size:13px;font-weight:500;color:var(--ink2);}
+.v-role{font-family:var(--mono);font-size:9px;color:var(--ink3);letter-spacing:.05em;margin-top:1px;}
 
-    /* Retry */
-    .btn-retry{width:100%;margin-top:10px;padding:14px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;background:var(--greenlt);color:var(--green2);border:1px solid rgba(45,140,94,.3);cursor:pointer;border-radius:var(--radius);text-transform:uppercase;transition:all var(--transition)}
-    .btn-retry:hover{background:var(--green);color:#fff}
+/* ══ LOADING ══ */
+.loading{
+  display:none;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:48px 28px;
+  text-align:center;
+  box-shadow:var(--shadow);
+  margin-bottom:20px;
+}
+.loading-spinner{
+  width:56px;height:56px;margin:0 auto 28px;
+  border:2px solid var(--border);border-top-color:var(--green2);
+  border-radius:50%;animation:spin 1.2s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-family:var(--serif);font-size:24px;font-weight:700;font-style:italic;color:var(--ink);margin-bottom:6px;}
+.loading-sub{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin-bottom:24px;}
+.timer{font-family:var(--mono);font-size:48px;font-weight:300;color:var(--green2);letter-spacing:.08em;margin-bottom:12px;}
+.loading-phase{font-size:14px;color:var(--ink3);font-style:italic;font-family:var(--serif);margin-bottom:20px;}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;max-width:200px;margin:0 auto;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green2),var(--green3));width:0%;transition:width 130s linear;border-radius:2px;}
 
-    /* ─── MODALS ─────────────────────────────── */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,10,.75);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-    .modal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);max-width:420px;width:100%;padding:36px;position:relative;box-shadow:var(--shadow2);animation:modalIn .3s cubic-bezier(.2,.8,.4,1)}
-    @keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
-    .modal-close{position:absolute;top:14px;right:16px;font-size:20px;background:none;border:none;cursor:pointer;color:var(--muted);line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:2px;transition:all var(--transition)}
-    .modal-close:hover{background:var(--cream);color:var(--text)}
-    .modal-close:focus{outline:2px solid var(--green3);outline-offset:3px}
-    .modal-tag{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
-    .modal-title{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:16px}
-    .modal-p{font-size:14px;color:var(--text3);line-height:1.75;margin-bottom:10px}
-    .modal-btn{width:100%;margin-top:10px;padding:15px;background:var(--green);color:#fff;border:none;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:all var(--transition)}
-    .modal-btn:hover{background:var(--green2)}
-    .modal-btn:focus{outline:2px solid var(--green3);outline-offset:3px}
+/* ══ RESULT ══ */
+#result{display:none;}
 
-    /* Wallet options */
-    .wm-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;margin-bottom:10px;background:var(--card2);transition:all var(--transition)}
-    .wm-opt:hover{border-color:var(--green3);background:var(--greenlt)}
-    .wm-opt:last-child{margin-bottom:0}
-    .wm-opt:focus{outline:2px solid var(--green3);outline-offset:3px}
-    .wm-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
-    .wm-name{font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text)}
-    .wm-desc{font-size:12px;color:var(--muted);margin-top:1px}
-    .wm-foot{margin-top:16px;font-family:var(--mono);font-size:9px;color:var(--border2);text-align:center;letter-spacing:.08em;line-height:1.8}
+.verdict-card{
+  border-radius:12px;overflow:hidden;margin-bottom:20px;
+  box-shadow:var(--shadow-lg);
+  animation:rise .5s both;
+}
+.vc-header{
+  padding:28px 32px 0;
+}
+.vc-header.URGENT{background:linear-gradient(135deg,#7a0000,#a01020);}
+.vc-header.SOON{background:linear-gradient(135deg,#6b3a00,#8b5000);}
+.vc-header.MONITOR{background:linear-gradient(135deg,#0d4a2a,#1a6b3e);}
+.vc-eyebrow{
+  font-family:var(--mono);font-size:9px;letter-spacing:.28em;
+  color:rgba(255,255,255,.5);text-transform:uppercase;
+  margin-bottom:16px;
+}
+.urgency-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 18px;border-radius:40px;margin-bottom:20px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);
+}
+.urg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.urg-dot.URGENT{background:#ff8080;}
+.urg-dot.SOON{background:#ffb060;}
+.urg-dot.MONITOR{background:#80ffb0;}
+.urg-text{font-family:var(--mono);font-size:11px;letter-spacing:.2em;font-weight:600;color:#fff;text-transform:uppercase;}
 
-    /* ─── FOOTER ─────────────────────────────── */
-    footer{margin-top:64px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--border2);letter-spacing:.15em}
-    footer a{color:var(--green3);text-decoration:none;transition:color var(--transition)}
-    footer a:hover{color:var(--green2)}
+.verdict-body{
+  padding:28px 32px 32px;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-top:none;
+  border-radius:0 0 12px 12px;
+}
+.verdict-quote{
+  font-family:var(--serif);
+  font-size:clamp(16px,2.5vw,20px);
+  font-style:italic;font-weight:400;
+  color:var(--ink);line-height:1.8;
+  margin-bottom:20px;
+  padding:16px 20px;
+  background:var(--paper2);
+  border-radius:8px;
+  border-left:3px solid var(--green3);
+}
+.onchain-row{display:flex;align-items:center;gap:6px;padding-top:16px;border-top:1px solid var(--border);}
+.oc-indicator{width:6px;height:6px;border-radius:50%;background:var(--green3);flex-shrink:0;}
+.oc-text{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3);}
 
-    /* ─── ANIMATIONS ─────────────────────────── */
-    @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* Steps */
+.steps-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:28px 32px;margin-bottom:20px;
+  box-shadow:var(--shadow-sm);animation:rise .5s .08s both;
+}
+.sc-label{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:10px;}
+.sc-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.step-row{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);}
+.step-row:last-of-type{border-bottom:none;padding-bottom:0;}
+.step-row:first-of-type{padding-top:0;}
+.step-n{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--green-tint);border:1px solid var(--green-tint2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:13px;font-weight:700;color:var(--green);
+  flex-shrink:0;margin-top:2px;
+}
+.step-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--ink3);text-transform:uppercase;display:block;margin-bottom:3px;}
+.step-body{font-size:14px;color:var(--ink2);line-height:1.65;}
 
-    /* ─── ACCESSIBILITY ──────────────────────── */
-    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-    :focus-visible{outline:2px solid var(--green3);outline-offset:3px}
+/* How */
+.how-card{
+  background:var(--paper2);border:1px solid var(--border);
+  border-radius:12px;padding:20px 24px;margin-bottom:20px;
+  animation:rise .5s .12s both;
+}
+.how-text{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink3);line-height:1.9;}
 
-    /* ─── RESPONSIVE ─────────────────────────── */
-    @media(max-width:560px){
-      .g3{grid-template-columns:1fr 1fr}
-      .wallet-bar{flex-direction:column;align-items:flex-start;gap:14px}
-      .btn-connect{align-self:stretch;text-align:center}
-      .card{padding:24px}
-      .result-verdict{padding:28px}
-    }
-    @media(max-width:380px){.g3{grid-template-columns:1fr}}
+.btn-retry{
+  width:100%;margin-top:10px;padding:14px;
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  background:var(--green-tint);color:var(--green);
+  border:1px solid rgba(46,125,85,.3);cursor:pointer;border-radius:8px;transition:all .18s;
+}
+.btn-retry:hover{background:var(--green-tint2);}
 
-    /* High contrast support */
-    @media(forced-colors:active){
-      .btn-submit,.btn-connect,.modal-btn{border:2px solid ButtonText}
-    }
-  </style>
+/* ══ MODALS ══ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(28,31,29,.6);z-index:9999;
+  align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(6px);
+}
+.modal-box{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;max-width:420px;width:100%;
+  padding:36px;position:relative;
+  box-shadow:var(--shadow-lg);
+  animation:rise .3s both;
+}
+.modal-close{
+  position:absolute;top:12px;right:14px;font-size:18px;
+  background:none;border:none;cursor:pointer;color:var(--ink3);
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:all .15s;
+}
+.modal-close:hover{background:var(--paper2);color:var(--ink);}
+.modal-tag{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;}
+.modal-title{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--ink);margin-bottom:16px;letter-spacing:-.02em;}
+.modal-p{font-size:14px;color:var(--ink3);line-height:1.75;margin-bottom:10px;}
+.modal-btn{
+  width:100%;margin-top:10px;padding:14px;
+  background:var(--green);border:none;border-radius:8px;
+  color:#fff;font-family:var(--sans);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .18s;
+}
+.modal-btn:hover{background:var(--green2);}
+
+/* Wallet opts */
+.wm-opt{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;margin-bottom:8px;background:var(--paper);transition:all .15s;
+}
+.wm-opt:hover{border-color:var(--green2);background:var(--green-tint);}
+.wm-opt:last-child{margin-bottom:0;}
+.wm-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden;}
+.wm-name{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink);}
+.wm-desc{font-size:12px;color:var(--ink3);margin-top:1px;}
+.wm-foot{margin-top:14px;font-family:var(--mono);font-size:9px;color:var(--ink3);text-align:center;letter-spacing:.08em;line-height:1.8;}
+
+/* ══ FOOTER ══ */
+.site-footer{
+  background:var(--white);
+  border-top:1px solid var(--border);
+  padding:24px 0;
+  text-align:center;
+  font-family:var(--mono);font-size:10px;
+  color:var(--ink3);letter-spacing:.12em;
+}
+.site-footer a{color:var(--green2);text-decoration:none;}
+
+/* ══ ANIMATIONS ══ */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+:focus-visible{outline:2px solid var(--green2);outline-offset:3px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:760px){
+  .page{grid-template-columns:1fr;gap:24px;}
+  .sidebar{display:contents;}
+  .sidebar>*{order:0;}
+  .wallet-card{order:-1;}
+  .g3{grid-template-columns:1fr 1fr;}
+  .site-header-inner{flex-direction:column;gap:12px;align-items:flex-start;}
+  .form-body{padding:20px;}
+  .vc-header,.verdict-body{padding-left:20px;padding-right:20px;}
+  .steps-card{padding:20px;}
+}
+@media(max-width:400px){.g3{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-eyebrow">GenLayer · Optimistic Democracy · Studionet</div>
-    <span class="header-icon" role="img" aria-label="Stethoscope">🩺</span>
-    <h1>Second <span>Opinion</span></h1>
-    <p class="subtitle">AI Validators Diagnose Onchain</p>
-    <button class="disc-link" onclick="document.getElementById('disc-modal').style.display='flex'" aria-haspopup="dialog">⚠ Disclaimer</button>
-    <div class="lang-row" role="group" aria-label="Language selection">
-      <button class="lang-btn active" data-lang="en" aria-label="English" aria-pressed="true"><img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt=""> EN</button>
-      <button class="lang-btn" data-lang="de" aria-label="Deutsch" aria-pressed="false"><img src="https://flagcdn.com/20x15/de.png" width="20" height="15" alt=""> DE</button>
-      <button class="lang-btn" data-lang="tr" aria-label="Türkçe" aria-pressed="false"><img src="https://flagcdn.com/20x15/tr.png" width="20" height="15" alt=""> TR</button>
-      <button class="lang-btn" data-lang="ar" aria-label="العربية" aria-pressed="false"><img src="https://flagcdn.com/20x15/sa.png" width="20" height="15" alt=""> AR</button>
-      <button class="lang-btn" data-lang="es" aria-label="Español" aria-pressed="false"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt=""> ES</button>
-      <button class="lang-btn" data-lang="fr" aria-label="Français" aria-pressed="false"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt=""> FR</button>
-      <button class="lang-btn" data-lang="ru" aria-label="Русский" aria-pressed="false"><img src="https://flagcdn.com/20x15/ru.png" width="20" height="15" alt=""> RU</button>
-      <button class="lang-btn" data-lang="zh" aria-label="中文" aria-pressed="false"><img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt=""> ZH</button>
-    </div>
-  </header>
-
-  <!-- WALLET BAR -->
-  <div class="wallet-bar" role="complementary" aria-label="Wallet connection">
-    <div class="wallet-info">
-      <span class="wallet-lbl">Wallet</span>
-      <div class="wallet-status">
-        <span class="wallet-dot" id="wallet-dot" aria-hidden="true"></span>
-        <span class="wallet-addr" id="wallet-addr" aria-live="polite">Not connected</span>
-      </div>
-    </div>
-    <button class="btn-connect" id="wallet-btn" aria-label="Connect your Web3 wallet">CONNECT WALLET</button>
+<!-- TOP STRIP -->
+<div class="top-strip">
+  <div class="top-strip-inner">
+    <span>GenLayer Studionet</span>
+    <span class="strip-dot"></span>
+    <span>Optimistic Democracy</span>
+    <span class="strip-dot"></span>
+    <span>AI Medical Consensus</span>
   </div>
-
-  <!-- FORM CARD -->
-  <div class="card" role="main">
-    <div class="card-label" id="form-title">Patient Information</div>
-
-    <div class="g3">
-      <div>
-        <label class="fl" id="lbl-age" for="ageInput">Age</label>
-        <input id="ageInput" type="number" min="0" max="120" placeholder="30" aria-labelledby="lbl-age" autocomplete="off"/>
-      </div>
-      <div>
-        <label class="fl" id="lbl-weight" for="weightInput">Weight (kg)</label>
-        <input id="weightInput" type="number" min="0" placeholder="70" aria-labelledby="lbl-weight" autocomplete="off"/>
-      </div>
-      <div>
-        <label class="fl" id="lbl-height" for="heightInput">Height (cm)</label>
-        <input id="heightInput" type="number" min="0" placeholder="175" aria-labelledby="lbl-height" autocomplete="off"/>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="fl" id="lbl-gender" for="genderInput">Gender</label>
-      <select id="genderInput" aria-labelledby="lbl-gender">
-        <option value="" disabled selected id="opt-gender">Select gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Non-binary">Non-binary</option>
-        <option value="Prefer not to say">Prefer not to say</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label class="fl" id="lbl-allergies" for="allergiesInput">Allergies</label>
-      <input id="allergiesInput" type="text" placeholder="e.g. Penicillin, Pollen (leave blank if none)" aria-labelledby="lbl-allergies" autocomplete="off"/>
-    </div>
-
-    <div class="field">
-      <label class="fl" id="lbl-precond" for="preCondInput">Pre-existing Conditions</label>
-      <input id="preCondInput" type="text" placeholder="e.g. Diabetes Type 2 (leave blank if none)" aria-labelledby="lbl-precond" autocomplete="off"/>
-    </div>
-
-    <div class="field">
-      <label class="fl" id="lbl-symptoms" for="symptomsInput">Symptoms</label>
-      <textarea id="symptomsInput" placeholder="Describe your symptoms in detail..." aria-labelledby="lbl-symptoms" aria-required="true"></textarea>
-    </div>
-
-    <div class="field">
-      <span class="fl" id="lbl-doc">Medical Document <span style="font-style:italic;font-weight:300;letter-spacing:0">(optional)</span></span>
-      <div class="upload" role="button" aria-label="Upload medical document" tabindex="0">
-        <input type="file" id="fileInput" accept=".txt" aria-labelledby="lbl-doc" aria-describedby="lbl-upload"/>
-        <p id="lbl-upload">📎 Upload a medical document (.txt)</p>
-        <p class="fn" id="fileName" aria-live="polite"></p>
-      </div>
-    </div>
-
-    <button class="btn-submit" id="submitBtn" aria-label="Submit symptoms for AI consensus diagnosis">
-      🩺 Get Second Opinion
-    </button>
-    <div class="status-msg" id="status-msg" role="alert" aria-live="assertive"></div>
-  </div>
-
-  <!-- LOADING -->
-  <div class="loading" id="loading" role="status" aria-live="polite" aria-label="AI analysis in progress">
-    <span class="hourglass" aria-hidden="true">⏳</span>
-    <div class="loading-title" id="loading-title">AI Jury Deliberating</div>
-    <div class="loading-sub" id="loading-sub">GenLayer Consensus in Progress</div>
-    <div class="timer" id="timer" aria-label="Elapsed time">00:00</div>
-    <div class="loading-phase" id="loading-phase">Sending to GenLayer validators...</div>
-    <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="pf"></div></div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="result" aria-live="polite">
-    <div class="result-verdict MONITOR" id="result-verdict">
-      <div class="rv-label">AI Consensus Verdict</div>
-      <div class="urgency-chip MONITOR" id="urgency-chip">
-        <span class="urg-icon" id="urg-icon" aria-hidden="true">🟢</span>
-        <span class="urg-text" id="urg-text">MONITOR</span>
-      </div>
-      <p class="verdict-quote" id="verdict-main">—</p>
-      <div class="onchain-tag"><span id="onchain-label">Stored permanently on GenLayer Studionet</span></div>
-    </div>
-
-    <div class="steps-card card">
-      <div class="card-label" id="next-title">Recommended Next Steps</div>
-      <div class="step-row">
-        <div class="step-n" aria-hidden="true">1</div>
-        <div class="step-content"><span class="step-lbl" id="step1-label">Immediate Action</span><span class="step-txt" id="step1-text">Contact your healthcare provider and share this AI assessment.</span></div>
-      </div>
-      <div class="step-row">
-        <div class="step-n" aria-hidden="true">2</div>
-        <div class="step-content"><span class="step-lbl" id="step2-label">Documentation</span><span class="step-txt" id="step2-text">Write down all your symptoms, their duration and severity before your appointment.</span></div>
-      </div>
-      <div class="step-row">
-        <div class="step-n" aria-hidden="true">3</div>
-        <div class="step-content"><span class="step-lbl" id="step3-label">Reminder</span><span class="step-txt" id="step3-text">This AI opinion does not replace professional medical diagnosis. Always consult a licensed physician.</span></div>
-      </div>
-    </div>
-
-    <div class="how-card">
-      <div class="how-text" id="trans-text">HOW THIS WORKS · Multiple independent AI validators on GenLayer each analyze your symptoms separately and reach consensus via Optimistic Democracy. No single AI decides — disagreements are resolved by the network.</div>
-    </div>
-
-    <div class="result-foot">
-      <p class="result-foot-txt" id="footer-text">Not Medical Advice · GenLayer AI Jury · Studionet</p>
-    </div>
-  </div>
-
 </div>
 
+<!-- SITE HEADER -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="logo">
+      <div class="logo-icon">🩺</div>
+      <div>
+        <div class="logo-text">Second Opinion</div>
+        <div class="logo-sub">AI Validator Network</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-outline" onclick="document.getElementById('disc-modal').style.display='flex'" id="disc-btn-top">⚠ Disclaimer</button>
+    </div>
+  </div>
+</header>
+
+<!-- LANG STRIP -->
+<div class="lang-strip">
+  <div class="lang-inner">
+    <span class="lang-lbl">Language</span>
+    <button class="lang-btn active" data-lang="en" aria-pressed="true"><img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt=""> EN</button>
+    <button class="lang-btn" data-lang="de" aria-pressed="false"><img src="https://flagcdn.com/20x15/de.png" width="20" height="15" alt=""> DE</button>
+    <button class="lang-btn" data-lang="tr" aria-pressed="false"><img src="https://flagcdn.com/20x15/tr.png" width="20" height="15" alt=""> TR</button>
+    <button class="lang-btn" data-lang="ar" aria-pressed="false"><img src="https://flagcdn.com/20x15/sa.png" width="20" height="15" alt=""> AR</button>
+    <button class="lang-btn" data-lang="es" aria-pressed="false"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt=""> ES</button>
+    <button class="lang-btn" data-lang="fr" aria-pressed="false"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt=""> FR</button>
+    <button class="lang-btn" data-lang="ru" aria-pressed="false"><img src="https://flagcdn.com/20x15/ru.png" width="20" height="15" alt=""> RU</button>
+    <button class="lang-btn" data-lang="zh" aria-pressed="false"><img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt=""> ZH</button>
+  </div>
+</div>
+
+<!-- PAGE -->
+<main class="page">
+
+  <!-- MAIN COLUMN -->
+  <div class="main-col">
+
+    <div class="section-intro">
+      <div class="section-eyebrow">AI-Powered Second Opinion</div>
+      <h1 class="section-title" id="section-title">Get your symptoms analyzed<br>by a panel of AI validators</h1>
+      <p class="section-desc" id="section-desc">Multiple independent AI models — Claude, GPT-5, Qwen, Nemotron — analyze your case separately and reach consensus on GenLayer's blockchain. No single AI decides.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-head">
+        <div class="fch-dot"></div>
+        <div class="fch-dot"></div>
+        <div class="fch-dot"></div>
+        <span class="fch-label" id="form-title">Patient Information</span>
+      </div>
+      <div class="form-body">
+        <div class="g3">
+          <div><label class="fl" for="ageInput" id="lbl-age">Age</label><input id="ageInput" type="number" min="0" max="120" placeholder="30"/></div>
+          <div><label class="fl" for="weightInput" id="lbl-weight">Weight (kg)</label><input id="weightInput" type="number" min="0" placeholder="70"/></div>
+          <div><label class="fl" for="heightInput" id="lbl-height">Height (cm)</label><input id="heightInput" type="number" min="0" placeholder="175"/></div>
+        </div>
+        <div class="field">
+          <label class="fl" for="genderInput" id="lbl-gender">Gender</label>
+          <select id="genderInput">
+            <option value="" disabled selected id="opt-gender">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="field"><label class="fl" for="allergiesInput" id="lbl-allergies">Allergies</label><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
+        <div class="field"><label class="fl" for="preCondInput" id="lbl-precond">Pre-existing Conditions</label><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
+        <div class="field"><label class="fl" for="symptomsInput" id="lbl-symptoms">Symptoms</label><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..." aria-required="true"></textarea></div>
+        <div class="field">
+          <span class="fl" id="lbl-doc">Medical Document <em style="font-style:italic;letter-spacing:0;font-weight:300">(optional)</em></span>
+          <div class="upload" tabindex="0">
+            <input type="file" id="fileInput" accept=".txt"/>
+            <span class="upload-icon">📎</span>
+            <p id="lbl-upload">Upload a medical document (.txt)</p>
+            <p class="fn" id="fileName" aria-live="polite"></p>
+          </div>
+        </div>
+        <button class="btn-submit" id="submitBtn" aria-label="Submit for AI consensus">
+          <span>🧬</span>
+          <span id="submit-text">Get Second Opinion</span>
+        </button>
+        <div class="status-msg" id="status-msg" role="alert" aria-live="assertive"></div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading" role="status" aria-live="polite">
+      <div class="loading-spinner"></div>
+      <div class="loading-title" id="loading-title">AI Jury Deliberating</div>
+      <div class="loading-sub" id="loading-sub">GenLayer Consensus in Progress</div>
+      <div class="timer" id="timer">00:00</div>
+      <div class="loading-phase" id="loading-phase">Sending to GenLayer validators...</div>
+      <div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+    </div>
+
+    <!-- Result -->
+    <div id="result">
+      <div class="verdict-card">
+        <div class="vc-header MONITOR" id="vc-header">
+          <div class="vc-eyebrow">AI Consensus Verdict</div>
+          <div class="urgency-pill" id="urgency-pill">
+            <span class="urg-dot MONITOR" id="urg-dot"></span>
+            <span class="urg-text" id="urg-text">MONITOR</span>
+          </div>
+        </div>
+        <div class="verdict-body">
+          <p class="verdict-quote" id="verdict-main">—</p>
+          <div class="onchain-row">
+            <span class="oc-indicator"></span>
+            <span class="oc-text" id="onchain-label">Stored permanently on GenLayer Studionet · Optimistic Democracy</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps-card">
+        <div class="sc-label" id="next-title">Recommended Next Steps</div>
+        <div class="step-row">
+          <div class="step-n">1</div>
+          <div><span class="step-lbl" id="step1-label">Immediate Action</span><span class="step-body" id="step1-text">Contact your healthcare provider and share this AI assessment.</span></div>
+        </div>
+        <div class="step-row">
+          <div class="step-n">2</div>
+          <div><span class="step-lbl" id="step2-label">Documentation</span><span class="step-body" id="step2-text">Write down all symptoms, duration and severity before your appointment.</span></div>
+        </div>
+        <div class="step-row">
+          <div class="step-n">3</div>
+          <div><span class="step-lbl" id="step3-label">Reminder</span><span class="step-body" id="step3-text">This AI opinion does not replace professional medical diagnosis.</span></div>
+        </div>
+      </div>
+
+      <div class="how-card">
+        <div class="how-text" id="trans-text">HOW THIS WORKS · Multiple independent AI validators on GenLayer each analyze your symptoms separately and reach consensus via Optimistic Democracy. No single AI decides. Results stored permanently on-chain.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="wallet-card">
+      <div class="wc-label">Wallet</div>
+      <div class="wallet-status-row">
+        <span class="wallet-dot" id="wallet-dot"></span>
+        <span class="wallet-addr" id="wallet-addr" aria-live="polite">Not connected</span>
+      </div>
+      <button class="btn-connect" id="wallet-btn">Connect Wallet</button>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">How it works</div>
+      <div class="info-card-text">Your symptoms are analyzed by <strong>5 independent AI models</strong> simultaneously. Each reaches its own verdict. GenLayer's <strong>Optimistic Democracy</strong> mechanism ensures consensus — stored permanently on-chain.</div>
+    </div>
+
+    <div class="validators-card">
+      <div class="vc-label">AI Validator Panel</div>
+      <div class="v-item"><div class="v-icon">🤖</div><div><div class="v-name">Claude Sonnet</div><div class="v-role">Anthropic</div></div></div>
+      <div class="v-item"><div class="v-icon">🧠</div><div><div class="v-name">GPT-5</div><div class="v-role">OpenAI</div></div></div>
+      <div class="v-item"><div class="v-icon">⚡</div><div><div class="v-name">Qwen3 235B</div><div class="v-role">Alibaba</div></div></div>
+      <div class="v-item"><div class="v-icon">🔬</div><div><div class="v-name">Nemotron 253B</div><div class="v-role">NVIDIA</div></div></div>
+      <div class="v-item"><div class="v-icon">🌐</div><div><div class="v-name">GLM-5</div><div class="v-role">Zhipu AI</div></div></div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  Built on <a href="https://genlayer.com" target="_blank" rel="noopener">GenLayer</a> · AI Consensus · Not Medical Advice
+</footer>
+
 <!-- WALLET MODAL -->
-<div id="wallet-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="wm-title">
+<div id="wallet-modal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box">
-    <button class="modal-close" onclick="document.getElementById('wallet-modal').style.display='none'" aria-label="Close">✕</button>
-    <div class="modal-tag">Connect</div>
-    <div class="modal-title" id="wm-title">Your Wallet</div>
+    <button class="modal-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
+    <div class="modal-tag">Connect Wallet</div>
+    <div class="modal-title">Choose your wallet</div>
     <div id="wallet-options-list"></div>
     <div class="wm-foot">Connects to GenLayer Studionet.<br>AI verdicts stored on-chain.</div>
   </div>
 </div>
 
 <!-- DISCLAIMER MODAL -->
-<div id="disc-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="disc-title-el">
+<div id="disc-modal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box">
-    <button class="modal-close" onclick="document.getElementById('disc-modal').style.display='none'" aria-label="Close">✕</button>
-    <div class="modal-tag">⚠ Disclaimer</div>
-    <div class="modal-title" id="disc-title-el" id="disc-title">Not Medical Advice</div>
+    <button class="modal-close" onclick="document.getElementById('disc-modal').style.display='none'">✕</button>
+    <div class="modal-tag">⚠ Important</div>
+    <div class="modal-title" id="disc-title">Not Medical Advice</div>
     <p class="modal-p" id="disc-p1">Second Opinion is an experimental AI tool powered by GenLayer for informational purposes only.</p>
-    <p class="modal-p" id="disc-p2">Nothing here constitutes medical diagnosis or treatment advice. AI consensus verdicts are based on the information you provide and may be incomplete or inaccurate.</p>
-    <p class="modal-p" id="disc-p3">Always consult a licensed physician. In case of emergency contact emergency services immediately.</p>
+    <p class="modal-p" id="disc-p2">Nothing here constitutes medical diagnosis or treatment advice. AI verdicts may be incomplete or inaccurate.</p>
+    <p class="modal-p" id="disc-p3">Always consult a licensed physician. In emergency contact emergency services immediately.</p>
     <button class="modal-btn" id="disc-btn" onclick="document.getElementById('disc-modal').style.display='none'">I Understand</button>
   </div>
 </div>
-
-<footer>Built on <a href="https://genlayer.com" target="_blank" rel="noopener">GenLayer</a> — Multiple AI validators reach consensus on your diagnosis</footer>
 
 <script>
 const CONTRACT='0x7a97eD49560Be4283280F29475026eA21D49E5b7';
 const STUDIO_RPC='https://studio.genlayer.com/api';
 const WC_PROJECT_ID='e40d93e27b32349a99a47db1758f665f';
-let client=null,userAddress=null,activeProvider=null;
-let timerInterval=null,elapsed=0,docText='';
+let client=null,userAddress=null,timerInterval=null,elapsed=0,docText='';
 window.currentLang='en';
-
 function $(id){return document.getElementById(id)}
 function setText(id,t){const e=$(id);if(e)e.textContent=t}
-function showStatus(msg,isErr){
-  const el=$('status-msg');
-  if(!msg){el.style.display='none';el.className='status-msg';return}
-  el.textContent=msg;el.className='status-msg visible'+(isErr?' error':'');
-}
-function startTimer(){
-  elapsed=0;clearInterval(timerInterval);
-  $('pf').style.width='0%';
-  setTimeout(()=>{$('pf').style.transition='width 130s linear';$('pf').style.width='92%'},100);
-  timerInterval=setInterval(()=>{
-    elapsed++;$('timer').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
-  },1000);
-}
-function stopTimer(){clearInterval(timerInterval);$('pf').style.width='100%'}
+function showStatus(msg,isErr){const el=$('status-msg');if(!msg){el.style.display='none';el.className='status-msg';return}el.textContent=msg;el.className='status-msg visible'+(isErr?' error':'');}
+function startTimer(){elapsed=0;clearInterval(timerInterval);$('pf').style.width='0%';setTimeout(()=>{$('pf').style.transition='width 130s linear';$('pf').style.width='92%'},100);timerInterval=setInterval(()=>{elapsed++;$('timer').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');},1000);}
+function stopTimer(){clearInterval(timerInterval);$('pf').style.width='100%';}
 function setPhase(m){setText('loading-phase',m)}
-
-$('fileInput').addEventListener('change',async e=>{
-  const f=e.target.files[0];if(!f)return;
-  $('fileName').textContent='✓ '+f.name;docText=await f.text();
-});
-
-// EIP-6963
+$('fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('fileName').textContent='✓ '+f.name;docText=await f.text();});
 var eip6963Wallets=[];
 window.addEventListener('eip6963:announceProvider',e=>{if(e.detail?.provider)eip6963Wallets.push(e.detail)});
 window.dispatchEvent(new Event('eip6963:requestProvider'));
-
 async function onWalletConnected(provider,accounts){
-  activeProvider=provider;window.ethereum=provider;
-  userAddress=accounts[0];window.userAddress=userAddress;
+  window.ethereum=provider;userAddress=accounts[0];window.userAddress=userAddress;
   $('wallet-addr').textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4);
   $('wallet-dot').classList.add('on');
   const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
-  const btn=$('wallet-btn');btn.textContent=T.connected_btn;btn.classList.add('connected');btn.setAttribute('aria-disabled','true');
+  const btn=$('wallet-btn');btn.textContent=T.connected_btn;btn.classList.add('connected');
   $('wallet-modal').style.display='none';
   try{
     const glMod=await import('https://esm.sh/genlayer-js@latest');
@@ -448,57 +731,36 @@ async function onWalletConnected(provider,accounts){
     const hex='0x'+chainsMod.studionet.id.toString(16);
     try{await provider.request({method:'wallet_addEthereumChain',params:[{chainId:hex,chainName:'GenLayer Studio',rpcUrls:[STUDIO_RPC],nativeCurrency:{name:'GEN',symbol:'GEN',decimals:18}}]})}catch(e){}
     try{await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:hex}]})}catch(e){}
-  }catch(e){console.warn('[Chain]',e.message)}
+  }catch(e){console.warn(e)}
   loadLastVerdict();
 }
-
-async function connectInjected(info){
-  try{const p=info?info.provider:window.ethereum;if(!p)throw new Error('No wallet found');const a=await p.request({method:'eth_requestAccounts'});await onWalletConnected(p,a)}
-  catch(e){showStatus('Connection failed: '+(e.message||e),true)}
-}
-async function connectWalletConnect(){
-  try{
-    const{EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2');
-    const wcp=await EthereumProvider.init({projectId:WC_PROJECT_ID,chains:[61166],showQrModal:true,metadata:{name:'Second Opinion',description:'AI Medical Consensus on GenLayer',url:window.location.origin,icons:[]}});
-    await wcp.connect();await onWalletConnected(wcp,wcp.accounts);
-  }catch(e){showStatus('WalletConnect: '+(e.message||'Failed'),true)}
-}
-
+async function connectInjected(info){try{const p=info?info.provider:window.ethereum;if(!p)throw new Error('No wallet');const a=await p.request({method:'eth_requestAccounts'});await onWalletConnected(p,a)}catch(e){showStatus('Connection failed: '+(e.message||e),true)}}
+async function connectWalletConnect(){try{const{EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2');const wcp=await EthereumProvider.init({projectId:WC_PROJECT_ID,chains:[61166],showQrModal:true,metadata:{name:'Second Opinion',description:'AI Medical Consensus',url:window.location.origin,icons:[]}});await wcp.connect();await onWalletConnected(wcp,wcp.accounts);}catch(e){showStatus('WalletConnect: '+(e.message||'Failed'),true)}}
 function openWalletModal(){
   const list=$('wallet-options-list');list.innerHTML='';
   const opts=[];
-  eip6963Wallets.forEach(w=>opts.push({name:w.info.name,desc:'Detected wallet',icon:w.info.icon?`<img src="${w.info.icon}" style="width:28px;height:28px;border-radius:6px">`:'🔗',action:()=>connectInjected(w)}));
+  eip6963Wallets.forEach(w=>opts.push({name:w.info.name,desc:'Detected',icon:w.info.icon?`<img src="${w.info.icon}" style="width:28px;height:28px;border-radius:6px">`:'🔗',action:()=>connectInjected(w)}));
   if(!eip6963Wallets.length&&window.ethereum)opts.push({name:'MetaMask',desc:'Browser extension',icon:'<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:28px;height:28px">',action:()=>connectInjected(null)});
-  opts.push({name:'WalletConnect',desc:'Scan QR · Mobile · 400+ wallets',icon:'<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="white"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37l.38.37a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z"/></svg></div>',action:()=>connectWalletConnect()});
-  opts.forEach(opt=>{
-    const div=document.createElement('div');div.className='wm-opt';div.setAttribute('role','button');div.setAttribute('tabindex','0');
-    div.innerHTML=`<div class="wm-icon">${opt.icon}</div><div><div class="wm-name">${opt.name}</div><div class="wm-desc">${opt.desc}</div></div>`;
-    div.onclick=opt.action;div.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')opt.action()};
-    list.appendChild(div);
-  });
+  opts.push({name:'WalletConnect',desc:'Scan QR · 400+ wallets',icon:'<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="white"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37l.38.37a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z"/></svg></div>',action:()=>connectWalletConnect()});
+  opts.forEach(opt=>{const div=document.createElement('div');div.className='wm-opt';div.setAttribute('tabindex','0');div.innerHTML=`<div class="wm-icon">${opt.icon}</div><div><div class="wm-name">${opt.name}</div><div class="wm-desc">${opt.desc}</div></div>`;div.onclick=opt.action;div.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')opt.action()};list.appendChild(div);});
   $('wallet-modal').style.display='flex';
 }
 $('wallet-btn').addEventListener('click',()=>{if(!userAddress)openWalletModal()});
-
 function renderVerdict(raw){
   const vStr=String(raw||'').replace(/^"|"$/g,'');
-  const parts=vStr.split(' | ');
-  const rec=(parts.at(-1)||'').trim();
+  const parts=vStr.split(' | ');const rec=(parts.at(-1)||'').trim();
   const text=parts.slice(0,-1).join(' | ')||vStr;
   const urgency=['URGENT','SOON','MONITOR'].includes(rec)?rec:'MONITOR';
-  const icons={URGENT:'🔴',SOON:'🟡',MONITOR:'🟢'};
-  const rv=$('result-verdict');
-  rv.className='result-verdict '+urgency;
-  const chip=$('urgency-chip');chip.className='urgency-chip '+urgency;
-  setText('urg-icon',icons[urgency]||'🟢');setText('urg-text',urgency);
-  setText('verdict-main',text);
+  $('vc-header').className='vc-header '+urgency;
+  $('urgency-pill').className='urgency-pill';
+  $('urg-dot').className='urg-dot '+urgency;
+  setText('urg-text',urgency);setText('verdict-main',text);
   const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
   const steps=T.steps[urgency]||T.steps.MONITOR;
   setText('step1-text',steps[0]);setText('step2-text',steps[1]);setText('step3-text',steps[2]);
   $('result').style.display='block';
   setTimeout(()=>$('result').scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
-
 async function loadLastVerdict(){
   if(!userAddress)return;
   try{
@@ -509,122 +771,71 @@ async function loadLastVerdict(){
     if(v&&typeof v==='string'&&v.length>5)renderVerdict(v);
   }catch(e){}
 }
-
 $('submitBtn').addEventListener('click',async()=>{
   const symptoms=$('symptomsInput').value.trim();
   const age=$('ageInput').value.trim();
   const gender=$('genderInput').value;
   if(!symptoms||!age||!gender){showStatus('Please fill in age, gender and symptoms.',true);return}
   if(!client){openWalletModal();return}
-  const btn=$('submitBtn');
-  const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
-  btn.disabled=true;btn.textContent='Processing...';
+  const btn=$('submitBtn');const T=TRANSLATIONS[window.currentLang]||TRANSLATIONS.en;
+  btn.disabled=true;$('submit-text').textContent='Processing...';
   $('result').style.display='none';$('loading').style.display='block';
   showStatus('');startTimer();
-  document.getElementById('loading').scrollIntoView({behavior:'smooth',block:'center'});
+  $('loading').scrollIntoView({behavior:'smooth',block:'center'});
   const oldRetry=document.getElementById('retry-btn');if(oldRetry)oldRetry.remove();
   try{
-    setPhase('Sending to GenLayer validators...');
-    await client.writeContract({
-      address:CONTRACT,functionName:'submit_consultation',
-      args:[symptoms,age,gender,$('weightInput').value||'0',$('heightInput').value||'0',$('allergiesInput').value||'',$('preCondInput').value||'',docText],
-      value:BigInt(0)
-    });
-    setPhase('Transaction confirmed — AI jury deliberating...');
-    let verdict='';
-    // Clear old verdict first by checking what was there before
-    let oldVerdict='';
+    setPhase('Transmitting to GenLayer validator network...');
+    await client.writeContract({address:CONTRACT,functionName:'submit_consultation',args:[symptoms,age,gender,$('weightInput').value||'0',$('heightInput').value||'0',$('allergiesInput').value||'',$('preCondInput').value||'',docText],value:BigInt(0)});
+    setPhase('Transaction confirmed — AI jury convening...');
+    let verdict='',oldVerdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    try{
-      const tc0=glMod.createClient({chain:chainsMod.studionet});
-      const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-      oldVerdict=String(v0||'').replace(/^"|"$/g,'');
-    }catch(e){}
-    // Poll until we get a NEW verdict (different from old one)
+    try{const tc0=glMod.createClient({chain:chainsMod.studionet});const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});oldVerdict=String(v0||'').replace(/^"|"$/g,'');}catch(e){}
     for(let i=1;i<=60;i++){
       const waitMs=i<=4?8000:10000;
       await new Promise(r=>setTimeout(r,waitMs));
-      setPhase(`AI jury deliberating — ${Math.round(i*(i<=4?8:10))}s (${i}/60)...`);
+      setPhase(`Validators deliberating — ${Math.round(i*(i<=4?8:10))}s · Round ${i}/60`);
       try{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        // Only accept if it's new AND has content
-        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;
-        verdict='';// reset if same as old
-      }catch(e){console.warn('[Poll]',e.message)}
+        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;verdict='';
+      }catch(e){}
     }
     stopTimer();$('loading').style.display='none';
-    if(!verdict||verdict.length<5)throw new Error('Analysis timed out — please try again.');
+    if(!verdict||verdict.length<5)throw new Error('Consensus timeout — please retry.');
     renderVerdict(verdict);showStatus('');
   }catch(e){
     stopTimer();$('loading').style.display='none';
     showStatus('Error: '+(e.message||String(e)),true);
-    const rb=document.createElement('button');rb.id='retry-btn';rb.className='btn-retry';
-    rb.textContent='↺ Retry';rb.onclick=()=>{rb.remove();$('submitBtn').click()};
-    $('status-msg').after(rb);
+    const rb=document.createElement('button');rb.id='retry-btn';rb.className='btn-retry';rb.textContent='↺ Retry';rb.onclick=()=>{rb.remove();$('submitBtn').click()};$('status-msg').after(rb);
   }
-  btn.disabled=false;btn.textContent=T.submit_btn||'🩺 Get Second Opinion';
+  btn.disabled=false;$('submit-text').textContent=T.submit_text||'Get Second Opinion';
 });
-
-// First visit disclaimer
-(()=>{
-  let shown=false;
-  try{shown=!!sessionStorage.getItem('so_disc')}catch(e){}
-  if(!shown){setTimeout(()=>{$('disc-modal').style.display='flex'},800);try{sessionStorage.setItem('so_disc','1')}catch(e){}}
-})();
-
-// Auto-reconnect
+(()=>{let s=false;try{s=!!sessionStorage.getItem('so_disc')}catch(e){}if(!s){setTimeout(()=>{$('disc-modal').style.display='flex'},900);try{sessionStorage.setItem('so_disc','1')}catch(e){}}})();
 if(window.ethereum){window.ethereum.request({method:'eth_accounts'}).then(a=>{if(a.length>0)onWalletConnected(window.ethereum,a)}).catch(()=>{})}
-
-// Close modals on overlay click
-['wallet-modal','disc-modal'].forEach(id=>{
-  $(id).addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.style.display='none'});
-});
-
-// Translations
-const TRANSLATIONS={
-  en:{connect_btn:'CONNECT WALLET',connected_btn:'CONNECTED',submit_btn:'🩺 Get Second Opinion',loading_title:'AI Jury Deliberating',loading_sub:'GenLayer Consensus in Progress',form_title:'Patient Information',next_title:'Recommended Next Steps',onchain:'Stored permanently on GenLayer Studionet',footer:'Not Medical Advice · GenLayer AI Jury · Studionet',disc_title:'Not Medical Advice',disc_p1:'Second Opinion is an experimental AI tool powered by GenLayer for informational purposes only.',disc_p2:'Nothing here constitutes medical diagnosis or treatment advice. AI consensus verdicts may be incomplete or inaccurate.',disc_p3:'Always consult a licensed physician. In case of emergency contact emergency services immediately.',disc_btn:'I Understand',trans:'HOW THIS WORKS · Multiple independent AI validators on GenLayer analyze your symptoms and reach consensus via Optimistic Democracy. No single AI decides.',lbl_age:'Age',lbl_weight:'Weight (kg)',lbl_height:'Height (cm)',lbl_gender:'Gender',lbl_gender_opt:'Select gender',lbl_allergies:'Allergies',lbl_precond:'Pre-existing Conditions',lbl_symptoms:'Symptoms',lbl_doc:'Medical Document',lbl_upload:'📎 Upload a medical document (.txt)',ph_allergies:'e.g. Penicillin, Pollen (leave blank if none)',ph_precond:'e.g. Diabetes Type 2 (leave blank if none)',ph_symptoms:'Describe your symptoms in detail...',steps:{URGENT:['Seek immediate medical attention or go to the emergency room.','List all symptoms, medications and allergies for the physician.','Do NOT delay — the AI assessment indicates urgent evaluation is needed.'],SOON:['Schedule a doctor appointment within the next 1–3 days.','Write down all symptoms, duration and any changes you have noticed.','This AI opinion does not replace professional medical diagnosis.'],MONITOR:['Monitor your symptoms over the next few days.','If symptoms worsen or new symptoms appear, consult a doctor.','This AI opinion does not replace professional medical diagnosis.']}},
-  de:{connect_btn:'WALLET VERBINDEN',connected_btn:'VERBUNDEN',submit_btn:'🩺 Zweitmeinung anfragen',loading_title:'KI-Jury berät',loading_sub:'GenLayer Konsens läuft',form_title:'Patienteninformationen',next_title:'Empfohlene nächste Schritte',onchain:'Dauerhaft auf GenLayer Studionet gespeichert',footer:'Kein medizinischer Rat · GenLayer KI-Jury · Studionet',disc_title:'Kein Medizinischer Rat',disc_p1:'Second Opinion ist ein experimentelles KI-Tool nur zu Informationszwecken.',disc_p2:'KI-Urteile sind keine medizinische Diagnose oder Behandlungsempfehlung.',disc_p3:'Konsultiere immer einen Arzt. Im Notfall den Notruf anrufen.',disc_btn:'Verstanden',trans:'WIE ES FUNKTIONIERT · Mehrere unabhängige KI-Validatoren auf GenLayer analysieren Symptome und einigen sich per Optimistic Democracy.',lbl_age:'Alter',lbl_weight:'Gewicht (kg)',lbl_height:'Größe (cm)',lbl_gender:'Geschlecht',lbl_gender_opt:'Geschlecht wählen',lbl_allergies:'Allergien',lbl_precond:'Vorerkrankungen',lbl_symptoms:'Symptome',lbl_doc:'Medizinisches Dokument',lbl_upload:'📎 Medizinisches Dokument hochladen (.txt)',ph_allergies:'z.B. Penicillin, Pollen (leer lassen falls keine)',ph_precond:'z.B. Diabetes Typ 2 (leer lassen falls keine)',ph_symptoms:'Beschreibe deine Symptome ausführlich...',steps:{URGENT:['Sofort ärztliche Hilfe suchen oder in die Notaufnahme gehen.','Alle Symptome, Medikamente und Allergien für den Arzt auflisten.','Nicht warten — die KI-Bewertung zeigt dringenden Handlungsbedarf.'],SOON:['Innerhalb von 1–3 Tagen einen Arzttermin vereinbaren.','Alle Symptome, Dauer und Veränderungen aufschreiben.','Diese KI-Meinung ersetzt keine professionelle Diagnose.'],MONITOR:['Symptome in den nächsten Tagen beobachten.','Bei Verschlechterung oder neuen Symptomen zum Arzt gehen.','Diese KI-Meinung ersetzt keine professionelle Diagnose.']}},
-  tr:{connect_btn:'CÜZDAN BAĞLA',connected_btn:'BAĞLANDI',submit_btn:'🩺 İkinci Görüş Al',loading_title:'YZ Jürisi Karar Veriyor',loading_sub:'GenLayer Konsensüs Devam Ediyor',form_title:'Hasta Bilgileri',next_title:'Önerilen Sonraki Adımlar',onchain:"GenLayer Studionet'te kalıcı olarak saklandı",footer:'Tıbbi Tavsiye Değil · GenLayer YZ Jürisi · Studionet',disc_title:'Tıbbi Tavsiye Değildir',disc_p1:'Second Opinion yalnızca bilgilendirme amaçlı deneysel bir YZ aracıdır.',disc_p2:'YZ kararları tıbbi teşhis veya tedavi tavsiyesi değildir.',disc_p3:"Her zaman lisanslı bir doktora danışın. Acil durumlarda 112'yi arayın.",disc_btn:'Anladım',trans:"NASIL ÇALIŞIR · GenLayer'daki bağımsız YZ doğrulayıcıları Optimistic Democracy ile fikir birliğine varır.",lbl_age:'Yaş',lbl_weight:'Ağırlık (kg)',lbl_height:'Boy (cm)',lbl_gender:'Cinsiyet',lbl_gender_opt:'Cinsiyet seçin',lbl_allergies:'Alerjiler',lbl_precond:'Mevcut Hastalıklar',lbl_symptoms:'Belirtiler',lbl_doc:'Tıbbi Belge',lbl_upload:'📎 Tıbbi belge yükle (.txt)',ph_allergies:'Örn. Penisilin, Polen (yoksa boş bırakın)',ph_precond:'Örn. Tip 2 Diyabet (yoksa boş bırakın)',ph_symptoms:'Belirtilerinizi ayrıntılı olarak açıklayın...',steps:{URGENT:["Hemen acil servise gidin veya 112'yi arayın.",'Tüm belirtileri, ilaçları ve alerjileri doktor için listeleyin.','Geciktirmeyin — YZ değerlendirmesi acil müdahale gerektiğini gösteriyor.'],SOON:['1–3 gün içinde doktor randevusu alın.','Tüm semptomları, süresini ve değişimleri not edin.','Bu YZ görüşü profesyonel tıbbi tanının yerini tutmaz.'],MONITOR:['Belirtileri birkaç gün boyunca takip edin.','Belirtiler kötüleşirse doktora gidin.','Bu YZ görüşü profesyonel tıbbi tanının yerini tutmaz.']}},
-  ar:{connect_btn:'ربط المحفظة',connected_btn:'متصل',submit_btn:'🩺 احصل على رأي ثانٍ',loading_title:'هيئة المحلفين تداول',loading_sub:'إجماع GenLayer جارٍ',form_title:'معلومات المريض',next_title:'الخطوات التالية الموصى بها',onchain:'مخزن بشكل دائم على GenLayer Studionet',footer:'ليس نصيحة طبية · هيئة محلفين GenLayer',disc_title:'ليس نصيحة طبية',disc_p1:'Second Opinion أداة ذكاء اصطناعي تجريبية لأغراض معلوماتية فقط.',disc_p2:'أحكام الذكاء الاصطناعي لا تمثل تشخيصاً طبياً.',disc_p3:'استشر دائماً طبيباً مرخصاً. في حالات الطوارئ اتصل بالإسعاف.',disc_btn:'فهمت',trans:'كيف يعمل · يحلل عدة مدققي ذكاء اصطناعي مستقلين أعراضك ويتوصلون إلى إجماع.',lbl_age:'العمر',lbl_weight:'الوزن (كغ)',lbl_height:'الطول (سم)',lbl_gender:'الجنس',lbl_gender_opt:'اختر الجنس',lbl_allergies:'الحساسية',lbl_precond:'الأمراض المزمنة',lbl_symptoms:'الأعراض',lbl_doc:'وثيقة طبية',lbl_upload:'📎 رفع وثيقة طبية (.txt)',ph_allergies:'مثال: بنسلين (اتركه فارغاً إن لم يكن)',ph_precond:'مثال: السكري النوع 2 (اتركه فارغاً إن لم يكن)',ph_symptoms:'صف أعراضك بالتفصيل...',steps:{URGENT:['اطلب الرعاية الطبية الفورية أو اذهب إلى غرفة الطوارئ.','اسرد جميع الأعراض والأدوية للطبيب.','لا تتأخر — يشير تقييم الذكاء الاصطناعي إلى الحاجة لتقييم عاجل.'],SOON:['احجز موعداً مع الطبيب خلال 1–3 أيام.','دوّن جميع الأعراض ومدتها.','هذا الرأي لا يحل محل التشخيص الطبي المهني.'],MONITOR:['راقب الأعراض على مدى الأيام القليلة القادمة.','إذا ساءت الأعراض استشر الطبيب.','هذا الرأي لا يحل محل التشخيص الطبي المهني.']}},
-  es:{connect_btn:'CONECTAR CARTERA',connected_btn:'CONECTADO',submit_btn:'🩺 Obtener Segunda Opinión',loading_title:'El Jurado IA delibera',loading_sub:'Consenso GenLayer en progreso',form_title:'Información del Paciente',next_title:'Próximos Pasos Recomendados',onchain:'Almacenado permanentemente en GenLayer Studionet',footer:'No es consejo médico · Jurado IA GenLayer',disc_title:'No es Consejo Médico',disc_p1:'Second Opinion es una herramienta experimental de IA solo informativa.',disc_p2:'Los veredictos IA no constituyen diagnóstico médico.',disc_p3:'Siempre consulta a un médico licenciado.',disc_btn:'Entendido',trans:'CÓMO FUNCIONA · Múltiples validadores de IA en GenLayer analizan tus síntomas y llegan a consenso.',lbl_age:'Edad',lbl_weight:'Peso (kg)',lbl_height:'Altura (cm)',lbl_gender:'Género',lbl_gender_opt:'Seleccionar género',lbl_allergies:'Alergias',lbl_precond:'Condiciones Preexistentes',lbl_symptoms:'Síntomas',lbl_doc:'Documento Médico',lbl_upload:'📎 Subir documento médico (.txt)',ph_allergies:'Ej. Penicilina, Polen (dejar en blanco si ninguna)',ph_precond:'Ej. Diabetes Tipo 2 (dejar en blanco si ninguna)',ph_symptoms:'Describe tus síntomas en detalle...',steps:{URGENT:['Busca atención médica inmediata.','Lista todos los síntomas y medicamentos para el médico.','No lo demores — la evaluación indica evaluación urgente.'],SOON:['Programa una cita médica en 1–3 días.','Anota todos los síntomas y cambios observados.','Esta opinión no reemplaza el diagnóstico médico profesional.'],MONITOR:['Monitorea tus síntomas durante los próximos días.','Si empeoran consulta a un médico.','Esta opinión no reemplaza el diagnóstico médico profesional.']}},
-  fr:{connect_btn:'CONNECTER PORTEFEUILLE',connected_btn:'CONNECTÉ',submit_btn:'🩺 Obtenir un Second Avis',loading_title:'Le Jury IA délibère',loading_sub:'Consensus GenLayer en cours',form_title:'Informations Patient',next_title:'Prochaines Étapes Recommandées',onchain:'Stocké définitivement sur GenLayer Studionet',footer:'Pas un conseil médical · Jury IA GenLayer',disc_title:'Pas un Conseil Médical',disc_p1:"Second Opinion est un outil IA expérimental à des fins d'information uniquement.",disc_p2:"Les verdicts IA ne constituent pas un diagnostic médical.",disc_p3:"Consultez toujours un médecin agréé.",disc_btn:"J'ai compris",trans:"COMMENT ÇA MARCHE · Plusieurs validateurs IA indépendants analysent vos symptômes et atteignent un consensus.",lbl_age:'Âge',lbl_weight:'Poids (kg)',lbl_height:'Taille (cm)',lbl_gender:'Genre',lbl_gender_opt:'Sélectionner le genre',lbl_allergies:'Allergies',lbl_precond:'Conditions Préexistantes',lbl_symptoms:'Symptômes',lbl_doc:'Document Médical',lbl_upload:'📎 Télécharger un document médical (.txt)',ph_allergies:'Ex. Pénicilline, Pollen (laisser vide si aucune)',ph_precond:'Ex. Diabète Type 2 (laisser vide si aucune)',ph_symptoms:'Décrivez vos symptômes en détail...',steps:{URGENT:["Cherchez une aide médicale immédiate.",'Listez tous les symptômes et médicaments pour le médecin.',"Ne tardez pas — l'évaluation indique une urgence."],SOON:['Prenez rendez-vous chez le médecin sous 1–3 jours.','Notez tous les symptômes.','Cet avis ne remplace pas un diagnostic médical professionnel.'],MONITOR:['Surveillez vos symptômes pendant les prochains jours.',"Si les symptômes s'aggravent consultez un médecin.",'Cet avis ne remplace pas un diagnostic médical professionnel.']}},
-  ru:{connect_btn:'ПОДКЛЮЧИТЬ КОШЕЛЁК',connected_btn:'ПОДКЛЮЧЁН',submit_btn:'🩺 Получить Второе Мнение',loading_title:'Жюри ИИ совещается',loading_sub:'Консенсус GenLayer в процессе',form_title:'Данные Пациента',next_title:'Рекомендуемые Следующие Шаги',onchain:'Навсегда сохранено на GenLayer Studionet',footer:'Не медицинский совет · Жюри ИИ GenLayer',disc_title:'Не Медицинский Совет',disc_p1:'Second Opinion — экспериментальный ИИ-инструмент только в информационных целях.',disc_p2:'Вердикты ИИ не являются медицинским диагнозом.',disc_p3:'Всегда консультируйтесь с врачом.',disc_btn:'Понятно',trans:'КАК ЭТО РАБОТАЕТ · Несколько независимых ИИ-валидаторов анализируют симптомы и достигают консенсуса.',lbl_age:'Возраст',lbl_weight:'Вес (кг)',lbl_height:'Рост (см)',lbl_gender:'Пол',lbl_gender_opt:'Выберите пол',lbl_allergies:'Аллергии',lbl_precond:'Хронические заболевания',lbl_symptoms:'Симптомы',lbl_doc:'Медицинский документ',lbl_upload:'📎 Загрузить медицинский документ (.txt)',ph_allergies:'Напр. Пенициллин (оставьте пустым если нет)',ph_precond:'Напр. Сахарный диабет 2 типа (оставьте пустым если нет)',ph_symptoms:'Опишите ваши симптомы подробно...',steps:{URGENT:['Немедленно обратитесь в скорую помощь.','Перечислите все симптомы и лекарства для врача.','Не откладывайте — оценка ИИ указывает на срочность.'],SOON:['Запишитесь к врачу в течение 1–3 дней.','Запишите все симптомы и изменения.','Это мнение не заменяет профессиональный диагноз.'],MONITOR:['Следите за симптомами в ближайшие дни.','Если симптомы ухудшатся, обратитесь к врачу.','Это мнение не заменяет профессиональный диагноз.']}},
-  zh:{connect_btn:'连接钱包',connected_btn:'已连接',submit_btn:'🩺 获取第二意见',loading_title:'AI陪审团审议中',loading_sub:'GenLayer共识进行中',form_title:'患者信息',next_title:'建议的后续步骤',onchain:'永久存储在GenLayer Studionet上',footer:'非医疗建议 · GenLayer AI陪审团',disc_title:'非医疗建议',disc_p1:'Second Opinion是一款仅供参考的实验性AI工具。',disc_p2:'AI裁决不构成医疗诊断或治疗建议。',disc_p3:'请始终咨询执照医生。',disc_btn:'我明白了',trans:'工作原理 · 多个独立AI验证者分析症状并通过乐观民主机制达成共识。',lbl_age:'年龄',lbl_weight:'体重 (公斤)',lbl_height:'身高 (厘米)',lbl_gender:'性别',lbl_gender_opt:'选择性别',lbl_allergies:'过敏史',lbl_precond:'既往病史',lbl_symptoms:'症状',lbl_doc:'医疗文件',lbl_upload:'📎 上传医疗文件 (.txt)',ph_allergies:'例如：青霉素（无则留空）',ph_precond:'例如：2型糖尿病（无则留空）',ph_symptoms:'请详细描述您的症状...',steps:{URGENT:['立即寻求医疗救助或前往急诊室。','为医生列出所有症状和药物。','请勿拖延——AI评估显示需要紧急评估。'],SOON:['在未来1–3天内预约医生。','记下所有症状和变化。','此AI意见不能替代专业医疗诊断。'],MONITOR:['在接下来几天内监测症状。','如果症状加重请咨询医生。','此AI意见不能替代专业医疗诊断。']}}
-};
-
+['wallet-modal','disc-modal'].forEach(id=>{$(id).addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.style.display='none'})});
+const TRANSLATIONS={en:{connect_btn:'Connect Wallet',connected_btn:'Connected ✓',submit_text:'Get Second Opinion',loading_title:'AI Jury Deliberating',loading_sub:'GenLayer Consensus in Progress',form_title:'Patient Information',next_title:'Recommended Next Steps',onchain:'Stored permanently on GenLayer Studionet · Optimistic Democracy',disc_title:'Not Medical Advice',disc_p1:'Second Opinion is an experimental AI tool for informational purposes only.',disc_p2:'AI verdicts do not constitute medical diagnosis or treatment advice.',disc_p3:'Always consult a licensed physician. In emergency contact emergency services.',disc_btn:'I Understand',trans:'HOW THIS WORKS · Multiple independent AI validators analyze your symptoms and reach consensus via Optimistic Democracy. Results stored on-chain.',lbl_age:'Age',lbl_weight:'Weight (kg)',lbl_height:'Height (cm)',lbl_gender:'Gender',lbl_gender_opt:'Select gender',lbl_allergies:'Allergies',lbl_precond:'Pre-existing Conditions',lbl_symptoms:'Symptoms',lbl_doc:'Medical Document',lbl_upload:'Upload a medical document (.txt)',ph_allergies:'e.g. Penicillin, Pollen (leave blank if none)',ph_precond:'e.g. Diabetes Type 2 (leave blank if none)',ph_symptoms:'Describe your symptoms in detail...',steps:{URGENT:['Seek immediate medical attention or go to the emergency room.','List all symptoms, medications and allergies for the physician.','Do NOT delay — the AI assessment indicates urgent evaluation needed.'],SOON:['Schedule a doctor appointment within the next 1–3 days.','Write down all symptoms, duration and changes you noticed.','This AI opinion does not replace professional medical diagnosis.'],MONITOR:['Monitor your symptoms over the next few days.','If symptoms worsen or new ones appear, consult a doctor.','This AI opinion does not replace professional medical diagnosis.']}},de:{connect_btn:'Wallet verbinden',connected_btn:'Verbunden ✓',submit_text:'Zweitmeinung anfragen',loading_title:'KI-Jury berät',loading_sub:'GenLayer Konsens läuft',form_title:'Patienteninformationen',next_title:'Empfohlene nächste Schritte',onchain:'Dauerhaft auf GenLayer Studionet gespeichert · Optimistic Democracy',disc_title:'Kein Medizinischer Rat',disc_p1:'Second Opinion ist ein experimentelles KI-Tool zu Informationszwecken.',disc_p2:'KI-Urteile sind keine medizinische Diagnose.',disc_p3:'Konsultiere immer einen Arzt.',disc_btn:'Verstanden',trans:'WIE ES FUNKTIONIERT · Mehrere KI-Validatoren analysieren Symptome und einigen sich per Optimistic Democracy.',lbl_age:'Alter',lbl_weight:'Gewicht (kg)',lbl_height:'Größe (cm)',lbl_gender:'Geschlecht',lbl_gender_opt:'Geschlecht wählen',lbl_allergies:'Allergien',lbl_precond:'Vorerkrankungen',lbl_symptoms:'Symptome',lbl_doc:'Medizinisches Dokument',lbl_upload:'Medizinisches Dokument hochladen (.txt)',ph_allergies:'z.B. Penicillin, Pollen (leer lassen falls keine)',ph_precond:'z.B. Diabetes Typ 2 (leer lassen falls keine)',ph_symptoms:'Beschreibe deine Symptome ausführlich...',steps:{URGENT:['Sofort ärztliche Hilfe suchen.','Alle Symptome und Medikamente auflisten.','Nicht warten.'],SOON:['Innerhalb 1–3 Tagen Arzttermin vereinbaren.','Symptome aufschreiben.','Diese KI-Meinung ersetzt keine professionelle Diagnose.'],MONITOR:['Symptome beobachten.','Bei Verschlechterung zum Arzt.','Diese KI-Meinung ersetzt keine professionelle Diagnose.']}},tr:{connect_btn:'Cüzdan bağla',connected_btn:'Bağlandı ✓',submit_text:'İkinci görüş al',loading_title:'YZ Jürisi karar veriyor',loading_sub:'GenLayer konsensüs devam ediyor',form_title:'Hasta bilgileri',next_title:'Önerilen adımlar',onchain:"GenLayer Studionet'te kalıcı olarak saklandı",disc_title:'Tıbbi Tavsiye Değil',disc_p1:'Second Opinion bilgilendirme amaçlı deneysel YZ aracıdır.',disc_p2:'YZ kararları tıbbi teşhis değildir.',disc_p3:'Daima bir doktora danışın.',disc_btn:'Anladım',trans:'NASIL ÇALIŞIR · Bağımsız YZ doğrulayıcıları Optimistic Democracy ile fikir birliğine varır.',lbl_age:'Yaş',lbl_weight:'Ağırlık (kg)',lbl_height:'Boy (cm)',lbl_gender:'Cinsiyet',lbl_gender_opt:'Cinsiyet seçin',lbl_allergies:'Alerjiler',lbl_precond:'Mevcut hastalıklar',lbl_symptoms:'Belirtiler',lbl_doc:'Tıbbi belge',lbl_upload:'Tıbbi belge yükle (.txt)',ph_allergies:'Örn. Penisilin (yoksa boş)',ph_precond:'Örn. Tip 2 Diyabet (yoksa boş)',ph_symptoms:'Belirtilerinizi açıklayın...',steps:{URGENT:['Hemen acile gidin.','Belirtileri listeleyin.','Geciktirmeyin.'],SOON:['1–3 gün içinde randevu alın.','Belirtileri not edin.','YZ görüşü tanının yerini tutmaz.'],MONITOR:['Belirtileri takip edin.','Kötüleşirse doktora gidin.','YZ görüşü tanının yerini tutmaz.']}},ar:{connect_btn:'ربط المحفظة',connected_btn:'متصل ✓',submit_text:'احصل على رأي ثانٍ',loading_title:'هيئة المحلفين تداول',loading_sub:'إجماع GenLayer جارٍ',form_title:'معلومات المريض',next_title:'الخطوات التالية',onchain:'مخزن على GenLayer Studionet',disc_title:'ليس نصيحة طبية',disc_p1:'Second Opinion أداة ذكاء اصطناعي تجريبية للمعلومات فقط.',disc_p2:'أحكام الذكاء الاصطناعي ليست تشخيصاً طبياً.',disc_p3:'استشر دائماً طبيباً مرخصاً.',disc_btn:'فهمت',trans:'كيف يعمل · عدة مدققي ذكاء اصطناعي يحللون أعراضك ويتوصلون إلى إجماع.',lbl_age:'العمر',lbl_weight:'الوزن',lbl_height:'الطول',lbl_gender:'الجنس',lbl_gender_opt:'اختر الجنس',lbl_allergies:'الحساسية',lbl_precond:'الأمراض المزمنة',lbl_symptoms:'الأعراض',lbl_doc:'وثيقة طبية',lbl_upload:'رفع وثيقة (.txt)',ph_allergies:'مثال: بنسلين (اتركه فارغاً)',ph_precond:'مثال: السكري (اتركه فارغاً)',ph_symptoms:'صف أعراضك...',steps:{URGENT:['اطلب رعاية طبية فورية.','اسرد الأعراض للطبيب.','لا تتأخر.'],SOON:['احجز موعداً خلال 1–3 أيام.','دوّن الأعراض.','الرأي لا يحل محل التشخيص.'],MONITOR:['راقب الأعراض.','إذا ساءت استشر طبيباً.','الرأي لا يحل محل التشخيص.']}},es:{connect_btn:'Conectar cartera',connected_btn:'Conectado ✓',submit_text:'Obtener segunda opinión',loading_title:'El Jurado IA delibera',loading_sub:'Consenso GenLayer en progreso',form_title:'Información del paciente',next_title:'Próximos pasos',onchain:'Almacenado en GenLayer Studionet',disc_title:'No es Consejo Médico',disc_p1:'Second Opinion es una herramienta IA experimental informativa.',disc_p2:'Los veredictos no son diagnóstico médico.',disc_p3:'Siempre consulta a un médico.',disc_btn:'Entendido',trans:'CÓMO FUNCIONA · Múltiples validadores IA analizan síntomas y llegan a consenso.',lbl_age:'Edad',lbl_weight:'Peso (kg)',lbl_height:'Altura (cm)',lbl_gender:'Género',lbl_gender_opt:'Seleccionar',lbl_allergies:'Alergias',lbl_precond:'Condiciones preexistentes',lbl_symptoms:'Síntomas',lbl_doc:'Documento médico',lbl_upload:'Subir documento (.txt)',ph_allergies:'Ej. Penicilina (vacío si ninguna)',ph_precond:'Ej. Diabetes Tipo 2 (vacío si ninguna)',ph_symptoms:'Describe tus síntomas...',steps:{URGENT:['Busca atención inmediata.','Lista síntomas y medicamentos.','No lo demores.'],SOON:['Cita médica en 1–3 días.','Anota síntomas.','No reemplaza diagnóstico.'],MONITOR:['Monitorea síntomas.','Si empeoran consulta médico.','No reemplaza diagnóstico.']}},fr:{connect_btn:'Connecter portefeuille',connected_btn:'Connecté ✓',submit_text:'Obtenir un second avis',loading_title:'Le Jury IA délibère',loading_sub:'Consensus GenLayer en cours',form_title:'Informations patient',next_title:'Prochaines étapes',onchain:'Stocké sur GenLayer Studionet',disc_title:'Pas un Conseil Médical',disc_p1:"Second Opinion est un outil IA expérimental informatif.",disc_p2:"Les verdicts ne constituent pas un diagnostic médical.",disc_p3:"Consultez toujours un médecin.",disc_btn:"J'ai compris",trans:"COMMENT ÇA MARCHE · Plusieurs validateurs IA analysent vos symptômes et atteignent un consensus.",lbl_age:'Âge',lbl_weight:'Poids (kg)',lbl_height:'Taille (cm)',lbl_gender:'Genre',lbl_gender_opt:'Sélectionner',lbl_allergies:'Allergies',lbl_precond:'Conditions préexistantes',lbl_symptoms:'Symptômes',lbl_doc:'Document médical',lbl_upload:'Télécharger (.txt)',ph_allergies:'Ex. Pénicilline (vide si aucune)',ph_precond:'Ex. Diabète Type 2 (vide si aucun)',ph_symptoms:'Décrivez vos symptômes...',steps:{URGENT:["Cherchez aide médicale immédiate.","Listez symptômes et médicaments.","Ne tardez pas."],SOON:['Rendez-vous sous 1–3 jours.','Notez les symptômes.','Ne remplace pas un diagnostic.'],MONITOR:['Surveillez les symptômes.',"Si aggravation consultez médecin.",'Ne remplace pas un diagnostic.']}},ru:{connect_btn:'Подключить кошелёк',connected_btn:'Подключён ✓',submit_text:'Получить второе мнение',loading_title:'Жюри ИИ совещается',loading_sub:'Консенсус GenLayer в процессе',form_title:'Данные пациента',next_title:'Следующие шаги',onchain:'Сохранено на GenLayer Studionet',disc_title:'Не Медицинский Совет',disc_p1:'Second Opinion — информационный инструмент.',disc_p2:'Вердикты не являются медицинским диагнозом.',disc_p3:'Всегда консультируйтесь с врачом.',disc_btn:'Понятно',trans:'КАК РАБОТАЕТ · ИИ-валидаторы анализируют симптомы и достигают консенсуса.',lbl_age:'Возраст',lbl_weight:'Вес (кг)',lbl_height:'Рост (см)',lbl_gender:'Пол',lbl_gender_opt:'Выберите пол',lbl_allergies:'Аллергии',lbl_precond:'Хронические заболевания',lbl_symptoms:'Симптомы',lbl_doc:'Медицинский документ',lbl_upload:'Загрузить (.txt)',ph_allergies:'Напр. Пенициллин (пусто если нет)',ph_precond:'Напр. Диабет 2 типа (пусто если нет)',ph_symptoms:'Опишите симптомы...',steps:{URGENT:['Немедленно обратитесь в скорую.','Перечислите симптомы.','Не откладывайте.'],SOON:['Запишитесь к врачу за 1–3 дня.','Запишите симптомы.','Не заменяет диагноз.'],MONITOR:['Следите за симптомами.','При ухудшении к врачу.','Не заменяет диагноз.']}},zh:{connect_btn:'连接钱包',connected_btn:'已连接 ✓',submit_text:'获取第二意见',loading_title:'AI陪审团审议中',loading_sub:'GenLayer共识进行中',form_title:'患者信息',next_title:'建议步骤',onchain:'存储在GenLayer Studionet',disc_title:'非医疗建议',disc_p1:'Second Opinion是仅供参考的AI工具。',disc_p2:'AI裁决不构成医疗诊断。',disc_p3:'请始终咨询执照医生。',disc_btn:'我明白了',trans:'工作原理 · 多个独立AI验证者分析症状并达成共识。',lbl_age:'年龄',lbl_weight:'体重(公斤)',lbl_height:'身高(厘米)',lbl_gender:'性别',lbl_gender_opt:'选择性别',lbl_allergies:'过敏史',lbl_precond:'既往病史',lbl_symptoms:'症状',lbl_doc:'医疗文件',lbl_upload:'上传文件(.txt)',ph_allergies:'例：青霉素（无则留空）',ph_precond:'例：2型糖尿病（无则留空）',ph_symptoms:'请详细描述症状...',steps:{URGENT:['立即就医。','列出症状和药物。','请勿拖延。'],SOON:['1–3天内预约医生。','记录症状。','不替代专业诊断。'],MONITOR:['监测症状。','如恶化请就医。','不替代专业诊断。']}}};
 function applyLang(lang){
-  const t=TRANSLATIONS[lang]||TRANSLATIONS.en;
-  window.currentLang=lang;
+  const t=TRANSLATIONS[lang]||TRANSLATIONS.en;window.currentLang=lang;
   document.body.style.direction=(lang==='ar')?'rtl':'ltr';
-  document.querySelectorAll('.lang-btn').forEach(b=>{
-    const isActive=b.dataset.lang===lang;
-    b.classList.toggle('active',isActive);
-    b.setAttribute('aria-pressed',isActive?'true':'false');
-  });
-  const wb=$('wallet-btn');
-  if(wb)wb.textContent=wb.classList.contains('connected')?t.connected_btn:t.connect_btn;
-  const sb=$('submitBtn');if(sb&&!sb.disabled)sb.textContent=t.submit_btn;
+  document.querySelectorAll('.lang-btn').forEach(b=>{const a=b.dataset.lang===lang;b.classList.toggle('active',a);b.setAttribute('aria-pressed',a?'true':'false');});
+  const wb=$('wallet-btn');if(wb)wb.textContent=wb.classList.contains('connected')?t.connected_btn:t.connect_btn;
+  const st=$('submit-text');if(st)st.textContent=t.submit_text;
   setText('loading-title',t.loading_title);setText('loading-sub',t.loading_sub);
   setText('form-title',t.form_title);setText('next-title',t.next_title);
-  setText('onchain-label',t.onchain);setText('footer-text',t.footer);
+  setText('onchain-label',t.onchain);
   setText('disc-title',t.disc_title);setText('disc-p1',t.disc_p1);setText('disc-p2',t.disc_p2);setText('disc-p3',t.disc_p3);setText('disc-btn',t.disc_btn);
   setText('trans-text',t.trans);
   setText('lbl-age',t.lbl_age);setText('lbl-weight',t.lbl_weight);setText('lbl-height',t.lbl_height);
-  setText('lbl-gender',t.lbl_gender);setText('lbl-allergies',t.lbl_allergies);
-  setText('lbl-precond',t.lbl_precond);setText('lbl-symptoms',t.lbl_symptoms);
-  setText('lbl-upload',t.lbl_upload);
+  setText('lbl-gender',t.lbl_gender);setText('lbl-allergies',t.lbl_allergies);setText('lbl-precond',t.lbl_precond);
+  setText('lbl-symptoms',t.lbl_symptoms);setText('lbl-upload',t.lbl_upload);
   const gopt=$('opt-gender');if(gopt)gopt.textContent=t.lbl_gender_opt;
   const ai=$('allergiesInput');if(ai)ai.placeholder=t.ph_allergies;
   const pi=$('preCondInput');if(pi)pi.placeholder=t.ph_precond;
   const si=$('symptomsInput');if(si)si.placeholder=t.ph_symptoms;
 }
-
-document.querySelectorAll('.lang-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>applyLang(btn.dataset.lang));
-});
+document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>applyLang(btn.dataset.lang)));
 </script>
 </body>
 </html>
