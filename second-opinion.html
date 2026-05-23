@@ -701,15 +701,16 @@ $('submitBtn').addEventListener('click',async()=>{
     setPhase('Transmitting to GenLayer validator network...');
     const txHash=await client.writeContract({address:CONTRACT,functionName:'submit_consultation',args:[symptoms,age,gender,$('weightInput').value||'0',$('heightInput').value||'0',$('allergiesInput').value||'',$('preCondInput').value||'',docText],value:BigInt(0)});
     lastTxHash=txHash;
+    console.log('[TX Hash]',txHash);
     setPhase('Transaction confirmed — AI jury convening...');
     let verdict='',oldVerdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
     try{const tc0=glMod.createClient({chain:chainsMod.studionet});const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});oldVerdict=String(v0||'').replace(/^"|"$/g,'');}catch(e){}
-    for(let i=1;i<=60;i++){
+    for(let i=1;i<=90;i++){
       const waitMs=i<=4?8000:10000;
       await new Promise(r=>setTimeout(r,waitMs));
-      setPhase(`Validators deliberating — ${Math.round(i*(i<=4?8:10))}s · Round ${i}/60`);
+      setPhase(`Validators deliberating — ${Math.round(i*(i<=4?8:10))}s · Round ${i}/90`);
       try{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
