@@ -703,20 +703,20 @@ $('submitBtn').addEventListener('click',async()=>{
     lastTxHash=txHash;
     console.log('[TX Hash]',txHash);
     setPhase('Transaction confirmed — AI jury convening...');
-    let verdict='',oldVerdict='';
+    let verdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    try{const tc0=glMod.createClient({chain:chainsMod.studionet});const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});oldVerdict=String(v0||'').replace(/^"|"$/g,'');}catch(e){}
-    for(let i=1;i<=90;i++){
-      const waitMs=i<=4?8000:10000;
-      await new Promise(r=>setTimeout(r,waitMs));
-      setPhase(`Validators deliberating — ${Math.round(i*(i<=4?8:10))}s · Round ${i}/90`);
+    // Wait 2 min then poll every 10s for up to 10 min
+    await new Promise(r=>setTimeout(r,120000));
+    for(let i=1;i<=60;i++){
+      setPhase(`Reading verdict... attempt ${i}/60`);
       try{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;verdict='';
+        if(verdict&&verdict.length>10)break;
       }catch(e){}
+      await new Promise(r=>setTimeout(r,10000));
     }
     stopTimer();$('loading').style.display='none';
     if(!verdict||verdict.length<5)throw new Error('Consensus timeout — please retry.');
