@@ -463,44 +463,53 @@ function setPhase(m){setText('loading-phase',m)}
 $('fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('fileName').textContent='✓ '+f.name;docText=await f.text();});
 
 // ═══ VALIDATOR DISPLAY ═══
-function modelShortName(fullName){
-  if(!fullName)return'Unknown';
-  const n=fullName.toLowerCase();
-  if(n.includes('claude'))return'Claude Sonnet';
+function modelShortName(m){
+  if(!m)return'Unknown';
+  const n=m.toLowerCase();
+  // Extract after last slash if provider/model format
+  const short=m.includes('/')?m.split('/').pop():m;
+  if(n.includes('claude'))return'Claude Sonnet 4.6';
   if(n.includes('gpt-5')&&n.includes('mini'))return'GPT-5 Mini';
   if(n.includes('gpt-5'))return'GPT-5';
   if(n.includes('gpt'))return'GPT';
+  if(n.includes('qwen3.6-max'))return'Qwen3.6 Max';
+  if(n.includes('qwen3.6-plus'))return'Qwen3.6 Plus';
   if(n.includes('qwen3')&&n.includes('235'))return'Qwen3-235B';
   if(n.includes('qwen'))return'Qwen';
-  if(n.includes('nemotron')||n.includes('llama-3.1-nemotron'))return'Nemotron-253B';
+  if(n.includes('nemotron'))return'Nemotron-253B';
+  if(n.includes('llama-3.1'))return'Llama 3.1';
   if(n.includes('llama'))return'Llama';
-  if(n.includes('glm'))return'GLM-5';
+  if(n.includes('glm'))return'GLM';
   if(n.includes('gemini'))return'Gemini';
   if(n.includes('mistral'))return'Mistral';
-  return fullName.split('/').pop()||fullName;
+  if(n.includes('grok'))return'Grok';
+  if(n.includes('minimax'))return'MiniMax M2';
+  return short||m;
 }
-function providerName(fullName){
-  const n=(fullName||'').toLowerCase();
-  if(n.includes('claude')||n.includes('anthropic'))return'Anthropic';
-  if(n.includes('gpt')||n.includes('openai'))return'OpenAI';
-  if(n.includes('qwen')||n.includes('alibaba'))return'Alibaba';
-  if(n.includes('nemotron')||n.includes('nvidia'))return'NVIDIA';
+function providerName(m){
+  const n=(m||'').toLowerCase();
+  if(n.includes('anthropic')||n.includes('claude'))return'Anthropic';
+  if(n.includes('openai')||n.includes('gpt'))return'OpenAI';
+  if(n.includes('qwen'))return'Alibaba';
+  if(n.includes('nvidia')||n.includes('nemotron'))return'NVIDIA';
   if(n.includes('glm')||n.includes('zhipu'))return'Zhipu AI';
-  if(n.includes('gemini')||n.includes('google'))return'Google';
+  if(n.includes('google')||n.includes('gemini'))return'Google';
   if(n.includes('mistral'))return'Mistral AI';
-  if(n.includes('llama')||n.includes('meta'))return'Meta';
-  if(n.includes('ionet'))return'io.net';
-  if(n.includes('openrouter'))return'OpenRouter';
-  return'';
+  if(n.includes('meta')||n.includes('llama'))return'Meta';
+  if(n.includes('x-ai')||n.includes('grok'))return'xAI';
+  if(n.includes('minimax'))return'MiniMax';
+  return'OpenRouter';
 }
-function modelIcon(name){
-  const n=(name||'').toLowerCase();
+function modelIcon(m){
+  const n=(m||'').toLowerCase();
   if(n.includes('claude'))return'🤖';
   if(n.includes('gpt'))return'🧠';
   if(n.includes('qwen'))return'⚡';
   if(n.includes('nemotron')||n.includes('llama'))return'🔬';
   if(n.includes('glm'))return'🌐';
   if(n.includes('gemini'))return'💎';
+  if(n.includes('grok'))return'🌀';
+  if(n.includes('minimax'))return'🎯';
   return'🤖';
 }
 
@@ -518,23 +527,14 @@ async function fetchValidators(txHash){
     });
     const data=await res.json();
     const tx=data?.result;
-    // Try different possible structures
-    const validators=tx?.consensus_data?.validators||tx?.validatorSet||tx?.consensus?.validators||tx?.validators||[];
+    const validators=tx?.consensus_data?.validators||[];
     if(validators.length===0){
-      // Try receipt
-      const res2=await fetch(STUDIO_RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:2,method:'eth_getTransactionReceipt',params:[txHash]})});
-      const data2=await res2.json();
-      const tx2=data2?.result;
-      const v2=tx2?.consensus_data?.validators||tx2?.validatorSet||tx2?.validators||[];
-      if(v2.length>0){renderValidators(v2,vb);return;}
-      // Show raw for debugging
-      const allKeys=Object.keys(tx||{}).join(', ');
-      vb.innerHTML=`<span class="vrc-loading">Validator data format: ${allKeys||'unavailable'}</span>`;
+      vb.innerHTML='<span class="vrc-loading">No validator data available</span>';
       return;
     }
     renderValidators(validators,vb);
   }catch(e){
-    vb.innerHTML=`<span class="vrc-loading">Could not load validator data</span>`;
+    vb.innerHTML='<span class="vrc-loading">Could not load validator data</span>';
   }
 }
 
@@ -545,13 +545,15 @@ function renderValidators(validators,container){
   }
   container.innerHTML='';
   validators.forEach(v=>{
-    const model=v.model||v.llm||v.llm_config?.model||v.ai_model||'';
-    const vote=(v.vote||v.decision||v.result||'').toLowerCase();
-    const isAgree=vote.includes('agree')||vote.includes('accept')||vote==='true'||vote==='1';
-    const isDisagree=vote.includes('disagree')||vote==='false'||vote==='0';
-    const isError=vote.includes('error')||vote.includes('fail');
+    // Correct path: node_config.primary_model.model
+    const model=v.node_config?.primary_model?.model||v.node_config?.model||v.model||'';
+    const vote=(v.vote||'').toLowerCase();
+    const execResult=(v.execution_result||'').toLowerCase();
+    const isAgree=vote==='agree';
+    const isError=vote==='error'||execResult==='error'||execResult.includes('fail');
+    const isIdle=vote==='idle';
     const statusClass=isError?'error':isAgree?'agree':'disagree';
-    const voteLabel=isError?'ERROR':isAgree?'AGREE':'DISAGREE';
+    const voteLabel=isError?'ERROR':isIdle?'IDLE':isAgree?'AGREE':'DISAGREE';
     const row=document.createElement('div');
     row.className='validator-row';
     row.innerHTML=`
