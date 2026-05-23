@@ -703,10 +703,17 @@ $('submitBtn').addEventListener('click',async()=>{
     lastTxHash=txHash;
     console.log('[TX Hash]',txHash);
     setPhase('Transaction confirmed — AI jury convening...');
-    let verdict='';
+    let verdict='',oldVerdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    // Wait 2 min then poll every 10s for up to 10 min
+    // Read current verdict BEFORE waiting — this is what we need to beat
+    try{
+      const tc0=glMod.createClient({chain:chainsMod.studionet});
+      const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
+      oldVerdict=String(v0||'').replace(/^"|"$/g,'');
+      console.log('[oldVerdict]',oldVerdict.slice(0,80));
+    }catch(e){console.warn('[oldVerdict error]',e.message)}
+    // Wait 2 minutes then poll every 10s
     await new Promise(r=>setTimeout(r,120000));
     for(let i=1;i<=60;i++){
       setPhase(`Reading verdict... attempt ${i}/60`);
@@ -714,8 +721,10 @@ $('submitBtn').addEventListener('click',async()=>{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        if(verdict&&verdict.length>10)break;
-      }catch(e){}
+        console.log(`[poll ${i}] length=${verdict.length} different=${verdict!==oldVerdict}`);
+        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;
+        verdict='';
+      }catch(e){console.warn('[poll error]',e.message)}
       await new Promise(r=>setTimeout(r,10000));
     }
     stopTimer();$('loading').style.display='none';
