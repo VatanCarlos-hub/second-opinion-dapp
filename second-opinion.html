@@ -703,29 +703,20 @@ $('submitBtn').addEventListener('click',async()=>{
     lastTxHash=txHash;
     console.log('[TX Hash]',txHash);
     setPhase('Transaction confirmed — AI jury convening...');
-    let verdict='',oldVerdict='';
+    let verdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    // Read current verdict BEFORE waiting — this is what we need to beat
-    try{
-      const tc0=glMod.createClient({chain:chainsMod.studionet});
-      const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-      oldVerdict=String(v0||'').replace(/^"|"$/g,'');
-      console.log('[oldVerdict]',oldVerdict.slice(0,80));
-    }catch(e){console.warn('[oldVerdict error]',e.message)}
-    // Wait 2 minutes then poll every 10s
-    await new Promise(r=>setTimeout(r,120000));
+    // Poll every 15s for up to 15 minutes
     for(let i=1;i<=60;i++){
-      setPhase(`Reading verdict... attempt ${i}/60`);
+      await new Promise(r=>setTimeout(r,15000));
+      const mins=Math.floor(i*15/60);const secs=(i*15)%60;
+      setPhase(`Validators deliberating — ${mins}m ${secs}s · attempt ${i}/60`);
       try{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        console.log(`[poll ${i}] length=${verdict.length} different=${verdict!==oldVerdict}`);
-        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;
-        verdict='';
-      }catch(e){console.warn('[poll error]',e.message)}
-      await new Promise(r=>setTimeout(r,10000));
+        if(verdict&&verdict.length>10)break;
+      }catch(e){}
     }
     stopTimer();$('loading').style.display='none';
     if(!verdict||verdict.length<5)throw new Error('Consensus timeout — please retry.');
