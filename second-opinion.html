@@ -526,11 +526,10 @@ $('submitBtn').addEventListener('click',async()=>{
       const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
       oldVerdict=String(v0||'').replace(/^"|"$/g,'');
     }catch(e){}
-    // Wait 2 minutes minimum then poll
-    await new Promise(r=>setTimeout(r,120000));
-    for(let i=1;i<=60;i++){
+    // Poll immediately every 10s
+    for(let i=1;i<=90;i++){
       await new Promise(r=>setTimeout(r,10000));
-      txt('l-phase',`Validators deliberating — ${Math.floor((Date.now()-submitTime)/1000)}s · attempt ${i}/60`);
+      txt('l-phase',`Validators deliberating — ${Math.floor((Date.now()-submitTime)/1000)}s · attempt ${i}/90`);
       try{
         const tc=g.createClient({chain:c.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
