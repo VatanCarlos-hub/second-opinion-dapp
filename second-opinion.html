@@ -514,6 +514,9 @@ $('submitBtn').addEventListener('click',async()=>{
       value:BigInt(0)
     });
     lastTxHash=txHash;
+    console.log('[TX Hash]', txHash);
+    txt('l-phase','TX: '+(txHash?txHash.slice(0,20)+'...':'undefined'));
+    await new Promise(r=>setTimeout(r,3000));
     txt('l-phase','Transaction confirmed — AI jury deliberating...');
     let verdict='';
     const submitTime=Date.now();
