@@ -659,7 +659,7 @@ async function onWalletConnected(provider,accounts){
     try{await provider.request({method:'wallet_addEthereumChain',params:[{chainId:hex,chainName:'GenLayer Studio',rpcUrls:[STUDIO_RPC],nativeCurrency:{name:'GEN',symbol:'GEN',decimals:18}}]})}catch(e){}
     try{await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:hex}]})}catch(e){}
   }catch(e){console.warn(e)}
-  loadLastVerdict();
+  // loadLastVerdict(); // disabled - only show after new submit
 }
 async function connectInjected(info){try{const p=info?info.provider:window.ethereum;if(!p)throw new Error('No wallet');const a=await p.request({method:'eth_requestAccounts'});await onWalletConnected(p,a)}catch(e){showStatus('Connection failed: '+(e.message||e),true)}}
 async function connectWalletConnect(){try{const{EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2');const wcp=await EthereumProvider.init({projectId:WC_PROJECT_ID,chains:[61166],showQrModal:true,metadata:{name:'Second Opinion',description:'AI Medical Consensus',url:window.location.origin,icons:[]}});await wcp.connect();await onWalletConnected(wcp,wcp.accounts);}catch(e){showStatus('WalletConnect: '+(e.message||'Failed'),true)}}
