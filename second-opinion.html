@@ -675,14 +675,7 @@ function openWalletModal(){
 $('wallet-btn').addEventListener('click',()=>{if(!userAddress)openWalletModal()});
 
 async function loadLastVerdict(){
-  if(!userAddress)return;
-  try{
-    const glMod=await import('https://esm.sh/genlayer-js@latest');
-    const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    const tc=glMod.createClient({chain:chainsMod.studionet});
-    const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-    if(v&&typeof v==='string'&&v.length>5)renderVerdict(v);
-  }catch(e){}
+  // Disabled - only show verdict after new submit
 }
 
 $('submitBtn').addEventListener('click',async()=>{
