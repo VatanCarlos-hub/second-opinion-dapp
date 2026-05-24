@@ -702,29 +702,20 @@ $('submitBtn').addEventListener('click',async()=>{
     const txHash=await client.writeContract({address:CONTRACT,functionName:'submit_consultation',args:[symptoms,age,gender,$('weightInput').value||'0',$('heightInput').value||'0',$('allergiesInput').value||'',$('preCondInput').value||'',docText],value:BigInt(0)});
     lastTxHash=txHash;
     console.log('[TX Hash]',txHash);
-    setPhase('Transaction confirmed — AI jury convening...');
-    let verdict='',oldVerdict='';
+    setPhase('Validators reaching consensus... (~2 minutes)');
+    let verdict='';
     const glMod=await import('https://esm.sh/genlayer-js@latest');
     const chainsMod=await import('https://esm.sh/genlayer-js@latest/chains');
-    // Save old verdict BEFORE waiting
-    try{
-      const tc0=glMod.createClient({chain:chainsMod.studionet});
-      const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-      oldVerdict=String(v0||'').replace(/^"|"$/g,'');
-    }catch(e){}
-    // Wait 130 seconds then poll
-    setPhase('Validators reaching consensus... (~2 minutes)');
-    await new Promise(r=>setTimeout(r,130000));
-    for(let i=1;i<=60;i++){
-      setPhase(`Validators deliberating — ${i*10}s · attempt ${i}/60`);
+    // Poll every 10s for up to 15 minutes - wallet address ensures we get OUR verdict
+    for(let i=1;i<=90;i++){
+      await new Promise(r=>setTimeout(r,10000));
+      setPhase(`Validators deliberating — ${i*10}s · attempt ${i}/90`);
       try{
         const tc=glMod.createClient({chain:chainsMod.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;
-        verdict='';
+        if(verdict&&verdict.length>10)break;
       }catch(e){}
-      await new Promise(r=>setTimeout(r,10000));
     }
     stopTimer();$('loading').style.display='none';
     if(!verdict||verdict.length<5)throw new Error('Consensus timeout — please retry.');
