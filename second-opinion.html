@@ -519,26 +519,27 @@ $('submitBtn').addEventListener('click',async()=>{
     const submitTime=Date.now();
     const g=await import('https://esm.sh/genlayer-js@latest');
     const c=await import('https://esm.sh/genlayer-js@latest/chains');
-    // Read old verdict NOW before waiting
-    let oldVerdict='';
-    try{
-      const tc0=g.createClient({chain:c.studionet});
-      const v0=await tc0.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-      oldVerdict=String(v0||'').replace(/^"|"$/g,'');
-    }catch(e){}
-    // Wait 60s minimum - this ensures old verdict is gone
-    txt('l-phase','Validators warming up...');
-    await new Promise(r=>setTimeout(r,60000));
-    // Poll every 10s - accept anything different from old
+    // Poll OUR TX hash until FINALIZED, then read verdict
+    let txFinalized=false;
     for(let i=1;i<=90;i++){
       await new Promise(r=>setTimeout(r,10000));
-      txt('l-phase',`Validators deliberating — ${60+i*10}s · attempt ${i}/90`);
+      txt('l-phase',`Validators deliberating — ${i*10}s · attempt ${i}/90`);
+      try{
+        const res=await fetch(RPC,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getTransactionByHash',params:[txHash]})
+        });
+        const data=await res.json();
+        const txStatus=(data?.result?.status||'').toUpperCase();
+        txt('l-phase',`TX Status: ${txStatus||'pending'} — ${i*10}s · attempt ${i}/90`);
+        if(txStatus==='FINALIZED'){txFinalized=true;break;}
+      }catch(e){}
+    }
+    if(txFinalized){
       try{
         const tc=g.createClient({chain:c.studionet});
         const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
         verdict=String(v||'').replace(/^"|"$/g,'');
-        if(verdict&&verdict.length>10&&verdict!==oldVerdict)break;
-        verdict='';
       }catch(e){}
     }
     stopTimer();$('loading').style.display='none';
