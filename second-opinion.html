@@ -1,591 +1,368 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Second Opinion — AI Medical Consensus</title>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Figtree:wght@300;400;500;600&family=Fira+Code:wght@300;400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Figtree:wght@300;400;500;600&family=Fira+Code:wght@400&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --ink:#1c1f1d;--ink2:#3a3d3b;--ink3:#6b7069;
-  --paper:#f7f5f0;--paper2:#f0ede6;--paper3:#e8e4da;
-  --white:#fff;
+  --paper:#f7f5f0;--paper2:#f0ede6;--white:#fff;
   --green:#1a5c3e;--green2:#2e7d55;--green3:#4caf7d;
   --green-tint:#edf6f1;--green-tint2:#daf0e6;
-  --red:#8b1c1c;--red-tint:#fdf0f0;
-  --amber:#7a4a0a;--amber-tint:#fdf5e8;
+  --red:#8b1c1c;--red-tint:#fdf0f0;--amber:#7a4a0a;--amber-tint:#fdf5e8;
   --border:#ddd9cf;--border2:#c8c3b5;
-  --serif:'Libre Baskerville',Georgia,serif;
-  --sans:'Figtree',system-ui,sans-serif;
-  --mono:'Fira Code',monospace;
+  --serif:'Libre Baskerville',Georgia,serif;--sans:'Figtree',system-ui,sans-serif;--mono:'Fira Code',monospace;
   --shadow:0 2px 8px rgba(28,31,29,.07),0 8px 24px rgba(28,31,29,.07);
-  --shadow-lg:0 4px 16px rgba(28,31,29,.08),0 16px 48px rgba(28,31,29,.1);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh;}
-
-.top-strip{background:var(--green);padding:10px 0;text-align:center;}
-.top-inner{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.6);text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;padding:0 16px;}
-.dot{width:4px;height:4px;border-radius:50%;background:var(--green3);}
-
-.site-header{background:var(--white);border-bottom:1px solid var(--border);padding:22px 0;}
-.header-inner{max-width:960px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-.logo{display:flex;align-items:center;gap:14px;}
-.logo-icon{width:42px;height:42px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(26,92,62,.25);}
-.logo-text{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--ink);letter-spacing:-.02em;}
-.logo-sub{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--green2);text-transform:uppercase;margin-top:1px;}
-.btn-sm{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 16px;background:transparent;border:1px solid var(--border2);color:var(--ink3);cursor:pointer;border-radius:6px;transition:all .18s;}
-.btn-sm:hover{border-color:var(--green2);color:var(--green2);}
-
-.lang-strip{background:var(--paper2);border-bottom:1px solid var(--border);padding:8px 0;}
-.lang-inner{max-width:960px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.lang-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin-right:4px;}
-.lang-btn{font-family:var(--mono);font-size:10px;padding:4px 10px;background:transparent;border:1px solid var(--border);color:var(--ink3);cursor:pointer;border-radius:4px;transition:all .15s;display:inline-flex;align-items:center;gap:4px;min-height:28px;}
-.lang-btn img{border-radius:1px;}
-.lang-btn:hover,.lang-btn.active{border-color:var(--green);color:var(--green);background:var(--green-tint);}
-
-.page{max-width:960px;margin:0 auto;padding:36px 32px 100px;display:grid;grid-template-columns:1fr 290px;gap:28px;align-items:start;}
-
-/* FORM */
-.form-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
-.form-head{padding:14px 22px;background:var(--paper2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
-.fh-dot{width:8px;height:8px;border-radius:50%;}
-.fh-dot:nth-child(1){background:#ff5f57;}.fh-dot:nth-child(2){background:#febc2e;}.fh-dot:nth-child(3){background:#28c840;}
-.fh-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--ink3);text-transform:uppercase;margin:0 auto;}
-.form-body{padding:24px;}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
-.field{margin-bottom:14px;}
-.fl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;display:block;}
-input,select,textarea{width:100%;background:var(--paper);border:1px solid var(--border);border-radius:6px;color:var(--ink);font-family:var(--sans);font-size:15px;padding:11px 14px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;appearance:none;}
-input:focus,select:focus,textarea:focus{border-color:var(--green2);background:var(--white);box-shadow:0 0 0 3px rgba(46,125,85,.1);}
-input::placeholder,textarea::placeholder{color:var(--border2);font-size:14px;}
-textarea{resize:vertical;height:100px;line-height:1.65;}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7069' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
-select option{background:var(--white);}
-.upload{border:1.5px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;position:relative;transition:all .18s;background:var(--paper);}
-.upload:hover{border-color:var(--green2);background:var(--green-tint);}
-.upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.upload p{font-size:13px;color:var(--ink3);font-family:var(--mono);}
-.fn{color:var(--green2);margin-top:4px;font-size:12px;font-family:var(--mono);}
-.btn-submit{width:100%;margin-top:4px;background:var(--green);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:16px;font-weight:600;padding:17px 28px;cursor:pointer;transition:all .22s;box-shadow:0 4px 16px rgba(26,92,62,.25);display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;}
-.btn-submit:hover:not(:disabled){background:var(--green2);transform:translateY(-1px);}
-.btn-submit:disabled{background:var(--border2);color:var(--ink3);cursor:not-allowed;transform:none;box-shadow:none;}
-.status-msg{margin-top:12px;padding:12px 16px;border-left:3px solid var(--green3);background:var(--green-tint);font-size:13px;color:var(--ink2);display:none;border-radius:0 6px 6px 0;}
-.status-msg.error{border-color:var(--red);background:var(--red-tint);color:var(--red);}
-.status-msg.show{display:block;}
-
-/* LOADING */
-.loading{display:none;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:44px 24px;text-align:center;box-shadow:var(--shadow);margin-top:20px;}
-.spinner{width:48px;height:48px;margin:0 auto 24px;border:2px solid var(--border);border-top-color:var(--green2);border-radius:50%;animation:spin 1.2s linear infinite;}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
+.strip{background:var(--green);padding:9px 0;text-align:center}
+.strip span{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.65);text-transform:uppercase}
+header.site{background:var(--white);border-bottom:1px solid var(--border);padding:18px 0}
+.hin{max-width:620px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-i{width:40px;height:40px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 12px rgba(26,92,62,.25)}
+.logo-t{font-family:var(--serif);font-size:20px;font-weight:700}
+.logo-s{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--green2);text-transform:uppercase}
+.hbtns{display:flex;align-items:center;gap:10px}
+.email-tag{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.btn-sm{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;background:transparent;border:1px solid var(--border2);color:var(--ink3);cursor:pointer;border-radius:6px;transition:all .18s}
+.btn-sm:hover{border-color:var(--green2);color:var(--green2)}
+main{max-width:560px;margin:0 auto;padding:40px 24px 80px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.eyebrow::before{content:'';width:16px;height:1px;background:var(--green3)}
+h1{font-family:var(--serif);font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.lead{font-size:15px;color:var(--ink3);line-height:1.65;margin-bottom:20px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
+.fl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;display:block}
+input,select,textarea{width:100%;background:var(--paper);border:1px solid var(--border);border-radius:6px;color:var(--ink);font-family:var(--sans);font-size:15px;padding:11px 14px;outline:none;transition:border-color .18s,box-shadow .18s;margin-bottom:14px;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green2);background:var(--white);box-shadow:0 0 0 3px rgba(46,125,85,.12)}
+input::placeholder,textarea::placeholder{color:var(--border2)}
+textarea{resize:vertical;height:104px;line-height:1.6}
+.g2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:430px){.g2{grid-template-columns:1fr 1fr}}
+.code-in{font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center}
+.btn{width:100%;margin-top:4px;background:var(--green);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:16px;font-weight:600;padding:15px 24px;cursor:pointer;transition:background .2s;box-shadow:0 4px 16px rgba(26,92,62,.25)}
+.btn:hover:not(:disabled){background:var(--green2)}
+.btn:disabled{background:var(--border2);color:var(--ink3);cursor:not-allowed;box-shadow:none}
+.link{margin-top:10px;width:100%;padding:10px;background:transparent;border:none;color:var(--green2);font-family:var(--mono);font-size:11px;cursor:pointer}
+.msg{margin-top:12px;padding:10px 14px;border-left:3px solid var(--red);background:var(--red-tint);color:var(--red);font-size:13px;border-radius:0 6px 6px 0;display:none}
+.msg.show{display:block}
+.msg.ok{border-color:var(--green3);background:var(--green-tint);color:var(--green)}
+.hide{display:none}
+.spinner{width:40px;height:40px;margin:0 auto 14px;border:2px solid var(--border);border-top-color:var(--green2);border-radius:50%;animation:spin 1.1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.l-title{font-family:var(--serif);font-size:22px;font-weight:700;font-style:italic;color:var(--ink);margin-bottom:5px;}
-.l-sub{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin-bottom:20px;}
-.timer{font-family:var(--mono);font-size:44px;font-weight:300;color:var(--green2);letter-spacing:.08em;margin-bottom:10px;}
-.l-phase{font-size:14px;color:var(--ink3);font-style:italic;font-family:var(--serif);margin-bottom:18px;}
-.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;max-width:200px;margin:0 auto;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--green2),var(--green3));width:0%;transition:width 900s linear;border-radius:2px;}
-
-/* RESULT */
-#result{display:none;margin-top:20px;}
-
-.verdict-card{border-radius:12px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow-lg);}
-.vc-top{padding:22px 28px 0;}
-.vc-top.URGENT{background:linear-gradient(135deg,#7a0000,#a01020);}
-.vc-top.SOON{background:linear-gradient(135deg,#6b3a00,#8b5000);}
-.vc-top.MONITOR{background:linear-gradient(135deg,#0d4a2a,#1a6b3e);}
-.vc-eye{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:12px;}
-.urgency-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:40px;margin-bottom:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);}
-.u-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.u-dot.URGENT{background:#ff8080;}.u-dot.SOON{background:#ffb060;}.u-dot.MONITOR{background:#80ffb0;}
-.u-txt{font-family:var(--mono);font-size:11px;letter-spacing:.2em;font-weight:600;color:#fff;text-transform:uppercase;}
-.vc-body{padding:22px 28px 26px;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;}
-.v-quote{font-family:var(--serif);font-size:clamp(15px,2.2vw,19px);font-style:italic;color:var(--ink);line-height:1.8;margin-bottom:16px;padding:14px 18px;background:var(--paper2);border-radius:8px;border-left:3px solid var(--green3);}
-.onchain{display:flex;align-items:center;gap:6px;padding-top:12px;border-top:1px solid var(--border);}
-.oc-dot{width:6px;height:6px;border-radius:50%;background:var(--green3);flex-shrink:0;}
-.oc-txt{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink3);}
-
-/* THERAPY */
-.therapy-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;box-shadow:0 2px 8px rgba(28,31,29,.06);}
-.th-head{padding:14px 22px;background:var(--paper2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.th-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);}
-.th-body{padding:22px;}
-.ts-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.ts-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
-.ts-sec{margin-bottom:20px;}
-.ts-sec:last-child{margin-bottom:0;}
-.rem-list,.av-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
-.rem-item,.av-item{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ink2);line-height:1.55;}
-.rem-item::before{content:'✦';color:var(--green3);font-size:10px;flex-shrink:0;margin-top:3px;}
-.av-item::before{content:'✗';color:var(--red);font-size:12px;flex-shrink:0;margin-top:2px;}
-.med-item{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;}
-.med-item:last-child{margin-bottom:0;}
-.med-name{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px;}
-.med-purpose{font-size:13px;color:var(--ink3);margin-bottom:7px;font-style:italic;}
-.med-dose{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--ink2);line-height:1.55;padding:8px 10px;background:var(--green-tint);border-radius:6px;border-left:2px solid var(--green3);margin-bottom:6px;}
-.med-warn{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--amber);line-height:1.5;padding:6px 10px;background:var(--amber-tint);border-radius:6px;border-left:2px solid #d4882a;}
-.t-note{background:var(--amber-tint);border:1px solid rgba(122,74,10,.15);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--amber);line-height:1.65;display:flex;gap:8px;}
-
-/* VALIDATORS */
-.val-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;box-shadow:0 2px 8px rgba(28,31,29,.06);}
-.val-head{padding:14px 22px;background:var(--paper2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.val-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);}
-.val-body{padding:16px 22px;}
-.val-loading{font-family:var(--mono);font-size:11px;color:var(--ink3);font-style:italic;}
-.v-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
-.v-row:last-child{border-bottom:none;padding-bottom:0;}
-.v-row:first-child{padding-top:0;}
-.v-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.v-status.agree{background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.2);}
-.v-status.disagree{background:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.2);}
-.v-status.idle{background:var(--border2);}
-.v-model{font-size:13px;font-weight:500;color:var(--ink2);flex:1;}
-.v-provider{font-family:var(--mono);font-size:10px;color:var(--ink3);}
-.v-vote{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;}
-.v-vote.agree{color:#16a34a;}.v-vote.disagree{color:#d97706;}.v-vote.idle{color:var(--ink3);}
-
-/* STEPS */
-.steps-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 28px;margin-bottom:18px;box-shadow:0 2px 8px rgba(28,31,29,.06);}
-.sc-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
-.sc-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
-.step-row{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid var(--border);}
-.step-row:last-of-type{border-bottom:none;padding-bottom:0;}
-.step-row:first-of-type{padding-top:0;}
-.step-n{width:24px;height:24px;border-radius:6px;background:var(--green-tint);border:1px solid var(--green-tint2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;margin-top:2px;}
-.step-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--ink3);text-transform:uppercase;display:block;margin-bottom:3px;}
-.step-body{font-size:14px;color:var(--ink2);line-height:1.65;}
-.how-card{background:var(--paper2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:18px;}
-.how-txt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink3);line-height:1.9;}
-.btn-retry{width:100%;margin-top:10px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:500;background:var(--green-tint);color:var(--green);border:1px solid rgba(46,125,85,.3);cursor:pointer;border-radius:8px;transition:all .18s;}
-.btn-retry:hover{background:var(--green-tint2);}
-
-/* SIDEBAR */
-.wallet-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(28,31,29,.06);}
-.w-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--ink3);text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
-.w-lbl::before{content:'';width:12px;height:1px;background:var(--green3);}
-.w-row{display:flex;align-items:center;gap:8px;margin-bottom:13px;}
-.w-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all .4s;flex-shrink:0;}
-.w-dot.on{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.15);}
-.w-addr{font-family:var(--mono);font-size:12px;color:var(--ink2);}
-.btn-connect{width:100%;padding:12px;background:var(--green);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;min-height:42px;}
-.btn-connect:hover{background:var(--green2);}
-.btn-connect.connected{background:var(--green-tint);color:var(--green);border:1px solid rgba(46,125,85,.3);cursor:default;}
-.info-card{background:var(--green);border-radius:12px;padding:20px;margin-bottom:18px;color:rgba(255,255,255,.85);position:relative;overflow:hidden;}
-.info-card::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.05);}
-.info-title{font-family:var(--serif);font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;font-style:italic;position:relative;}
-.info-txt{font-size:13px;line-height:1.7;position:relative;}
-.info-txt strong{color:#fff;}
-
-/* MODALS */
-.overlay{display:none;position:fixed;inset:0;background:rgba(28,31,29,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);}
-.modal{background:var(--white);border:1px solid var(--border);border-radius:14px;max-width:420px;width:100%;padding:34px;position:relative;box-shadow:var(--shadow-lg);animation:rise .3s both;}
-.m-close{position:absolute;top:12px;right:14px;font-size:18px;background:none;border:none;cursor:pointer;color:var(--ink3);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s;}
-.m-close:hover{background:var(--paper2);}
-.m-tag{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:8px;}
-.m-title{font-family:var(--serif);font-size:23px;font-weight:700;color:var(--ink);margin-bottom:13px;letter-spacing:-.02em;}
-.m-p{font-size:14px;color:var(--ink3);line-height:1.75;margin-bottom:9px;}
-.m-btn{width:100%;margin-top:10px;padding:14px;background:var(--green);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;}
-.m-btn:hover{background:var(--green2);}
-.wm-opt{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:7px;background:var(--paper);transition:all .15s;}
-.wm-opt:hover{border-color:var(--green2);background:var(--green-tint);}
-.wm-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden;}
-.wm-name{font-size:14px;font-weight:600;color:var(--ink);}
-.wm-desc{font-size:12px;color:var(--ink3);}
-.wm-foot{margin-top:13px;font-family:var(--mono);font-size:9px;color:var(--ink3);text-align:center;letter-spacing:.08em;line-height:1.8;}
-
-.site-footer{background:var(--white);border-top:1px solid var(--border);padding:18px 0;text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.12em;}
-.site-footer a{color:var(--green2);text-decoration:none;}
-
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.center{text-align:center;padding:30px}
+.muted{font-family:var(--serif);font-style:italic;color:var(--ink3)}
+.vcard{margin-top:20px;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(28,31,29,.1)}
+.vtop{padding:20px 24px 0}
+.vtop.URGENT{background:linear-gradient(135deg,#7a0000,#a01020)}
+.vtop.SOON{background:linear-gradient(135deg,#6b3a00,#8b5000)}
+.vtop.MONITOR{background:linear-gradient(135deg,#0d4a2a,#1a6b3e)}
+.veye{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:40px;margin-bottom:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
+.pill .d{width:7px;height:7px;border-radius:50%}
+.pill .d.URGENT{background:#ff8080}.pill .d.SOON{background:#ffb060}.pill .d.MONITOR{background:#80ffb0}
+.pill .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;font-weight:600;color:#fff}
+.vbody{padding:20px 24px 24px;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px}
+.vquote{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.75;padding:14px 18px;background:var(--paper2);border-radius:8px;border-left:3px solid var(--green3);margin-bottom:16px}
+.tsec{margin-top:18px}
+.tlbl{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tlbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.li{display:flex;gap:8px;font-size:14px;color:var(--ink2);line-height:1.55;margin-bottom:7px}
+.li::before{content:'✦';color:var(--green3);font-size:10px;margin-top:3px}
+.li.avoid::before{content:'✗';color:var(--red)}
+.med{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px}
+.med .n{font-weight:600;margin-bottom:3px}
+.med .p{font-size:13px;color:var(--ink3);font-style:italic;margin-bottom:7px}
+.med .d{font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--green-tint);border-radius:6px;border-left:2px solid var(--green3);margin-bottom:6px}
+.med .w{font-size:12px;color:var(--amber);padding:6px 10px;background:var(--amber-tint);border-radius:6px;border-left:2px solid #d4882a}
+.onchain{display:flex;align-items:center;gap:6px;padding-top:14px;margin-top:4px}
+.onchain .d{width:6px;height:6px;border-radius:50%;background:var(--green3)}
+.onchain .t{font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.steps{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:18px;box-shadow:0 2px 8px rgba(28,31,29,.06)}
+.srow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none;padding-bottom:0}.srow:first-child{padding-top:0}
+.sn{width:24px;height:24px;border-radius:6px;background:var(--green-tint);border:1px solid var(--green-tint2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;margin-top:2px}
+.sb{font-size:14px;color:var(--ink2);line-height:1.6}
+.overlay{display:none;position:fixed;inset:0;background:rgba(28,31,29,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;z-index:9999}
+.overlay.show{display:flex}
+.modal{background:var(--white);border:1px solid var(--border);border-radius:14px;max-width:480px;width:100%;padding:30px;position:relative;max-height:85vh;overflow-y:auto}
+.mclose{position:absolute;top:12px;right:14px;width:32px;height:32px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:18px;border-radius:6px}
+.mtag{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:6px}
+.mtitle{font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px}
+.hrow{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--paper);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.hrow .dt{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hrow .dt.URGENT{background:#ff8080}.hrow .dt.SOON{background:#ffb060}.hrow .dt.MONITOR{background:#80ffb0}
+.hrow .x{flex:1;min-width:0}
+.hrow .e{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow .v{font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow .u{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--ink2)}
+footer.site{background:var(--white);border-top:1px solid var(--border);padding:16px 0;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3)}
+footer.site a{color:var(--green2);text-decoration:none}
+:focus-visible{outline:2px solid var(--green2);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-:focus-visible{outline:2px solid var(--green2);outline-offset:3px}
-@media(max-width:720px){.page{grid-template-columns:1fr;}.g3{grid-template-columns:1fr 1fr;}.sidebar{order:-1;}.wallet-card{order:0;}}
-@media(max-width:400px){.g3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="top-strip">
-  <div class="top-inner">
-    <span>GenLayer Studionet</span><span class="dot"></span>
-    <span>Optimistic Democracy</span><span class="dot"></span>
-    <span>AI Medical Consensus</span>
-  </div>
-</div>
+<div class="strip"><span>GenLayer Studionet · Optimistic Democracy · Email Login</span></div>
 
-<header class="site-header">
-  <div class="header-inner">
+<header class="site">
+  <div class="hin">
     <div class="logo">
-      <div class="logo-icon">🩺</div>
-      <div><div class="logo-text">Second Opinion</div><div class="logo-sub">AI Validator Network</div></div>
+      <div class="logo-i">🩺</div>
+      <div><div class="logo-t">Second Opinion</div><div class="logo-s">AI Validator Network</div></div>
     </div>
-    <button class="btn-sm" onclick="document.getElementById('disc-modal').style.display='flex'">⚠ Disclaimer</button>
+    <div class="hbtns">
+      <span class="email-tag hide" id="emailTag"></span>
+      <button class="btn-sm hide" id="histBtn">Verlauf</button>
+      <button class="btn-sm" id="discBtn">⚠ Disclaimer</button>
+      <button class="btn-sm hide" id="logoutBtn">Logout</button>
+    </div>
   </div>
 </header>
 
-<div class="lang-strip">
-  <div class="lang-inner">
-    <span class="lang-lbl">Language</span>
-    <button class="lang-btn active" data-lang="en"><img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt=""> EN</button>
-    <button class="lang-btn" data-lang="de"><img src="https://flagcdn.com/20x15/de.png" width="20" height="15" alt=""> DE</button>
-    <button class="lang-btn" data-lang="tr"><img src="https://flagcdn.com/20x15/tr.png" width="20" height="15" alt=""> TR</button>
-    <button class="lang-btn" data-lang="ar"><img src="https://flagcdn.com/20x15/sa.png" width="20" height="15" alt=""> AR</button>
-    <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt=""> ES</button>
-    <button class="lang-btn" data-lang="fr"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt=""> FR</button>
-    <button class="lang-btn" data-lang="ru"><img src="https://flagcdn.com/20x15/ru.png" width="20" height="15" alt=""> RU</button>
-    <button class="lang-btn" data-lang="zh"><img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt=""> ZH</button>
-  </div>
-</div>
+<main>
+  <!-- STEP 1: EMAIL -->
+  <section id="view-email">
+    <div class="eyebrow">Schritt 1 von 2 · Anmeldung</div>
+    <h1>Mit E-Mail einloggen</h1>
+    <p class="lead">Kein Wallet, keine Installation. Gib deine E-Mail ein — du bekommst einen 6-stelligen Code zugeschickt.</p>
+    <div class="card">
+      <label class="fl" for="email">E-Mail-Adresse</label>
+      <input id="email" type="email" placeholder="du@example.com" autocomplete="email"/>
+      <button class="btn" id="sendCodeBtn">Code senden</button>
+      <div class="msg" id="msg-email"></div>
+    </div>
+  </section>
 
-<main class="page">
-  <div>
-    <!-- Section intro -->
-    <div style="margin-bottom:24px;">
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:10px;"><span style="width:18px;height:1px;background:var(--green3);display:inline-block;"></span>AI-Powered Second Opinion</div>
-      <h1 style="font-family:var(--serif);font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--ink);margin-bottom:8px;" id="section-title">Get your symptoms analyzed by a panel of AI validators</h1>
-      <p style="font-size:15px;color:var(--ink3);line-height:1.7;max-width:520px;" id="section-desc">Multiple independent AI models analyze your case and reach consensus. Includes therapy suggestions and medication dosages.</p>
+  <!-- STEP 2: CODE -->
+  <section id="view-code" class="hide">
+    <div class="eyebrow">Schritt 2 von 2 · Bestätigung</div>
+    <h1>Code eingeben</h1>
+    <p class="lead">Wir haben einen Code an <b id="codeEmail" style="color:var(--ink)"></b> gesendet.</p>
+    <div class="card">
+      <label class="fl" for="code">6-stelliger Code</label>
+      <input id="code" class="code-in" inputmode="numeric" maxlength="6" placeholder="••••••"/>
+      <button class="btn" id="verifyBtn">Einloggen</button>
+      <button class="link" id="resendBtn">↺ Neuen Code senden</button>
+      <div class="msg" id="msg-code"></div>
+    </div>
+  </section>
+
+  <!-- STEP 3: APP -->
+  <section id="view-app" class="hide">
+    <div class="eyebrow" id="appEyebrow">Eingeloggt</div>
+    <h1>Symptome analysieren lassen</h1>
+    <p class="lead">Mehrere unabhängige KI-Validatoren prüfen den Fall und einigen sich per Optimistic Democracy.</p>
+    <div class="card">
+      <div class="g2">
+        <div><label class="fl" for="age">Alter</label><input id="age" type="number" min="0" max="120" placeholder="30"/></div>
+        <div><label class="fl" for="weight">Gewicht (kg)</label><input id="weight" type="number" min="0" placeholder="70"/></div>
+        <div><label class="fl" for="height">Größe (cm)</label><input id="height" type="number" min="0" placeholder="175"/></div>
+      </div>
+      <label class="fl" for="gender">Geschlecht</label>
+      <select id="gender">
+        <option value="" disabled selected>Geschlecht wählen</option>
+        <option>Männlich</option><option>Weiblich</option><option>Divers</option><option>Keine Angabe</option>
+      </select>
+      <label class="fl" for="allergies">Allergien</label>
+      <input id="allergies" placeholder="z.B. Penicillin (leer lassen falls keine)"/>
+      <label class="fl" for="precond">Vorerkrankungen</label>
+      <input id="precond" placeholder="z.B. Diabetes Typ 2 (leer lassen falls keine)"/>
+      <label class="fl" for="symptoms">Symptome</label>
+      <textarea id="symptoms" placeholder="Beschreibe die Symptome ausführlich…"></textarea>
+      <button class="btn" id="submitBtn">🧬 Zweitmeinung anfragen</button>
+      <div class="msg" id="msg-app"></div>
     </div>
 
-    <!-- Form -->
-    <div class="form-card">
-      <div class="form-head">
-        <div class="fh-dot"></div><div class="fh-dot"></div><div class="fh-dot"></div>
-        <span class="fh-label" id="form-title">Patient Information</span>
-      </div>
-      <div class="form-body">
-        <div class="g3">
-          <div><label class="fl" for="ageInput" id="lbl-age">Age</label><input id="ageInput" type="number" min="0" max="120" placeholder="30"/></div>
-          <div><label class="fl" for="weightInput" id="lbl-weight">Weight (kg)</label><input id="weightInput" type="number" min="0" placeholder="70"/></div>
-          <div><label class="fl" for="heightInput" id="lbl-height">Height (cm)</label><input id="heightInput" type="number" min="0" placeholder="175"/></div>
-        </div>
-        <div class="field">
-          <label class="fl" for="genderInput" id="lbl-gender">Gender</label>
-          <select id="genderInput"><option value="" disabled selected id="opt-gender">Select gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Non-binary">Non-binary</option><option value="Prefer not to say">Prefer not to say</option></select>
-        </div>
-        <div class="field"><label class="fl" for="allergiesInput" id="lbl-allergies">Allergies</label><input id="allergiesInput" placeholder="e.g. Penicillin, Pollen (leave blank if none)"/></div>
-        <div class="field"><label class="fl" for="preCondInput" id="lbl-precond">Pre-existing Conditions</label><input id="preCondInput" placeholder="e.g. Diabetes Type 2 (leave blank if none)"/></div>
-        <div class="field"><label class="fl" for="symptomsInput" id="lbl-symptoms">Symptoms</label><textarea id="symptomsInput" placeholder="Describe your symptoms in detail..." aria-required="true"></textarea></div>
-        <div class="field">
-          <span class="fl" id="lbl-doc">Medical Document <em style="font-style:italic;letter-spacing:0;font-weight:300">(optional)</em></span>
-          <div class="upload">
-            <input type="file" id="fileInput" accept=".txt"/>
-            <p id="lbl-upload">📎 Upload a medical document (.txt)</p>
-            <p class="fn" id="fileName"></p>
-          </div>
-        </div>
-        <button class="btn-submit" id="submitBtn"><span>🧬</span><span id="submit-text">Get Second Opinion</span></button>
-        <div class="status-msg" id="status-msg" role="alert"></div>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div class="loading" id="loading">
+    <div id="loading" class="center hide">
       <div class="spinner"></div>
-      <div class="l-title" id="l-title">AI Jury Deliberating</div>
-      <div class="l-sub" id="l-sub">GenLayer Consensus in Progress</div>
-      <div class="timer" id="timer">00:00</div>
-      <div class="l-phase" id="l-phase">Sending to validators...</div>
-      <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+      <div class="muted" id="loadingTxt">GenLayer-Konsens läuft… das kann ~1 Min dauern.</div>
     </div>
 
-    <!-- Result -->
-    <div id="result">
-      <div class="verdict-card">
-        <div class="vc-top MONITOR" id="vc-top">
-          <div class="vc-eye">AI Consensus Verdict</div>
-          <div class="urgency-pill" id="upill">
-            <span class="u-dot MONITOR" id="u-dot"></span>
-            <span class="u-txt" id="u-txt">MONITOR</span>
-          </div>
-        </div>
-        <div class="vc-body">
-          <p class="v-quote" id="v-quote">—</p>
-          <div class="onchain"><span class="oc-dot"></span><span class="oc-txt" id="oc-txt">Stored permanently on GenLayer Studionet · Optimistic Democracy</span></div>
-        </div>
-      </div>
-
-      <div class="therapy-card" id="therapy-card" style="display:none">
-        <div class="th-head"><span style="font-size:18px">💊</span><span class="th-title" id="th-title">Therapy Suggestions</span></div>
-        <div class="th-body">
-          <div class="ts-sec" id="sec-home" style="display:none"><div class="ts-lbl" id="ts-home-lbl">🏠 Home Remedies</div><ul class="rem-list" id="home-list"></ul></div>
-          <div class="ts-sec" id="sec-meds" style="display:none"><div class="ts-lbl" id="ts-meds-lbl">💊 Over-the-Counter Medications</div><div id="meds-list"></div></div>
-          <div class="ts-sec" id="sec-avoid" style="display:none"><div class="ts-lbl" id="ts-avoid-lbl">🚫 What to Avoid</div><ul class="av-list" id="avoid-list"></ul></div>
-          <div class="t-note" id="t-note" style="display:none"><span>⚠️</span><span id="t-note-txt"></span></div>
-        </div>
-      </div>
-
-      <div class="val-card" id="val-card" style="display:none">
-        <div class="val-head"><span style="font-size:18px">🤖</span><span class="val-title" id="val-title">AI Validators who participated</span></div>
-        <div class="val-body" id="val-body"><span class="val-loading">Loading...</span></div>
-      </div>
-
-      <div class="steps-card">
-        <div class="sc-lbl" id="next-title">Recommended Next Steps</div>
-        <div class="step-row"><div class="step-n">1</div><div><span class="step-lbl" id="s1-lbl">Immediate Action</span><span class="step-body" id="s1-txt">Contact your healthcare provider.</span></div></div>
-        <div class="step-row"><div class="step-n">2</div><div><span class="step-lbl" id="s2-lbl">Documentation</span><span class="step-body" id="s2-txt">Write down all symptoms before your appointment.</span></div></div>
-        <div class="step-row"><div class="step-n">3</div><div><span class="step-lbl" id="s3-lbl">Reminder</span><span class="step-body" id="s3-txt">This AI opinion does not replace professional medical diagnosis.</span></div></div>
-      </div>
-      <div class="how-card"><div class="how-txt" id="how-txt">HOW THIS WORKS · Multiple independent AI validators on GenLayer analyze your symptoms and reach consensus via Optimistic Democracy. Results stored permanently on-chain.</div></div>
-    </div>
-  </div>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="wallet-card">
-      <div class="w-lbl">Wallet</div>
-      <div class="w-row"><span class="w-dot" id="w-dot"></span><span class="w-addr" id="w-addr">Not connected</span></div>
-      <button class="btn-connect" id="wallet-btn">Connect Wallet</button>
-    </div>
-    <div class="info-card">
-      <div class="info-title">How it works</div>
-      <div class="info-txt">Your symptoms are analyzed by <strong>5 independent AI models</strong> simultaneously. GenLayer's <strong>Optimistic Democracy</strong> ensures consensus — stored permanently on-chain. Includes therapy suggestions & medication dosages.</div>
-    </div>
-  </div>
+    <div id="result" class="hide"></div>
+  </section>
 </main>
 
-<footer class="site-footer">Built on <a href="https://genlayer.com" target="_blank" rel="noopener">GenLayer</a> · AI Consensus · Not Medical Advice</footer>
-
-<!-- WALLET MODAL -->
-<div id="wallet-modal" class="overlay" role="dialog" aria-modal="true">
+<!-- HISTORY MODAL -->
+<div class="overlay" id="hist-modal">
   <div class="modal">
-    <button class="m-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
-    <div class="m-tag">Connect Wallet</div>
-    <div class="m-title">Choose your wallet</div>
-    <div id="wm-list"></div>
-    <div class="wm-foot">Connects to GenLayer Studionet. AI verdicts stored on-chain.</div>
+    <button class="mclose" data-close="hist-modal">✕</button>
+    <div class="mtag">Dein Verlauf</div>
+    <div class="mtitle">Frühere Anfragen</div>
+    <p class="lead">Deine eigenen bisherigen Zweitmeinungen. (Als Betreiber siehst du <b>alle</b> E-Mails + Verdikte im Supabase-Dashboard, Tabelle <code>consultations</code>.)</p>
+    <div id="hist-list"></div>
   </div>
 </div>
 
 <!-- DISCLAIMER MODAL -->
-<div id="disc-modal" class="overlay" role="dialog" aria-modal="true">
+<div class="overlay" id="disc-modal">
   <div class="modal">
-    <button class="m-close" onclick="document.getElementById('disc-modal').style.display='none'">✕</button>
-    <div class="m-tag">⚠ Important</div>
-    <div class="m-title" id="disc-title">Not Medical Advice</div>
-    <p class="m-p" id="disc-p1">Second Opinion is an experimental AI tool for informational purposes only.</p>
-    <p class="m-p" id="disc-p2">AI verdicts and therapy suggestions do not constitute medical advice. Always verify dosages with a pharmacist.</p>
-    <p class="m-p" id="disc-p3">Always consult a licensed physician. In emergency contact emergency services immediately.</p>
-    <button class="m-btn" id="disc-btn" onclick="document.getElementById('disc-modal').style.display='none'">I Understand</button>
+    <button class="mclose" data-close="disc-modal">✕</button>
+    <div class="mtag">⚠ Wichtig</div>
+    <div class="mtitle">Kein medizinischer Rat</div>
+    <p class="lead">Second Opinion ist ein experimentelles KI-Tool zu Informationszwecken. KI-Urteile und Therapievorschläge sind kein medizinischer Rat. Dosierungen immer mit Apotheker prüfen. Konsultiere immer einen Arzt; im Notfall den Notruf wählen.</p>
+    <button class="btn" data-close="disc-modal">Verstanden</button>
   </div>
 </div>
 
+<footer class="site">Built on <a href="https://genlayer.com" target="_blank" rel="noopener">GenLayer</a> · Email Login · Not Medical Advice</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const CONTRACT='0x843ce64151E25972F44515d64421D7c74c765674';
-const RPC='https://studio.genlayer.com/api';
-const WC_ID='e40d93e27b32349a99a47db1758f665f';
-let client=null,userAddress=null,timerInt=null,elapsed=0,docText='',lastTxHash=null;
-window.currentLang='en';
+/* ============================================================
+   KONFIG — nur diese zwei Zeilen ausfüllen (beide sind PUBLIC,
+   dürfen offen in der HTML stehen). Supabase → Project Settings → API.
+   ============================================================ */
+const SUPABASE_URL = "https://DEIN-PROJEKT.supabase.co";
+const SUPABASE_ANON_KEY = "DEIN_PUBLIC_ANON_KEY";
+/* ============================================================ */
 
-function $(id){return document.getElementById(id)}
-function txt(id,t){const e=$(id);if(e)e.textContent=t}
-function showStatus(msg,err){const e=$('status-msg');if(!msg){e.style.display='none';e.className='status-msg';return;}e.textContent=msg;e.className='status-msg show'+(err?' error':'');}
-function startTimer(){elapsed=0;clearInterval(timerInt);$('pf').style.transition='none';$('pf').style.width='0%';setTimeout(()=>{$('pf').style.transition='width 900s linear';$('pf').style.width='95%';},100);timerInt=setInterval(()=>{elapsed++;$('timer').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');},1000);}
-function stopTimer(){clearInterval(timerInt);$('pf').style.width='100%';}
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentEmail = null;
 
-$('fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('fileName').textContent='✓ '+f.name;docText=await f.text();});
+const $ = (id) => document.getElementById(id);
+const show = (id) => $(id).classList.remove("hide");
+const hide = (id) => $(id).classList.add("hide");
+function view(name){ ["email","code","app"].forEach(v=>$("view-"+v).classList.toggle("hide", v!==name)); }
+function note(boxId,m,ok){ const e=$(boxId); if(!m){e.classList.remove("show");return;} e.textContent=m; e.className="msg show"+(ok?" ok":""); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
-// EIP-6963
-var wallets6963=[];
-window.addEventListener('eip6963:announceProvider',e=>{if(e.detail?.provider)wallets6963.push(e.detail);});
-window.dispatchEvent(new Event('eip6963:requestProvider'));
-
-async function onConnect(provider,accounts){
-  window.ethereum=provider;userAddress=accounts[0];
-  $('w-addr').textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4);
-  $('w-dot').classList.add('on');
-  const T=TR[window.currentLang]||TR.en;
-  const btn=$('wallet-btn');btn.textContent=T.connected;btn.classList.add('connected');
-  $('wallet-modal').style.display='none';
-  try{
-    const g=await import('https://esm.sh/genlayer-js@latest');
-    const c=await import('https://esm.sh/genlayer-js@latest/chains');
-    client=g.createClient({chain:c.studionet,account:userAddress});
-    const hex='0x'+c.studionet.id.toString(16);
-    try{await provider.request({method:'wallet_addEthereumChain',params:[{chainId:hex,chainName:'GenLayer Studio',rpcUrls:[RPC],nativeCurrency:{name:'GEN',symbol:'GEN',decimals:18}}]})}catch(e){}
-    try{await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:hex}]})}catch(e){}
-  }catch(e){console.warn(e);}
+/* ---------- SESSION ---------- */
+async function refreshSession(){
+  const { data } = await sb.auth.getSession();
+  if(data.session && data.session.user){ currentEmail = data.session.user.email; enterApp(); }
+  else { view("email"); }
+}
+function enterApp(){
+  view("app");
+  $("emailTag").textContent = currentEmail; show("emailTag");
+  $("appEyebrow").textContent = "Eingeloggt · " + currentEmail;
+  show("histBtn"); show("logoutBtn");
 }
 
-async function connectInj(info){
-  try{const p=info?info.provider:window.ethereum;if(!p)throw new Error('No wallet');const a=await p.request({method:'eth_requestAccounts'});await onConnect(p,a);}
-  catch(e){showStatus('Connection failed: '+(e.message||e),true);}
-}
-async function connectWC(){
-  try{const{EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2');const wcp=await EthereumProvider.init({projectId:WC_ID,chains:[61166],showQrModal:true,metadata:{name:'Second Opinion',description:'AI Medical Consensus',url:window.location.origin,icons:[]}});await wcp.connect();await onConnect(wcp,wcp.accounts);}
-  catch(e){showStatus('WalletConnect: '+(e.message||'Failed'),true);}
-}
-
-function openWalletModal(){
-  const list=$('wm-list');list.innerHTML='';
-  const opts=[];
-  wallets6963.forEach(w=>opts.push({name:w.info.name,desc:'Detected',icon:w.info.icon?`<img src="${w.info.icon}" style="width:28px;height:28px;border-radius:6px">`:'🔗',fn:()=>connectInj(w)}));
-  if(!wallets6963.length&&window.ethereum)opts.push({name:'MetaMask',desc:'Browser extension',icon:'<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:28px;height:28px">',fn:()=>connectInj(null)});
-  opts.push({name:'WalletConnect',desc:'Scan QR · 400+ wallets',icon:'<div style="width:28px;height:28px;background:#3B99FC;border-radius:6px;display:flex;align-items:center;justify-content:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="white"><path d="M3.68 2.37C6.62-.52 11.38-.52 14.32 2.37l.38.37a.38.38 0 0 1 0 .54l-1.3 1.27a.19.19 0 0 1-.27 0l-.52-.51C10.71 2.2 7.29 2.2 5.39 4.04l-.56.54a.19.19 0 0 1-.27 0L3.27 3.31a.38.38 0 0 1 0-.54l.41-.4ZM16.8 4.82l1.16 1.13a.38.38 0 0 1 0 .54l-5.21 5.1a.38.38 0 0 1-.54 0L8.46 7.88a.1.1 0 0 0-.13 0L4.57 11.6a.38.38 0 0 1-.54 0L.82 6.49a.38.38 0 0 1 0-.54L1.98 4.82a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0l3.76-3.68a.38.38 0 0 1 .54 0l3.76 3.68a.1.1 0 0 0 .14 0L17.34 4.82a.38.38 0 0 1 .54 0Z"/></svg></div>',fn:()=>connectWC()});
-  opts.forEach(o=>{const d=document.createElement('div');d.className='wm-opt';d.innerHTML=`<div class="wm-icon">${o.icon}</div><div><div class="wm-name">${o.name}</div><div class="wm-desc">${o.desc}</div></div>`;d.onclick=o.fn;list.appendChild(d);});
-  $('wallet-modal').style.display='flex';
-}
-$('wallet-btn').addEventListener('click',()=>{if(!userAddress)openWalletModal();});
-
-// Model name helpers
-function mName(m){if(!m)return'Unknown';const n=m.toLowerCase();const s=m.includes('/')?m.split('/').pop():m;if(n.includes('claude'))return'Claude Sonnet 4.6';if(n.includes('gpt-5')&&n.includes('mini'))return'GPT-5 Mini';if(n.includes('gpt-5'))return'GPT-5';if(n.includes('qwen3.6-max'))return'Qwen3.6 Max';if(n.includes('qwen3.6-plus'))return'Qwen3.6 Plus';if(n.includes('qwen'))return'Qwen';if(n.includes('nemotron'))return'Nemotron-253B';if(n.includes('llama'))return'Llama';if(n.includes('glm'))return'GLM';if(n.includes('gemini'))return'Gemini';if(n.includes('grok'))return'Grok';if(n.includes('minimax'))return'MiniMax M2';if(n.includes('mistral'))return'Mistral';return s||m;}
-function mProvider(m){const n=(m||'').toLowerCase();if(n.includes('anthropic')||n.includes('claude'))return'Anthropic';if(n.includes('openai')||n.includes('gpt'))return'OpenAI';if(n.includes('qwen'))return'Alibaba';if(n.includes('nvidia')||n.includes('nemotron'))return'NVIDIA';if(n.includes('glm')||n.includes('zhipu'))return'Zhipu AI';if(n.includes('google')||n.includes('gemini'))return'Google';if(n.includes('x-ai')||n.includes('grok'))return'xAI';if(n.includes('minimax'))return'MiniMax';if(n.includes('mistral'))return'Mistral AI';if(n.includes('meta')||n.includes('llama'))return'Meta';return'OpenRouter';}
-function mIcon(m){const n=(m||'').toLowerCase();if(n.includes('claude'))return'🤖';if(n.includes('gpt'))return'🧠';if(n.includes('qwen'))return'⚡';if(n.includes('nemotron')||n.includes('llama'))return'🔬';if(n.includes('glm'))return'🌐';if(n.includes('gemini'))return'💎';if(n.includes('grok'))return'🌀';if(n.includes('minimax'))return'🎯';return'🤖';}
-
-async function fetchValidators(txHash){
-  if(!txHash)return;
-  const vc=$('val-card'),vb=$('val-body');
-  vc.style.display='block';
-  vb.innerHTML='<span class="val-loading">Loading validator data...</span>';
-  try{
-    const res=await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getTransactionByHash',params:[txHash]})});
-    const data=await res.json();
-    const validators=data?.result?.consensus_data?.validators||[];
-    if(!validators.length){vb.innerHTML='<span class="val-loading">No validator data available</span>';return;}
-    vb.innerHTML='';
-    validators.forEach(v=>{
-      const model=v.node_config?.primary_model?.model||'';
-      const vote=(v.vote||'').toLowerCase();
-      const sc=vote==='agree'?'agree':vote==='idle'?'idle':'disagree';
-      const vl=vote==='agree'?'AGREE':vote==='idle'?'IDLE':'DISAGREE';
-      const row=document.createElement('div');row.className='v-row';
-      row.innerHTML=`<span class="v-status ${sc}"></span><div style="flex:1"><div class="v-model">${mIcon(model)} ${mName(model)}</div><div class="v-provider">${mProvider(model)}</div></div><span class="v-vote ${sc}">${vl}</span>`;
-      vb.appendChild(row);
-    });
-  }catch(e){vb.innerHTML='<span class="val-loading">Could not load validator data</span>';}
-}
-
-function renderTherapy(t){
-  if(!t)return;
-  let therapy;try{therapy=typeof t==='string'?JSON.parse(t):t;}catch(e){return;}
-  if(!therapy)return;
-  $('therapy-card').style.display='block';
-  const hr=therapy.home_remedies||[];
-  if(hr.length){const l=$('home-list');l.innerHTML='';hr.forEach(r=>{const li=document.createElement('li');li.className='rem-item';li.textContent=r;l.appendChild(li);});$('sec-home').style.display='block';}
-  const meds=therapy.otc_medications||[];
-  if(meds.length){const c=$('meds-list');c.innerHTML='';meds.forEach(m=>{const d=document.createElement('div');d.className='med-item';d.innerHTML=`<div class="med-name">💊 ${m.name||''}</div><div class="med-purpose">${m.purpose||''}</div><div class="med-dose"><span>📋</span><span>${m.dosage||''}</span></div>${m.warning?`<div class="med-warn"><span>⚠️</span><span>${m.warning}</span></div>`:''}`;c.appendChild(d);});$('sec-meds').style.display='block';}
-  const av=therapy.avoid||[];
-  if(av.length){const l=$('avoid-list');l.innerHTML='';av.forEach(a=>{const li=document.createElement('li');li.className='av-item';li.textContent=a;l.appendChild(li);});$('sec-avoid').style.display='block';}
-  if(therapy.note){txt('t-note-txt',therapy.note);$('t-note').style.display='flex';}
-}
-
-function renderVerdict(raw){
-  let vStr='',therapyData=null;
-  try{const p=JSON.parse(raw);vStr=p.verdict||'';if(p.therapy){try{therapyData=JSON.parse(p.therapy);}catch(e){therapyData=p.therapy;}}}
-  catch(e){vStr=String(raw||'').replace(/^"|"$/g,'');}
-  const parts=vStr.split(' | ');
-  const rec=(parts.at(-1)||'').trim();
-  const text=parts.slice(0,-1).join(' | ')||vStr;
-  const urg=['URGENT','SOON','MONITOR'].includes(rec)?rec:'MONITOR';
-  $('vc-top').className='vc-top '+urg;
-  $('upill').className='urgency-pill';
-  $('u-dot').className='u-dot '+urg;
-  txt('u-txt',urg);txt('v-quote',text);
-  if(therapyData)renderTherapy(therapyData);
-  const T=TR[window.currentLang]||TR.en;
-  const steps=T.steps[urg]||T.steps.MONITOR;
-  txt('s1-txt',steps[0]);txt('s2-txt',steps[1]);txt('s3-txt',steps[2]);
-  $('result').style.display='block';
-  setTimeout(()=>$('result').scrollIntoView({behavior:'smooth',block:'start'}),100);
-  if(lastTxHash)setTimeout(()=>fetchValidators(lastTxHash),2000);
-}
-
-$('submitBtn').addEventListener('click',async()=>{
-  const symptoms=$('symptomsInput').value.trim();
-  const age=$('ageInput').value.trim();
-  const gender=$('genderInput').value;
-  if(!symptoms||!age||!gender){showStatus('Please fill in age, gender and symptoms.',true);return;}
-  if(!client){openWalletModal();return;}
-  const btn=$('submitBtn');
-  const T=TR[window.currentLang]||TR.en;
-  btn.disabled=true;$('submit-text').textContent='Processing...';
-  $('result').style.display='none';
-  $('therapy-card').style.display='none';
-  $('val-card').style.display='none';
-  $('loading').style.display='block';
-  showStatus('');startTimer();
-  $('loading').scrollIntoView({behavior:'smooth',block:'center'});
-  const oldR=document.getElementById('retry-btn');if(oldR)oldR.remove();
-  try{
-    txt('l-phase','Sending to GenLayer validators...');
-    const txHash=await client.writeContract({
-      address:CONTRACT,functionName:'submit_consultation',
-      args:[symptoms,age,gender,$('weightInput').value||'0',$('heightInput').value||'0',$('allergiesInput').value||'',$('preCondInput').value||'',docText],
-      value:BigInt(0)
-    });
-    lastTxHash=txHash;
-    let verdict='';
-    const g=await import('https://esm.sh/genlayer-js@latest');
-    const c=await import('https://esm.sh/genlayer-js@latest/chains');
-    // Poll TX status until FINALIZED
-    for(let i=1;i<=90;i++){
-      await new Promise(r=>setTimeout(r,10000));
-      try{
-        const res=await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getTransactionByHash',params:[txHash]})});
-        const data=await res.json();
-        const st=(data?.result?.status||'').toUpperCase();
-        txt('l-phase',`Status: ${st||'PENDING'} — ${i*10}s · ${i}/90`);
-        if(st==='FINALIZED'){
-          // Read verdict immediately after finalization
-          await new Promise(r=>setTimeout(r,2000));
-          const tc=g.createClient({chain:c.studionet});
-          const v=await tc.readContract({address:CONTRACT,functionName:'get_verdict',args:[userAddress.toLowerCase()]});
-          verdict=String(v||'').replace(/^"|"$/g,'');
-          break;
-        }
-      }catch(e){txt('l-phase',`Attempt ${i}/90 — ${i*10}s`);}
-    }
-    stopTimer();$('loading').style.display='none';
-    if(!verdict||verdict.length<5)throw new Error('Consensus timeout — please retry.');
-    renderVerdict(verdict);showStatus('');
-  }catch(e){
-    stopTimer();$('loading').style.display='none';
-    showStatus('Error: '+(e.message||String(e)),true);
-    const rb=document.createElement('button');rb.id='retry-btn';rb.className='btn-retry';rb.textContent='↺ Retry';rb.onclick=()=>{rb.remove();$('submitBtn').click();};$('status-msg').after(rb);
-  }
-  btn.disabled=false;$('submit-text').textContent=T.submit_text||'Get Second Opinion';
+/* ---------- STEP 1: send code ---------- */
+$("sendCodeBtn").addEventListener("click", async ()=>{
+  note("msg-email","");
+  const email = $("email").value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ note("msg-email","Bitte eine gültige E-Mail eingeben."); return; }
+  const btn = $("sendCodeBtn"); btn.disabled=true; btn.textContent="Sende…";
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+  btn.disabled=false; btn.textContent="Code senden";
+  if(error){ note("msg-email", error.message); return; }
+  currentEmail = email; $("codeEmail").textContent = email; view("code"); $("code").focus();
 });
 
-// First visit disclaimer
-(()=>{let s=false;try{s=!!sessionStorage.getItem('so_disc');}catch(e){}if(!s){setTimeout(()=>{$('disc-modal').style.display='flex';},900);try{sessionStorage.setItem('so_disc','1');}catch(e){}}})();
-
-// Auto-reconnect
-if(window.ethereum){window.ethereum.request({method:'eth_accounts'}).then(a=>{if(a.length>0)onConnect(window.ethereum,a);}).catch(()=>{});}
-
-// Close modals on overlay click
-['wallet-modal','disc-modal'].forEach(id=>{$(id).addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.style.display='none';});});
-
-const TR={
-en:{connect:'Connect Wallet',connected:'Connected ✓',submit_text:'Get Second Opinion',l_title:'AI Jury Deliberating',l_sub:'GenLayer Consensus in Progress',form_title:'Patient Information',next_title:'Recommended Next Steps',oc:'Stored permanently on GenLayer Studionet · Optimistic Democracy',disc_title:'Not Medical Advice',disc_p1:'Second Opinion is an experimental AI tool for informational purposes only.',disc_p2:'AI verdicts and therapy suggestions do not constitute medical advice. Always verify dosages with a pharmacist.',disc_p3:'Always consult a licensed physician. In emergency contact emergency services.',disc_btn:'I Understand',how:'HOW THIS WORKS · Multiple independent AI validators on GenLayer analyze your symptoms and reach consensus via Optimistic Democracy. Results stored permanently on-chain.',lbl_age:'Age',lbl_weight:'Weight (kg)',lbl_height:'Height (cm)',lbl_gender:'Gender',opt_gender:'Select gender',lbl_allergies:'Allergies',lbl_precond:'Pre-existing Conditions',lbl_symptoms:'Symptoms',lbl_upload:'📎 Upload a medical document (.txt)',ph_allergies:'e.g. Penicillin, Pollen (leave blank if none)',ph_precond:'e.g. Diabetes Type 2 (leave blank if none)',ph_symptoms:'Describe your symptoms in detail...',steps:{URGENT:['Seek immediate medical attention or go to the emergency room.','List all symptoms, medications and allergies for the physician.','Do NOT delay — the AI assessment indicates urgent evaluation needed.'],SOON:['Schedule a doctor appointment within the next 1–3 days.','Write down all symptoms, duration and changes you noticed.','This AI opinion does not replace professional medical diagnosis.'],MONITOR:['Monitor your symptoms over the next few days.','If symptoms worsen or new ones appear, consult a doctor.','This AI opinion does not replace professional medical diagnosis.']}},
-de:{connect:'Wallet verbinden',connected:'Verbunden ✓',submit_text:'Zweitmeinung anfragen',l_title:'KI-Jury berät',l_sub:'GenLayer Konsens läuft',form_title:'Patienteninformationen',next_title:'Empfohlene nächste Schritte',oc:'Dauerhaft auf GenLayer Studionet gespeichert · Optimistic Democracy',disc_title:'Kein Medizinischer Rat',disc_p1:'Second Opinion ist ein experimentelles KI-Tool zu Informationszwecken.',disc_p2:'KI-Urteile sind kein medizinischer Rat. Dosierungen immer mit Apotheker prüfen.',disc_p3:'Konsultiere immer einen Arzt. Im Notfall den Notruf anrufen.',disc_btn:'Verstanden',how:'WIE ES FUNKTIONIERT · Mehrere KI-Validatoren analysieren Symptome und einigen sich per Optimistic Democracy.',lbl_age:'Alter',lbl_weight:'Gewicht (kg)',lbl_height:'Größe (cm)',lbl_gender:'Geschlecht',opt_gender:'Geschlecht wählen',lbl_allergies:'Allergien',lbl_precond:'Vorerkrankungen',lbl_symptoms:'Symptome',lbl_upload:'📎 Medizinisches Dokument hochladen (.txt)',ph_allergies:'z.B. Penicillin, Pollen (leer lassen falls keine)',ph_precond:'z.B. Diabetes Typ 2 (leer lassen falls keine)',ph_symptoms:'Beschreibe deine Symptome ausführlich...',steps:{URGENT:['Sofort ärztliche Hilfe suchen.','Alle Symptome und Medikamente auflisten.','Nicht warten.'],SOON:['Innerhalb 1–3 Tagen Arzttermin vereinbaren.','Symptome aufschreiben.','Diese KI-Meinung ersetzt keine professionelle Diagnose.'],MONITOR:['Symptome beobachten.','Bei Verschlechterung zum Arzt.','Diese KI-Meinung ersetzt keine professionelle Diagnose.']}},
-tr:{connect:'Cüzdan bağla',connected:'Bağlandı ✓',submit_text:'İkinci görüş al',l_title:'YZ Jürisi karar veriyor',l_sub:'GenLayer konsensüs devam ediyor',form_title:'Hasta bilgileri',next_title:'Önerilen adımlar',oc:"GenLayer Studionet'te kalıcı olarak saklandı",disc_title:'Tıbbi Tavsiye Değil',disc_p1:'Second Opinion bilgilendirme amaçlı deneysel YZ aracıdır.',disc_p2:'YZ kararları tıbbi tavsiye değildir.',disc_p3:'Daima bir doktora danışın.',disc_btn:'Anladım',how:'NASIL ÇALIŞIR · Bağımsız YZ doğrulayıcıları Optimistic Democracy ile fikir birliğine varır.',lbl_age:'Yaş',lbl_weight:'Ağırlık (kg)',lbl_height:'Boy (cm)',lbl_gender:'Cinsiyet',opt_gender:'Cinsiyet seçin',lbl_allergies:'Alerjiler',lbl_precond:'Mevcut hastalıklar',lbl_symptoms:'Belirtiler',lbl_upload:'📎 Tıbbi belge yükle (.txt)',ph_allergies:'Örn. Penisilin (yoksa boş)',ph_precond:'Örn. Tip 2 Diyabet (yoksa boş)',ph_symptoms:'Belirtilerinizi açıklayın...',steps:{URGENT:['Hemen acile gidin.','Belirtileri listeleyin.','Geciktirmeyin.'],SOON:['1–3 gün içinde randevu alın.','Belirtileri not edin.','YZ görüşü tanının yerini tutmaz.'],MONITOR:['Belirtileri takip edin.','Kötüleşirse doktora gidin.','YZ görüşü tanının yerini tutmaz.']}},
-ar:{connect:'ربط المحفظة',connected:'متصل ✓',submit_text:'احصل على رأي ثانٍ',l_title:'هيئة المحلفين تداول',l_sub:'إجماع GenLayer جارٍ',form_title:'معلومات المريض',next_title:'الخطوات التالية',oc:'مخزن على GenLayer Studionet',disc_title:'ليس نصيحة طبية',disc_p1:'Second Opinion أداة تجريبية للمعلومات.',disc_p2:'أحكام الذكاء الاصطناعي ليست نصيحة طبية.',disc_p3:'استشر دائماً طبيباً.',disc_btn:'فهمت',how:'كيف يعمل · عدة مدققي ذكاء اصطناعي يحللون أعراضك ويتوصلون إلى إجماع.',lbl_age:'العمر',lbl_weight:'الوزن',lbl_height:'الطول',lbl_gender:'الجنس',opt_gender:'اختر الجنس',lbl_allergies:'الحساسية',lbl_precond:'الأمراض المزمنة',lbl_symptoms:'الأعراض',lbl_upload:'📎 رفع وثيقة (.txt)',ph_allergies:'مثال: بنسلين (اتركه فارغاً)',ph_precond:'مثال: السكري (اتركه فارغاً)',ph_symptoms:'صف أعراضك...',steps:{URGENT:['اطلب رعاية طبية فورية.','اسرد الأعراض للطبيب.','لا تتأخر.'],SOON:['احجز موعداً خلال 1–3 أيام.','دوّن الأعراض.','الرأي لا يحل محل التشخيص.'],MONITOR:['راقب الأعراض.','إذا ساءت استشر طبيباً.','الرأي لا يحل محل التشخيص.']}},
-es:{connect:'Conectar cartera',connected:'Conectado ✓',submit_text:'Obtener segunda opinión',l_title:'El Jurado IA delibera',l_sub:'Consenso GenLayer en progreso',form_title:'Información del paciente',next_title:'Próximos pasos',oc:'Almacenado en GenLayer Studionet',disc_title:'No es Consejo Médico',disc_p1:'Second Opinion es una herramienta IA experimental informativa.',disc_p2:'Los veredictos no son consejo médico.',disc_p3:'Siempre consulta a un médico.',disc_btn:'Entendido',how:'CÓMO FUNCIONA · Múltiples validadores IA analizan síntomas y llegan a consenso.',lbl_age:'Edad',lbl_weight:'Peso (kg)',lbl_height:'Altura (cm)',lbl_gender:'Género',opt_gender:'Seleccionar',lbl_allergies:'Alergias',lbl_precond:'Condiciones preexistentes',lbl_symptoms:'Síntomas',lbl_upload:'📎 Subir documento (.txt)',ph_allergies:'Ej. Penicilina (vacío si ninguna)',ph_precond:'Ej. Diabetes (vacío si ninguna)',ph_symptoms:'Describe tus síntomas...',steps:{URGENT:['Busca atención inmediata.','Lista síntomas.','No lo demores.'],SOON:['Cita médica en 1–3 días.','Anota síntomas.','No reemplaza diagnóstico.'],MONITOR:['Monitorea síntomas.','Si empeoran consulta médico.','No reemplaza diagnóstico.']}},
-fr:{connect:'Connecter portefeuille',connected:'Connecté ✓',submit_text:'Obtenir un second avis',l_title:'Le Jury IA délibère',l_sub:'Consensus GenLayer en cours',form_title:'Informations patient',next_title:'Prochaines étapes',oc:'Stocké sur GenLayer Studionet',disc_title:'Pas un Conseil Médical',disc_p1:"Second Opinion est un outil IA informatif.",disc_p2:"Les verdicts ne constituent pas un conseil médical.",disc_p3:"Consultez toujours un médecin.",disc_btn:"J'ai compris",how:"COMMENT ÇA MARCHE · Plusieurs validateurs IA analysent vos symptômes et atteignent un consensus.",lbl_age:'Âge',lbl_weight:'Poids (kg)',lbl_height:'Taille (cm)',lbl_gender:'Genre',opt_gender:'Sélectionner',lbl_allergies:'Allergies',lbl_precond:'Conditions préexistantes',lbl_symptoms:'Symptômes',lbl_upload:'📎 Télécharger (.txt)',ph_allergies:'Ex. Pénicilline (vide si aucune)',ph_precond:'Ex. Diabète (vide si aucun)',ph_symptoms:'Décrivez vos symptômes...',steps:{URGENT:["Cherchez aide médicale immédiate.","Listez symptômes.","Ne tardez pas."],SOON:['Rendez-vous sous 1–3 jours.','Notez les symptômes.','Ne remplace pas un diagnostic.'],MONITOR:['Surveillez les symptômes.',"Si aggravation consultez médecin.",'Ne remplace pas un diagnostic.']}},
-ru:{connect:'Подключить кошелёк',connected:'Подключён ✓',submit_text:'Получить второе мнение',l_title:'Жюри ИИ совещается',l_sub:'Консенсус GenLayer в процессе',form_title:'Данные пациента',next_title:'Следующие шаги',oc:'Сохранено на GenLayer Studionet',disc_title:'Не Медицинский Совет',disc_p1:'Second Opinion — информационный инструмент.',disc_p2:'Вердикты не являются медицинским советом.',disc_p3:'Всегда консультируйтесь с врачом.',disc_btn:'Понятно',how:'КАК РАБОТАЕТ · ИИ-валидаторы анализируют симптомы и достигают консенсуса.',lbl_age:'Возраст',lbl_weight:'Вес (кг)',lbl_height:'Рост (см)',lbl_gender:'Пол',opt_gender:'Выберите пол',lbl_allergies:'Аллергии',lbl_precond:'Хронические заболевания',lbl_symptoms:'Симптомы',lbl_upload:'📎 Загрузить (.txt)',ph_allergies:'Напр. Пенициллин (пусто если нет)',ph_precond:'Напр. Диабет (пусто если нет)',ph_symptoms:'Опишите симптомы...',steps:{URGENT:['Немедленно обратитесь в скорую.','Перечислите симптомы.','Не откладывайте.'],SOON:['Запишитесь к врачу за 1–3 дня.','Запишите симптомы.','Не заменяет диагноз.'],MONITOR:['Следите за симптомами.','При ухудшении к врачу.','Не заменяет диагноз.']}},
-zh:{connect:'连接钱包',connected:'已连接 ✓',submit_text:'获取第二意见',l_title:'AI陪审团审议中',l_sub:'GenLayer共识进行中',form_title:'患者信息',next_title:'建议步骤',oc:'存储在GenLayer Studionet',disc_title:'非医疗建议',disc_p1:'Second Opinion是仅供参考的AI工具。',disc_p2:'AI裁决不构成医疗建议。',disc_p3:'请始终咨询执照医生。',disc_btn:'我明白了',how:'工作原理 · 多个独立AI验证者分析症状并达成共识。',lbl_age:'年龄',lbl_weight:'体重(公斤)',lbl_height:'身高(厘米)',lbl_gender:'性别',opt_gender:'选择性别',lbl_allergies:'过敏史',lbl_precond:'既往病史',lbl_symptoms:'症状',lbl_upload:'📎 上传文件(.txt)',ph_allergies:'例：青霉素（无则留空）',ph_precond:'例：2型糖尿病（无则留空）',ph_symptoms:'请详细描述症状...',steps:{URGENT:['立即就医。','列出症状。','请勿拖延。'],SOON:['1–3天内预约医生。','记录症状。','不替代专业诊断。'],MONITOR:['监测症状。','如恶化请就医。','不替代专业诊断。']}}
-};
-
-function applyLang(lang){
-  const t=TR[lang]||TR.en;window.currentLang=lang;
-  document.body.style.direction=(lang==='ar')?'rtl':'ltr';
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
-  const wb=$('wallet-btn');if(wb)wb.textContent=wb.classList.contains('connected')?t.connected:t.connect;
-  const st=$('submit-text');if(st)st.textContent=t.submit_text;
-  txt('l-title',t.l_title);txt('l-sub',t.l_sub);
-  txt('form-title',t.form_title);txt('next-title',t.next_title);
-  txt('oc-txt',t.oc);
-  txt('disc-title',t.disc_title);txt('disc-p1',t.disc_p1);txt('disc-p2',t.disc_p2);txt('disc-p3',t.disc_p3);txt('disc-btn',t.disc_btn);
-  txt('how-txt',t.how);
-  txt('lbl-age',t.lbl_age);txt('lbl-weight',t.lbl_weight);txt('lbl-height',t.lbl_height);
-  txt('lbl-gender',t.lbl_gender);txt('lbl-allergies',t.lbl_allergies);txt('lbl-precond',t.lbl_precond);txt('lbl-symptoms',t.lbl_symptoms);txt('lbl-upload',t.lbl_upload);
-  const og=$('opt-gender');if(og)og.textContent=t.opt_gender;
-  const ai=$('allergiesInput');if(ai)ai.placeholder=t.ph_allergies;
-  const pi=$('preCondInput');if(pi)pi.placeholder=t.ph_precond;
-  const si=$('symptomsInput');if(si)si.placeholder=t.ph_symptoms;
+/* ---------- STEP 2: verify ---------- */
+$("verifyBtn").addEventListener("click", verify);
+$("code").addEventListener("keydown", e=>{ if(e.key==="Enter") verify(); });
+$("code").addEventListener("input", e=>{ e.target.value = e.target.value.replace(/\D/g,""); });
+async function verify(){
+  note("msg-code","");
+  const token = $("code").value.trim();
+  if(token.length!==6){ note("msg-code","Bitte den 6-stelligen Code eingeben."); return; }
+  const btn=$("verifyBtn"); btn.disabled=true; btn.textContent="Prüfe…";
+  const { data, error } = await sb.auth.verifyOtp({ email: currentEmail, token, type:"email" });
+  btn.disabled=false; btn.textContent="Einloggen";
+  if(error || !data.session){ note("msg-code","Code stimmt nicht oder ist abgelaufen."); return; }
+  enterApp();
 }
-document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.lang)));
+$("resendBtn").addEventListener("click", async ()=>{
+  const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options:{ shouldCreateUser:true } });
+  note("msg-code", error ? error.message : "Neuer Code gesendet.", !error);
+});
+
+/* ---------- STEP 3: consult → Supabase Edge-Function ---------- */
+$("submitBtn").addEventListener("click", async ()=>{
+  note("msg-app","");
+  const symptoms=$("symptoms").value.trim(), age=$("age").value.trim();
+  if(!symptoms || !age){ note("msg-app","Bitte Alter und Symptome ausfüllen."); return; }
+  hide("result"); show("loading"); $("submitBtn").disabled=true;
+  const payload = {
+    symptoms, age, gender:$("gender").value,
+    weight:$("weight").value, height:$("height").value,
+    allergies:$("allergies").value, preConditions:$("precond").value, docText:""
+  };
+  try{
+    const { data, error } = await sb.functions.invoke("consult", { body: payload });
+    if(error) throw new Error(error.message || "Fehler bei der Anfrage.");
+    if(data && data.error) throw new Error(data.error);
+    renderVerdict(data);
+  }catch(e){ note("msg-app", e.message || String(e)); }
+  finally{ hide("loading"); $("submitBtn").disabled=false; }
+});
+
+function renderVerdict(d){
+  const urg = ["URGENT","SOON","MONITOR"].includes(d.urgency) ? d.urgency : "MONITOR";
+  const steps = {
+    URGENT:["Sofort ärztliche Hilfe suchen oder in die Notaufnahme.","Alle Symptome, Medikamente und Allergien für den Arzt auflisten.","Nicht warten — die Einschätzung deutet auf dringenden Bedarf."],
+    SOON:["Innerhalb von 1–3 Tagen einen Arzttermin vereinbaren.","Symptome, Dauer und Veränderungen aufschreiben.","Diese KI-Meinung ersetzt keine professionelle Diagnose."],
+    MONITOR:["Symptome über die nächsten Tage beobachten.","Bei Verschlechterung oder neuen Symptomen zum Arzt.","Diese KI-Meinung ersetzt keine professionelle Diagnose."]
+  }[urg];
+
+  let therapyHtml = "";
+  const t = d.therapy;
+  if(t && typeof t === "object"){
+    const home = (t.home_remedies||[]).map(r=>`<div class="li">${esc(r)}</div>`).join("");
+    const meds = (t.otc_medications||[]).map(m=>`<div class="med"><div class="n">💊 ${esc(m.name)}</div>${m.purpose?`<div class="p">${esc(m.purpose)}</div>`:""}${m.dosage?`<div class="d">📋 ${esc(m.dosage)}</div>`:""}${m.warning?`<div class="w">⚠️ ${esc(m.warning)}</div>`:""}</div>`).join("");
+    const avoid = (t.avoid||[]).map(a=>`<div class="li avoid">${esc(a)}</div>`).join("");
+    if(home)  therapyHtml += `<div class="tsec"><div class="tlbl">🏠 Hausmittel</div>${home}</div>`;
+    if(meds)  therapyHtml += `<div class="tsec"><div class="tlbl">💊 Rezeptfreie Mittel</div>${meds}</div>`;
+    if(avoid) therapyHtml += `<div class="tsec"><div class="tlbl">🚫 Vermeiden</div>${avoid}</div>`;
+  }
+
+  $("result").innerHTML = `
+    <div class="vcard">
+      <div class="vtop ${urg}">
+        <div class="veye">AI Consensus Verdict</div>
+        <div class="pill"><span class="d ${urg}"></span><span class="t">${urg}</span></div>
+      </div>
+      <div class="vbody">
+        <p class="vquote">${esc(d.text || "—")}</p>
+        ${therapyHtml}
+        <div class="onchain"><span class="d"></span><span class="t">Dauerhaft auf GenLayer gespeichert · per Relayer eingereicht</span></div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="tlbl">Empfohlene nächste Schritte</div>
+      ${steps.map((s,i)=>`<div class="srow"><div class="sn">${i+1}</div><div class="sb">${esc(s)}</div></div>`).join("")}
+    </div>`;
+  show("result");
+  $("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ---------- HISTORY (eigene Einträge, via RLS) ---------- */
+$("histBtn").addEventListener("click", async ()=>{
+  $("hist-modal").classList.add("show");
+  const list = $("hist-list"); list.innerHTML = `<div class="center muted">Lädt…</div>`;
+  const { data, error } = await sb.from("consultations").select("email,urgency,verdict,created_at").order("created_at",{ascending:false}).limit(50);
+  if(error){ list.innerHTML = `<div class="center muted">Konnte Verlauf nicht laden.</div>`; return; }
+  if(!data.length){ list.innerHTML = `<div class="center muted">Noch keine Anfragen.</div>`; return; }
+  list.innerHTML = data.map(r=>{
+    const u = ["URGENT","SOON","MONITOR"].includes(r.urgency)?r.urgency:"MONITOR";
+    const short = (r.verdict||"").split(" | ")[0];
+    return `<div class="hrow"><span class="dt ${u}"></span><div class="x"><div class="e">${esc(r.email)}</div><div class="v">${esc(short)}</div></div><span class="u">${u}</span></div>`;
+  }).join("");
+});
+
+/* ---------- LOGOUT ---------- */
+$("logoutBtn").addEventListener("click", async ()=>{
+  await sb.auth.signOut(); currentEmail=null;
+  hide("emailTag"); hide("histBtn"); hide("logoutBtn");
+  $("email").value=""; $("code").value=""; view("email");
+});
+
+/* ---------- MODALS ---------- */
+$("discBtn").addEventListener("click", ()=>$("disc-modal").classList.add("show"));
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>$(b.dataset.close).classList.remove("show")));
+document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{ if(e.target===o) o.classList.remove("show"); }));
+
+/* ---------- START ---------- */
+refreshSession();
 </script>
 </body>
 </html>
