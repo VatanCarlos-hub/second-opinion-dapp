@@ -130,7 +130,7 @@ footer.site a{color:var(--green2);text-decoration:none}
   <section id="view-email">
     <div class="eyebrow">Schritt 1 von 2 · Anmeldung</div>
     <h1>Mit E-Mail einloggen</h1>
-    <p class="lead">Kein Wallet, keine Installation. Gib deine E-Mail ein — du bekommst einen 6-stelligen Code zugeschickt.</p>
+    <p class="lead">Kein Wallet, keine Installation. Gib deine E-Mail ein — du bekommst einen 8-stelligen Code zugeschickt.</p>
     <div class="card">
       <label class="fl" for="email">E-Mail-Adresse</label>
       <input id="email" type="email" placeholder="du@example.com" autocomplete="email"/>
@@ -145,8 +145,8 @@ footer.site a{color:var(--green2);text-decoration:none}
     <h1>Code eingeben</h1>
     <p class="lead">Wir haben einen Code an <b id="codeEmail" style="color:var(--ink)"></b> gesendet.</p>
     <div class="card">
-      <label class="fl" for="code">6-stelliger Code</label>
-      <input id="code" class="code-in" inputmode="numeric" maxlength="6" placeholder="••••••"/>
+      <label class="fl" for="code">8-stelliger Code</label>
+      <input id="code" class="code-in" inputmode="numeric" maxlength="8" placeholder="••••••••"/>
       <button class="btn" id="verifyBtn">Einloggen</button>
       <button class="link" id="resendBtn">↺ Neuen Code senden</button>
       <div class="msg" id="msg-code"></div>
@@ -264,7 +264,7 @@ $("code").addEventListener("input", e=>{ e.target.value = e.target.value.replace
 async function verify(){
   note("msg-code","");
   const token = $("code").value.trim();
-  if(token.length!==6){ note("msg-code","Bitte den 6-stelligen Code eingeben."); return; }
+  if(token.length!==8){ note("msg-code","Bitte den 8-stelligen Code eingeben."); return; }
   const btn=$("verifyBtn"); btn.disabled=true; btn.textContent="Prüfe…";
   const { data, error } = await sb.auth.verifyOtp({ email: currentEmail, token, type:"email" });
   btn.disabled=false; btn.textContent="Einloggen";
