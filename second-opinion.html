@@ -1,368 +1,129 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Second Opinion — AI Medical Consensus</title>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Figtree:wght@300;400;500;600&family=Fira+Code:wght@400&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --ink:#1c1f1d;--ink2:#3a3d3b;--ink3:#6b7069;
-  --paper:#f7f5f0;--paper2:#f0ede6;--white:#fff;
-  --green:#1a5c3e;--green2:#2e7d55;--green3:#4caf7d;
-  --green-tint:#edf6f1;--green-tint2:#daf0e6;
-  --red:#8b1c1c;--red-tint:#fdf0f0;--amber:#7a4a0a;--amber-tint:#fdf5e8;
-  --border:#ddd9cf;--border2:#c8c3b5;
-  --serif:'Libre Baskerville',Georgia,serif;--sans:'Figtree',system-ui,sans-serif;--mono:'Fira Code',monospace;
-  --shadow:0 2px 8px rgba(28,31,29,.07),0 8px 24px rgba(28,31,29,.07);
-}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;min-height:100vh}
-.strip{background:var(--green);padding:9px 0;text-align:center}
-.strip span{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.65);text-transform:uppercase}
-header.site{background:var(--white);border-bottom:1px solid var(--border);padding:18px 0}
-.hin{max-width:620px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.logo{display:flex;align-items:center;gap:12px}
-.logo-i{width:40px;height:40px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 12px rgba(26,92,62,.25)}
-.logo-t{font-family:var(--serif);font-size:20px;font-weight:700}
-.logo-s{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--green2);text-transform:uppercase}
-.hbtns{display:flex;align-items:center;gap:10px}
-.email-tag{font-family:var(--mono);font-size:11px;color:var(--ink3)}
-.btn-sm{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;background:transparent;border:1px solid var(--border2);color:var(--ink3);cursor:pointer;border-radius:6px;transition:all .18s}
-.btn-sm:hover{border-color:var(--green2);color:var(--green2)}
-main{max-width:560px;margin:0 auto;padding:40px 24px 80px}
-.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:9px}
-.eyebrow::before{content:'';width:16px;height:1px;background:var(--green3)}
-h1{font-family:var(--serif);font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
-.lead{font-size:15px;color:var(--ink3);line-height:1.65;margin-bottom:20px}
-.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
-.fl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;display:block}
-input,select,textarea{width:100%;background:var(--paper);border:1px solid var(--border);border-radius:6px;color:var(--ink);font-family:var(--sans);font-size:15px;padding:11px 14px;outline:none;transition:border-color .18s,box-shadow .18s;margin-bottom:14px;-webkit-appearance:none;appearance:none}
-input:focus,select:focus,textarea:focus{border-color:var(--green2);background:var(--white);box-shadow:0 0 0 3px rgba(46,125,85,.12)}
-input::placeholder,textarea::placeholder{color:var(--border2)}
-textarea{resize:vertical;height:104px;line-height:1.6}
-.g2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-@media(max-width:430px){.g2{grid-template-columns:1fr 1fr}}
-.code-in{font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center}
-.btn{width:100%;margin-top:4px;background:var(--green);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:16px;font-weight:600;padding:15px 24px;cursor:pointer;transition:background .2s;box-shadow:0 4px 16px rgba(26,92,62,.25)}
-.btn:hover:not(:disabled){background:var(--green2)}
-.btn:disabled{background:var(--border2);color:var(--ink3);cursor:not-allowed;box-shadow:none}
-.link{margin-top:10px;width:100%;padding:10px;background:transparent;border:none;color:var(--green2);font-family:var(--mono);font-size:11px;cursor:pointer}
-.msg{margin-top:12px;padding:10px 14px;border-left:3px solid var(--red);background:var(--red-tint);color:var(--red);font-size:13px;border-radius:0 6px 6px 0;display:none}
-.msg.show{display:block}
-.msg.ok{border-color:var(--green3);background:var(--green-tint);color:var(--green)}
-.hide{display:none}
-.spinner{width:40px;height:40px;margin:0 auto 14px;border:2px solid var(--border);border-top-color:var(--green2);border-radius:50%;animation:spin 1.1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.center{text-align:center;padding:30px}
-.muted{font-family:var(--serif);font-style:italic;color:var(--ink3)}
-.vcard{margin-top:20px;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(28,31,29,.1)}
-.vtop{padding:20px 24px 0}
-.vtop.URGENT{background:linear-gradient(135deg,#7a0000,#a01020)}
-.vtop.SOON{background:linear-gradient(135deg,#6b3a00,#8b5000)}
-.vtop.MONITOR{background:linear-gradient(135deg,#0d4a2a,#1a6b3e)}
-.veye{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px}
-.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:40px;margin-bottom:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
-.pill .d{width:7px;height:7px;border-radius:50%}
-.pill .d.URGENT{background:#ff8080}.pill .d.SOON{background:#ffb060}.pill .d.MONITOR{background:#80ffb0}
-.pill .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;font-weight:600;color:#fff}
-.vbody{padding:20px 24px 24px;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px}
-.vquote{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.75;padding:14px 18px;background:var(--paper2);border-radius:8px;border-left:3px solid var(--green3);margin-bottom:16px}
-.tsec{margin-top:18px}
-.tlbl{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--green2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.tlbl::after{content:'';flex:1;height:1px;background:var(--border)}
-.li{display:flex;gap:8px;font-size:14px;color:var(--ink2);line-height:1.55;margin-bottom:7px}
-.li::before{content:'✦';color:var(--green3);font-size:10px;margin-top:3px}
-.li.avoid::before{content:'✗';color:var(--red)}
-.med{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px}
-.med .n{font-weight:600;margin-bottom:3px}
-.med .p{font-size:13px;color:var(--ink3);font-style:italic;margin-bottom:7px}
-.med .d{font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--green-tint);border-radius:6px;border-left:2px solid var(--green3);margin-bottom:6px}
-.med .w{font-size:12px;color:var(--amber);padding:6px 10px;background:var(--amber-tint);border-radius:6px;border-left:2px solid #d4882a}
-.onchain{display:flex;align-items:center;gap:6px;padding-top:14px;margin-top:4px}
-.onchain .d{width:6px;height:6px;border-radius:50%;background:var(--green3)}
-.onchain .t{font-family:var(--mono);font-size:10px;color:var(--ink3)}
-.steps{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:18px;box-shadow:0 2px 8px rgba(28,31,29,.06)}
-.srow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
-.srow:last-child{border-bottom:none;padding-bottom:0}.srow:first-child{padding-top:0}
-.sn{width:24px;height:24px;border-radius:6px;background:var(--green-tint);border:1px solid var(--green-tint2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;margin-top:2px}
-.sb{font-size:14px;color:var(--ink2);line-height:1.6}
-.overlay{display:none;position:fixed;inset:0;background:rgba(28,31,29,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;z-index:9999}
-.overlay.show{display:flex}
-.modal{background:var(--white);border:1px solid var(--border);border-radius:14px;max-width:480px;width:100%;padding:30px;position:relative;max-height:85vh;overflow-y:auto}
-.mclose{position:absolute;top:12px;right:14px;width:32px;height:32px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:18px;border-radius:6px}
-.mtag{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--green2);text-transform:uppercase;margin-bottom:6px}
-.mtitle{font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px}
-.hrow{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--paper);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
-.hrow .dt{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.hrow .dt.URGENT{background:#ff8080}.hrow .dt.SOON{background:#ffb060}.hrow .dt.MONITOR{background:#80ffb0}
-.hrow .x{flex:1;min-width:0}
-.hrow .e{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hrow .v{font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hrow .u{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--ink2)}
-footer.site{background:var(--white);border-top:1px solid var(--border);padding:16px 0;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3)}
-footer.site a{color:var(--green2);text-decoration:none}
-:focus-visible{outline:2px solid var(--green2);outline-offset:2px}
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style>
-</head>
-<body>
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient as glCreateClient, createAccount } from "npm:genlayer-js";
+import { studionet } from "npm:genlayer-js/chains";
+import { createHmac } from "node:crypto";
 
-<div class="strip"><span>GenLayer Studionet · Optimistic Democracy · Email Login</span></div>
+const CONTRACT = Deno.env.get("GL_CONTRACT")!;
+const MASTER_SEED = Deno.env.get("MASTER_SEED")!;
 
-<header class="site">
-  <div class="hin">
-    <div class="logo">
-      <div class="logo-i">🩺</div>
-      <div><div class="logo-t">Second Opinion</div><div class="logo-s">AI Validator Network</div></div>
-    </div>
-    <div class="hbtns">
-      <span class="email-tag hide" id="emailTag"></span>
-      <button class="btn-sm hide" id="histBtn">Verlauf</button>
-      <button class="btn-sm" id="discBtn">⚠ Disclaimer</button>
-      <button class="btn-sm hide" id="logoutBtn">Logout</button>
-    </div>
-  </div>
-</header>
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-<main>
-  <!-- STEP 1: EMAIL -->
-  <section id="view-email">
-    <div class="eyebrow">Schritt 1 von 2 · Anmeldung</div>
-    <h1>Mit E-Mail einloggen</h1>
-    <p class="lead">Kein Wallet, keine Installation. Gib deine E-Mail ein — du bekommst einen 8-stelligen Code zugeschickt.</p>
-    <div class="card">
-      <label class="fl" for="email">E-Mail-Adresse</label>
-      <input id="email" type="email" placeholder="du@example.com" autocomplete="email"/>
-      <button class="btn" id="sendCodeBtn">Code senden</button>
-      <div class="msg" id="msg-email"></div>
-    </div>
-  </section>
-
-  <!-- STEP 2: CODE -->
-  <section id="view-code" class="hide">
-    <div class="eyebrow">Schritt 2 von 2 · Bestätigung</div>
-    <h1>Code eingeben</h1>
-    <p class="lead">Wir haben einen Code an <b id="codeEmail" style="color:var(--ink)"></b> gesendet.</p>
-    <div class="card">
-      <label class="fl" for="code">8-stelliger Code</label>
-      <input id="code" class="code-in" inputmode="numeric" maxlength="8" placeholder="••••••••"/>
-      <button class="btn" id="verifyBtn">Einloggen</button>
-      <button class="link" id="resendBtn">↺ Neuen Code senden</button>
-      <div class="msg" id="msg-code"></div>
-    </div>
-  </section>
-
-  <!-- STEP 3: APP -->
-  <section id="view-app" class="hide">
-    <div class="eyebrow" id="appEyebrow">Eingeloggt</div>
-    <h1>Symptome analysieren lassen</h1>
-    <p class="lead">Mehrere unabhängige KI-Validatoren prüfen den Fall und einigen sich per Optimistic Democracy.</p>
-    <div class="card">
-      <div class="g2">
-        <div><label class="fl" for="age">Alter</label><input id="age" type="number" min="0" max="120" placeholder="30"/></div>
-        <div><label class="fl" for="weight">Gewicht (kg)</label><input id="weight" type="number" min="0" placeholder="70"/></div>
-        <div><label class="fl" for="height">Größe (cm)</label><input id="height" type="number" min="0" placeholder="175"/></div>
-      </div>
-      <label class="fl" for="gender">Geschlecht</label>
-      <select id="gender">
-        <option value="" disabled selected>Geschlecht wählen</option>
-        <option>Männlich</option><option>Weiblich</option><option>Divers</option><option>Keine Angabe</option>
-      </select>
-      <label class="fl" for="allergies">Allergien</label>
-      <input id="allergies" placeholder="z.B. Penicillin (leer lassen falls keine)"/>
-      <label class="fl" for="precond">Vorerkrankungen</label>
-      <input id="precond" placeholder="z.B. Diabetes Typ 2 (leer lassen falls keine)"/>
-      <label class="fl" for="symptoms">Symptome</label>
-      <textarea id="symptoms" placeholder="Beschreibe die Symptome ausführlich…"></textarea>
-      <button class="btn" id="submitBtn">🧬 Zweitmeinung anfragen</button>
-      <div class="msg" id="msg-app"></div>
-    </div>
-
-    <div id="loading" class="center hide">
-      <div class="spinner"></div>
-      <div class="muted" id="loadingTxt">GenLayer-Konsens läuft… das kann ~1 Min dauern.</div>
-    </div>
-
-    <div id="result" class="hide"></div>
-  </section>
-</main>
-
-<!-- HISTORY MODAL -->
-<div class="overlay" id="hist-modal">
-  <div class="modal">
-    <button class="mclose" data-close="hist-modal">✕</button>
-    <div class="mtag">Dein Verlauf</div>
-    <div class="mtitle">Frühere Anfragen</div>
-    <p class="lead">Deine eigenen bisherigen Zweitmeinungen. (Als Betreiber siehst du <b>alle</b> E-Mails + Verdikte im Supabase-Dashboard, Tabelle <code>consultations</code>.)</p>
-    <div id="hist-list"></div>
-  </div>
-</div>
-
-<!-- DISCLAIMER MODAL -->
-<div class="overlay" id="disc-modal">
-  <div class="modal">
-    <button class="mclose" data-close="disc-modal">✕</button>
-    <div class="mtag">⚠ Wichtig</div>
-    <div class="mtitle">Kein medizinischer Rat</div>
-    <p class="lead">Second Opinion ist ein experimentelles KI-Tool zu Informationszwecken. KI-Urteile und Therapievorschläge sind kein medizinischer Rat. Dosierungen immer mit Apotheker prüfen. Konsultiere immer einen Arzt; im Notfall den Notruf wählen.</p>
-    <button class="btn" data-close="disc-modal">Verstanden</button>
-  </div>
-</div>
-
-<footer class="site">Built on <a href="https://genlayer.com" target="_blank" rel="noopener">GenLayer</a> · Email Login · Not Medical Advice</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ============================================================
-   KONFIG — nur diese zwei Zeilen ausfüllen (beide sind PUBLIC,
-   dürfen offen in der HTML stehen). Supabase → Project Settings → API.
-   ============================================================ */
-const SUPABASE_URL = "https://vrujdqycxdpryjtrmevn.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_ufCnWtzWgs4PKJjzLFPzqg_GB5ReAQf";
-/* ============================================================ */
-
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let currentEmail = null;
-
-const $ = (id) => document.getElementById(id);
-const show = (id) => $(id).classList.remove("hide");
-const hide = (id) => $(id).classList.add("hide");
-function view(name){ ["email","code","app"].forEach(v=>$("view-"+v).classList.toggle("hide", v!==name)); }
-function note(boxId,m,ok){ const e=$(boxId); if(!m){e.classList.remove("show");return;} e.textContent=m; e.className="msg show"+(ok?" ok":""); }
-function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-
-/* ---------- SESSION ---------- */
-async function refreshSession(){
-  const { data } = await sb.auth.getSession();
-  if(data.session && data.session.user){ currentEmail = data.session.user.email; enterApp(); }
-  else { view("email"); }
-}
-function enterApp(){
-  view("app");
-  $("emailTag").textContent = currentEmail; show("emailTag");
-  $("appEyebrow").textContent = "Eingeloggt · " + currentEmail;
-  show("histBtn"); show("logoutBtn");
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json" },
+  });
 }
 
-/* ---------- STEP 1: send code ---------- */
-$("sendCodeBtn").addEventListener("click", async ()=>{
-  note("msg-email","");
-  const email = $("email").value.trim().toLowerCase();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ note("msg-email","Bitte eine gültige E-Mail eingeben."); return; }
-  const btn = $("sendCodeBtn"); btn.disabled=true; btn.textContent="Sende…";
-  const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
-  btn.disabled=false; btn.textContent="Code senden";
-  if(error){ note("msg-email", error.message); return; }
-  currentEmail = email; $("codeEmail").textContent = email; view("code"); $("code").focus();
-});
-
-/* ---------- STEP 2: verify ---------- */
-$("verifyBtn").addEventListener("click", verify);
-$("code").addEventListener("keydown", e=>{ if(e.key==="Enter") verify(); });
-$("code").addEventListener("input", e=>{ e.target.value = e.target.value.replace(/\D/g,""); });
-async function verify(){
-  note("msg-code","");
-  const token = $("code").value.trim();
-  if(token.length!==8){ note("msg-code","Bitte den 8-stelligen Code eingeben."); return; }
-  const btn=$("verifyBtn"); btn.disabled=true; btn.textContent="Prüfe…";
-  const { data, error } = await sb.auth.verifyOtp({ email: currentEmail, token, type:"email" });
-  btn.disabled=false; btn.textContent="Einloggen";
-  if(error || !data.session){ note("msg-code","Code stimmt nicht oder ist abgelaufen."); return; }
-  enterApp();
+function derivePk(email: string): string {
+  const norm = email.trim().toLowerCase();
+  return "0x" + createHmac("sha256", MASTER_SEED).update("gl-user:" + norm).digest("hex");
 }
-$("resendBtn").addEventListener("click", async ()=>{
-  const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options:{ shouldCreateUser:true } });
-  note("msg-code", error ? error.message : "Neuer Code gesendet.", !error);
-});
 
-/* ---------- STEP 3: consult → Supabase Edge-Function ---------- */
-$("submitBtn").addEventListener("click", async ()=>{
-  note("msg-app","");
-  const symptoms=$("symptoms").value.trim(), age=$("age").value.trim();
-  if(!symptoms || !age){ note("msg-app","Bitte Alter und Symptome ausfüllen."); return; }
-  hide("result"); show("loading"); $("submitBtn").disabled=true;
-  const payload = {
-    symptoms, age, gender:$("gender").value,
-    weight:$("weight").value, height:$("height").value,
-    allergies:$("allergies").value, preConditions:$("precond").value, docText:""
-  };
-  try{
-    const { data, error } = await sb.functions.invoke("bright-responder", { body: payload });
-    if(error) throw new Error(error.message || "Fehler bei der Anfrage.");
-    if(data && data.error) throw new Error(data.error);
-    renderVerdict(data);
-  }catch(e){ note("msg-app", e.message || String(e)); }
-  finally{ hide("loading"); $("submitBtn").disabled=false; }
-});
+function parseVerdict(raw: string) {
+  let vStr = String(raw || "").replace(/^"|"$/g, "");
+  let therapy: unknown = null;
+  try {
+    const p = JSON.parse(raw);
+    if (p.verdict) vStr = p.verdict;
+    if (p.therapy) {
+      try {
+        therapy = typeof p.therapy === "string" ? JSON.parse(p.therapy) : p.therapy;
+      } catch {
+        therapy = p.therapy;
+      }
+    }
+  } catch {
+    // roher String, kein JSON
+  }
+  const parts = vStr.split(" | ");
+  const rec = (parts[parts.length - 1] || "").trim();
+  const urgency = ["URGENT", "SOON", "MONITOR"].includes(rec) ? rec : "MONITOR";
+  const text = parts.length > 1 ? parts.slice(0, parts.length - 1).join(" | ") : vStr;
+  return { urgency, text, therapy, verdict: vStr };
+}
 
-function renderVerdict(d){
-  const urg = ["URGENT","SOON","MONITOR"].includes(d.urgency) ? d.urgency : "MONITOR";
-  const steps = {
-    URGENT:["Sofort ärztliche Hilfe suchen oder in die Notaufnahme.","Alle Symptome, Medikamente und Allergien für den Arzt auflisten.","Nicht warten — die Einschätzung deutet auf dringenden Bedarf."],
-    SOON:["Innerhalb von 1–3 Tagen einen Arzttermin vereinbaren.","Symptome, Dauer und Veränderungen aufschreiben.","Diese KI-Meinung ersetzt keine professionelle Diagnose."],
-    MONITOR:["Symptome über die nächsten Tage beobachten.","Bei Verschlechterung oder neuen Symptomen zum Arzt.","Diese KI-Meinung ersetzt keine professionelle Diagnose."]
-  }[urg];
-
-  let therapyHtml = "";
-  const t = d.therapy;
-  if(t && typeof t === "object"){
-    const home = (t.home_remedies||[]).map(r=>`<div class="li">${esc(r)}</div>`).join("");
-    const meds = (t.otc_medications||[]).map(m=>`<div class="med"><div class="n">💊 ${esc(m.name)}</div>${m.purpose?`<div class="p">${esc(m.purpose)}</div>`:""}${m.dosage?`<div class="d">📋 ${esc(m.dosage)}</div>`:""}${m.warning?`<div class="w">⚠️ ${esc(m.warning)}</div>`:""}</div>`).join("");
-    const avoid = (t.avoid||[]).map(a=>`<div class="li avoid">${esc(a)}</div>`).join("");
-    if(home)  therapyHtml += `<div class="tsec"><div class="tlbl">🏠 Hausmittel</div>${home}</div>`;
-    if(meds)  therapyHtml += `<div class="tsec"><div class="tlbl">💊 Rezeptfreie Mittel</div>${meds}</div>`;
-    if(avoid) therapyHtml += `<div class="tsec"><div class="tlbl">🚫 Vermeiden</div>${avoid}</div>`;
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: cors });
+  }
+  if (req.method !== "POST") {
+    return json({ error: "Method not allowed" }, 405);
   }
 
-  $("result").innerHTML = `
-    <div class="vcard">
-      <div class="vtop ${urg}">
-        <div class="veye">AI Consensus Verdict</div>
-        <div class="pill"><span class="d ${urg}"></span><span class="t">${urg}</span></div>
-      </div>
-      <div class="vbody">
-        <p class="vquote">${esc(d.text || "—")}</p>
-        ${therapyHtml}
-        <div class="onchain"><span class="d"></span><span class="t">Dauerhaft auf GenLayer gespeichert · per Relayer eingereicht</span></div>
-      </div>
-    </div>
-    <div class="steps">
-      <div class="tlbl">Empfohlene nächste Schritte</div>
-      ${steps.map((s,i)=>`<div class="srow"><div class="sn">${i+1}</div><div class="sb">${esc(s)}</div></div>`).join("")}
-    </div>`;
-  show("result");
-  $("result").scrollIntoView({behavior:"smooth",block:"start"});
-}
+  try {
+    const jwt = (req.headers.get("Authorization") || "").replace("Bearer ", "");
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data: u, error: uErr } = await admin.auth.getUser(jwt);
+    if (uErr || !u || !u.user || !u.user.email) {
+      return json({ error: "Nicht eingeloggt." }, 401);
+    }
+    const email = u.user.email;
 
-/* ---------- HISTORY (eigene Einträge, via RLS) ---------- */
-$("histBtn").addEventListener("click", async ()=>{
-  $("hist-modal").classList.add("show");
-  const list = $("hist-list"); list.innerHTML = `<div class="center muted">Lädt…</div>`;
-  const { data, error } = await sb.from("consultations").select("email,urgency,verdict,created_at").order("created_at",{ascending:false}).limit(50);
-  if(error){ list.innerHTML = `<div class="center muted">Konnte Verlauf nicht laden.</div>`; return; }
-  if(!data.length){ list.innerHTML = `<div class="center muted">Noch keine Anfragen.</div>`; return; }
-  list.innerHTML = data.map(r=>{
-    const u = ["URGENT","SOON","MONITOR"].includes(r.urgency)?r.urgency:"MONITOR";
-    const short = (r.verdict||"").split(" | ")[0];
-    return `<div class="hrow"><span class="dt ${u}"></span><div class="x"><div class="e">${esc(r.email)}</div><div class="v">${esc(short)}</div></div><span class="u">${u}</span></div>`;
-  }).join("");
+    const b = await req.json().catch(() => ({}));
+    const action = b.action || "submit";
+
+    const account = createAccount(derivePk(email));
+
+    // ---------- PHASE 1: nur einreichen, sofort zurueckkehren ----------
+    if (action === "submit") {
+      if (!b.symptoms || !String(b.age || "").trim()) {
+        return json({ error: "Alter und Symptome sind noetig." }, 400);
+      }
+      const client = glCreateClient({ chain: studionet, account });
+      const txHash = await client.writeContract({
+        address: CONTRACT,
+        functionName: "submit_consultation",
+        args: [
+          b.symptoms,
+          String(b.age),
+          b.gender || "",
+          String(b.weight || "0"),
+          String(b.height || "0"),
+          b.allergies || "",
+          b.preConditions || "",
+          b.docText || "",
+        ],
+        value: 0n,
+      });
+      return json({ txHash: txHash, glAddress: account.address });
+    }
+
+    // ---------- PHASE 2: Verdikt lesen und speichern (kurz) ----------
+    if (action === "result") {
+      const reader = glCreateClient({ chain: studionet });
+      const raw = await reader.readContract({
+        address: CONTRACT,
+        functionName: "get_verdict",
+        args: [account.address.toLowerCase()],
+      });
+      const parsed = parseVerdict(String(raw || ""));
+      if (!parsed.verdict || parsed.verdict.length < 5) {
+        return json({ error: "Verdikt noch nicht verfuegbar." }, 404);
+      }
+      await admin.from("consultations").insert({
+        email: email,
+        gl_address: account.address,
+        urgency: parsed.urgency,
+        verdict: parsed.verdict,
+        tx_hash: b.txHash || null,
+      });
+      return json({
+        urgency: parsed.urgency,
+        text: parsed.text,
+        therapy: parsed.therapy,
+      });
+    }
+
+    return json({ error: "Unbekannte Aktion." }, 400);
+  } catch (e) {
+    return json({ error: (e as Error).message || "GenLayer-Fehler." }, 502);
+  }
 });
-
-/* ---------- LOGOUT ---------- */
-$("logoutBtn").addEventListener("click", async ()=>{
-  await sb.auth.signOut(); currentEmail=null;
-  hide("emailTag"); hide("histBtn"); hide("logoutBtn");
-  $("email").value=""; $("code").value=""; view("email");
-});
-
-/* ---------- MODALS ---------- */
-$("discBtn").addEventListener("click", ()=>$("disc-modal").classList.add("show"));
-document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>$(b.dataset.close).classList.remove("show")));
-document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{ if(e.target===o) o.classList.remove("show"); }));
-
-/* ---------- START ---------- */
-refreshSession();
-</script>
-</body>
-</html>
