@@ -288,7 +288,7 @@ $("submitBtn").addEventListener("click", async ()=>{
     allergies:$("allergies").value, preConditions:$("precond").value, docText:""
   };
   try{
-    const { data, error } = await sb.functions.invoke("consult", { body: payload });
+    const { data, error } = await sb.functions.invoke("bright-responder", { body: payload });
     if(error) throw new Error(error.message || "Fehler bei der Anfrage.");
     if(data && data.error) throw new Error(data.error);
     renderVerdict(data);
