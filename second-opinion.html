@@ -276,6 +276,7 @@
     // Set this after deploying second_opinion.py in Studio NEXT.
     // Or append ?contract=0x... to the URL to override at runtime.
     const DEFAULT_CONTRACT = '0x21C41fb4D99a786a6ae03cFE3B3D2E893EF3ECFc';
+    const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
     const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract))
@@ -480,7 +481,7 @@
       const line = document.getElementById('walletLine');
       const submit = document.getElementById('submitBtn');
       const addrLabel = document.getElementById('contractAddrLabel');
-      addrLabel.textContent = CONTRACT_ADDRESS === DEFAULT_CONTRACT ? t('foot.contract') + ' — nicht gesetzt' : CONTRACT_ADDRESS;
+      addrLabel.textContent = CONTRACT_ADDRESS === ZERO_ADDR ? t('foot.contract') + ' — nicht gesetzt' : CONTRACT_ADDRESS;
 
       line.innerHTML = '';
       if (!state.address){
@@ -584,7 +585,7 @@
     async function renderCaseList(){
       const list = document.getElementById('caseList');
       if (!state.address){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
-      if (CONTRACT_ADDRESS === DEFAULT_CONTRACT){
+      if (CONTRACT_ADDRESS === ZERO_ADDR){
         list.innerHTML = `<div class="empty">${esc(t('toast.notset'))}</div>`; return;
       }
       list.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
@@ -646,7 +647,7 @@
     document.getElementById('submitBtn').addEventListener('click', async () => {
       if (!state.address){ toast(t('toast.notconn'), true); return; }
       if (!state.chainOk){ toast(t('toast.wrongnet'), true); return; }
-      if (CONTRACT_ADDRESS === DEFAULT_CONTRACT){ toast(t('toast.notset'), true); return; }
+      if (CONTRACT_ADDRESS === ZERO_ADDR){ toast(t('toast.notset'), true); return; }
       const age = document.getElementById('age').value.trim();
       const sex = document.getElementById('sex').value;
       const symptoms = document.getElementById('symptoms').value.trim();
