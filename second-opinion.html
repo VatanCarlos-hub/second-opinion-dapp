@@ -260,6 +260,9 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- Debug status strip - immer sichtbar bis alles funktioniert -->
+  <div id="debug" style="position:fixed;bottom:0;left:0;right:0;background:#1a1f26;color:#fff;font-family:'SF Mono',Menlo,monospace;font-size:11px;padding:8px 14px;z-index:9999;line-height:1.6;white-space:pre-wrap">Debug: loading …</div>
+
   <script type="module">
     // =====================================================================
     // Second Opinion frontend
@@ -477,6 +480,19 @@
 
     function shortAddr(a){ return a ? `${a.slice(0,6)}…${a.slice(-4)}` : ''; }
 
+    function updateDebug(extra){
+      const el = document.getElementById('debug');
+      if (!el) return;
+      const parts = [
+        'wallet=' + (state.address ? state.address.slice(0,10)+'…' : 'NO'),
+        'chain_ok=' + (state.chainOk ? 'YES' : 'NO'),
+        'contract=' + (CONTRACT_ADDRESS === ZERO_ADDR ? 'NOT_SET' : CONTRACT_ADDRESS.slice(0,10)+'…'),
+        'submit_enabled=' + (!document.getElementById('submitBtn').disabled ? 'YES' : 'NO'),
+      ];
+      if (extra) parts.push('last=' + extra);
+      el.textContent = 'Debug: ' + parts.join(' · ');
+    }
+
     function updateWalletUI(){
       const line = document.getElementById('walletLine');
       const submit = document.getElementById('submitBtn');
@@ -501,7 +517,8 @@
         const sw = document.createElement('button'); sw.className = 'btn small'; sw.textContent = t('wallet.switch'); sw.onclick = () => ensureChain(state.provider);
         line.appendChild(sw);
       }
-      submit.disabled = !(state.chainOk && CONTRACT_ADDRESS !== DEFAULT_CONTRACT);
+      submit.disabled = !(state.chainOk && CONTRACT_ADDRESS !== ZERO_ADDR);
+      updateDebug();
     }
 
     async function ensureChain(prov){
