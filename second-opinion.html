@@ -145,7 +145,7 @@
       </div>
     </header>
 
-    <!-- Warning banner: kein Arztersatz + Datenschutz -->
+    <!-- Warning banner -->
     <div class="warnbox" role="alert">
       <strong data-i18n="warn.title">Wichtig — vor der Nutzung lesen:</strong>
       <span data-i18n="warn.body">
@@ -260,55 +260,30 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Debug status strip - immer sichtbar bis alles funktioniert -->
+  <!-- Debug status strip -->
   <div id="debug" style="position:fixed;bottom:0;left:0;right:0;background:#1a1f26;color:#fff;font-family:'SF Mono',Menlo,monospace;font-size:11px;padding:8px 14px;z-index:9999;line-height:1.6;white-space:pre-wrap">Debug: loading …</div>
 
   <script type="module">
-    // =====================================================================
-    // Second Opinion frontend
-    // - genlayer-js@2.0.0-rc.1 (pinned; @latest resolves to 1.1.8 which does
-    //   NOT know studioDevnet)
-    // - EIP-6963 wallet discovery + window.ethereum fallback
-    // - Manual chain switch to 0xf22d (61997)
-    // - Every write: estimateTransactionFees -> fees passed through
-    // =====================================================================
     import { createClient } from 'https://esm.sh/genlayer-js@2.0.0-rc.1';
     import { studioDevnet } from 'https://esm.sh/genlayer-js@2.0.0-rc.1/chains';
 
-    // ---- CONTRACT ADDRESS ----------------------------------------------
-    // Set this after deploying second_opinion.py in Studio NEXT.
-    // Or append ?contract=0x... to the URL to override at runtime.
     const DEFAULT_CONTRACT = '0x21C41fb4D99a786a6ae03cFE3B3D2E893EF3ECFc';
     const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
-    const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract))
-      ? urlContract
-      : DEFAULT_CONTRACT;
+    const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : DEFAULT_CONTRACT;
 
     const CHAIN_ID_HEX = '0xf22d'; // 61997
-    const CHAIN_PARAMS = {
-      chainId: CHAIN_ID_HEX,
-      chainName: 'GenLayer Studio Devnet',
-      nativeCurrency: { name: 'GEN Token', symbol: 'GEN', decimals: 18 },
-      rpcUrls: ['https://studio-dev.genlayer.com/api'],
-    };
 
-    // ---- i18n -----------------------------------------------------------
     const I18N = {
       de: {
         'brand.title':'Second Opinion',
         'brand.subtitle':'Zweitmeinung on-chain · GenLayer Studio NEXT',
-        'net.disconnected':'nicht verbunden',
-        'net.wrong':'falsches Netz',
-        'net.ok':'studioDevnet',
-        'wallet.connect':'Wallet verbinden',
-        'wallet.switch':'Netz wechseln',
-        'wallet.disconnect':'trennen',
+        'net.disconnected':'nicht verbunden','net.wrong':'falsches Netz','net.ok':'studioDevnet',
+        'wallet.connect':'Wallet verbinden','wallet.switch':'Netz wechseln','wallet.disconnect':'trennen',
         'warn.title':'Wichtig — vor der Nutzung lesen:',
-        'warn.body':'Diese Anwendung ersetzt keinen ärztlichen Rat. Sie liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Alle eingegebenen Angaben werden unverschlüsselt auf einer öffentlichen Blockchain gespeichert und sind mit der Fall-Kennung dauerhaft für jeden lesbar. Geben Sie deshalb keine identifizierenden Daten ein (kein Klarname, kein Geburtsdatum, keine Adresse, keine einzigartigen Details, die auf Sie zurückführen).',
-        'form.title':'Neuen Fall einreichen',
-        'form.hint':'Fünf Felder. Antwort der Jury: zwei Ein-Wort-Befunde.',
+        'warn.body':'Diese Anwendung ersetzt keinen ärztlichen Rat. Sie liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Alle eingegebenen Angaben werden unverschlüsselt auf einer öffentlichen Blockchain gespeichert und sind mit der Fall-Kennung dauerhaft für jeden lesbar.',
+        'form.title':'Neuen Fall einreichen','form.hint':'Fünf Felder. Antwort der Jury: zwei Ein-Wort-Befunde.',
         'form.age':'Alter (Jahre)','form.sex':'Geschlecht',
         'form.sex.unspec':'nicht angegeben','form.sex.f':'weiblich','form.sex.m':'männlich','form.sex.o':'divers',
         'form.symptoms':'Symptome (allgemein, ohne persönliche Details)',
@@ -316,101 +291,52 @@
         'form.treat':'Aktuelle Behandlung (falls vorhanden)',
         'form.cost':'Kosten: wenige Cent GEN, Rückerstattung des Restbudgets automatisch.',
         'form.submit':'Fall einreichen',
-        'mine.title':'Meine Befunde',
-        'mine.hint':'Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.',
-        'mine.empty':'Noch keine Fälle. Erst Wallet verbinden.',
-        'mine.loading':'lädt …',
+        'mine.title':'Meine Befunde','mine.hint':'Nur Fälle, die diese Wallet eingereicht hat.',
+        'mine.empty':'Noch keine Fälle. Erst Wallet verbinden.','mine.loading':'lädt …',
         'foot.contract':'Contract','foot.chain':'Chain',
-        'foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch',
+        'foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten',
         'picker.title':'Wallet auswählen','picker.cancel':'abbrechen',
-        'detail.age':'Alter','detail.sex':'Geschlecht','detail.symptoms':'Symptome','detail.diag':'Diagnose','detail.treat':'Behandlung',
-        'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt',
-        'detail.filed':'Eingereicht von',
-        'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zu den Symptomen.',
-        'vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.',
-        'vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.',
-        'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.',
-        'vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.',
-        'vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.',
-        'vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
-        'toast.notconn':'Bitte zuerst Wallet verbinden.',
-        'toast.notset':'Contract-Adresse ist nicht gesetzt.',
-        'toast.wrongnet':'Falsches Netz. Wechsle zu studioDevnet.',
-        'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.',
+        'toast.notconn':'Bitte zuerst Wallet verbinden.','toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.',
         'toast.sent':'Transaktion gesendet — warte auf Finalisierung …',
-        'toast.done':'Fall finalisiert.',
-        'toast.err':'Fehler',
+        'toast.done':'Fall finalisiert und geladen!','toast.err':'Fehler bei Transaktion',
       },
       en: {
-        'brand.title':'Second Opinion',
-        'brand.subtitle':'On-chain second opinion · GenLayer Studio NEXT',
+        'brand.title':'Second Opinion','brand.subtitle':'On-chain second opinion · GenLayer Studio NEXT',
         'net.disconnected':'not connected','net.wrong':'wrong network','net.ok':'studioDevnet',
         'wallet.connect':'Connect wallet','wallet.switch':'Switch network','wallet.disconnect':'disconnect',
         'warn.title':'Important — read before use:',
-        'warn.body':'This application does not replace medical advice. It only provides a non-binding AI second opinion and is not a diagnostic tool. All submitted data is stored unencrypted on a public blockchain and is permanently readable by anyone with the case id. Do not include any identifying data (no real name, no date of birth, no address, no unique details that could identify you).',
-        'form.title':'Submit a new case','form.hint':'Five fields. Jury returns two single-word findings.',
+        'warn.body':'This application does not replace medical advice.',
+        'form.title':'Submit a new case','form.hint':'Five fields.',
         'form.age':'Age (years)','form.sex':'Sex',
         'form.sex.unspec':'not specified','form.sex.f':'female','form.sex.m':'male','form.sex.o':'other',
-        'form.symptoms':'Symptoms (general, no personal details)',
-        'form.diag':'Current diagnosis (if any)',
-        'form.treat':'Current treatment (if any)',
-        'form.cost':'Cost: a few cents of GEN, unused budget refunded automatically.',
-        'form.submit':'Submit case',
-        'mine.title':'My findings','mine.hint':'Only cases this wallet submitted. Still publicly readable on-chain.',
-        'mine.empty':'No cases yet. Connect a wallet first.','mine.loading':'loading …',
+        'form.symptoms':'Symptoms','form.diag':'Current diagnosis','form.treat':'Current treatment',
+        'form.cost':'Cost: a few cents of GEN.','form.submit':'Submit case',
+        'mine.title':'My findings','mine.hint':'Only cases this wallet submitted.',
+        'mine.empty':'No cases yet.','mine.loading':'loading …',
         'foot.contract':'Contract','foot.chain':'Chain',
-        'foot.pattern':'Consensus: 2× strict_eq · single-word answers · rest deterministic',
+        'foot.pattern':'Consensus: 2× strict_eq',
         'picker.title':'Select wallet','picker.cancel':'cancel',
-        'detail.age':'Age','detail.sex':'Sex','detail.symptoms':'Symptoms','detail.diag':'Diagnosis','detail.treat':'Treatment',
-        'detail.vplaus':'Plausibility of diagnosis','detail.vurg':'Specialist urgency','detail.filed':'Filed by',
-        'vhint.PLAUSIBLE':'The proposed diagnosis fits the symptoms.',
-        'vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.',
-        'vhint.INSUFFICIENT_DATA':'Not enough information to judge.',
-        'vhint.URGENT':'Specialist consultation within 24–48h.',
-        'vhint.MODERATE':'Specialist consultation within 1–2 weeks.',
-        'vhint.ROUTINE':'No acute specialist consultation needed.',
-        'vhint.UNREVIEWED':'Jury returned no clear answer.',
-        'toast.notconn':'Please connect a wallet first.','toast.notset':'Contract address not set.',
-        'toast.wrongnet':'Wrong network. Switch to studioDevnet.',
-        'toast.fields':'Please fill in at least age and symptoms.',
-        'toast.sent':'Transaction sent — waiting for finalization …',
-        'toast.done':'Case finalized.','toast.err':'Error',
+        'toast.notconn':'Please connect a wallet first.','toast.fields':'Please fill in required fields.',
+        'toast.sent':'Transaction sent — waiting…','toast.done':'Case finalized.','toast.err':'Error',
       },
       tr: {
-        'brand.title':'Second Opinion',
-        'brand.subtitle':'Zincir üstü ikinci görüş · GenLayer Studio NEXT',
+        'brand.title':'Second Opinion','brand.subtitle':'Zincir üstü ikinci görüş',
         'net.disconnected':'bağlı değil','net.wrong':'yanlış ağ','net.ok':'studioDevnet',
         'wallet.connect':'Cüzdanı bağla','wallet.switch':'Ağ değiştir','wallet.disconnect':'ayır',
-        'warn.title':'Önemli — kullanmadan önce okuyun:',
-        'warn.body':'Bu uygulama tıbbi tavsiyenin yerini almaz. Yalnızca bağlayıcı olmayan bir yapay zekâ ikinci görüşü sunar ve bir tanı aracı değildir. Girilen tüm veriler açık bir blockchain üzerine şifresiz olarak kaydedilir ve dava kimliği ile herkes tarafından kalıcı olarak okunabilir. Bu nedenle sizi tanımlayabilecek hiçbir veri girmeyin (gerçek ad, doğum tarihi, adres veya sizi ele verebilecek benzersiz ayrıntılar yok).',
-        'form.title':'Yeni dava gönder','form.hint':'Beş alan. Jüri iki tek kelimelik bulgu döner.',
-        'form.age':'Yaş (yıl)','form.sex':'Cinsiyet',
+        'warn.title':'Önemli:','warn.body':'Tıbbi tavsiye yerine geçmez.',
+        'form.title':'Yeni dava gönder','form.hint':'Beş alan.',
+        'form.age':'Yaş','form.sex':'Cinsiyet',
         'form.sex.unspec':'belirtilmedi','form.sex.f':'kadın','form.sex.m':'erkek','form.sex.o':'diğer',
-        'form.symptoms':'Belirtiler (genel, kişisel ayrıntı yok)',
-        'form.diag':'Mevcut tanı (varsa)',
-        'form.treat':'Mevcut tedavi (varsa)',
-        'form.cost':'Ücret: birkaç sent GEN, kullanılmayan bütçe otomatik iade edilir.',
-        'form.submit':'Davayı gönder',
-        'mine.title':'Bulgularım','mine.hint':'Sadece bu cüzdanın gönderdiği davalar. Zincir üstünde yine herkese açık.',
-        'mine.empty':'Henüz dava yok. Önce cüzdan bağlayın.','mine.loading':'yükleniyor …',
+        'form.symptoms':'Belirtiler','form.diag':'Tanı','form.treat':'Tedavi',
+        'form.cost':'Ücret: birkaç sent GEN.','form.submit':'Davayı gönder',
+        'mine.title':'Bulgularım','mine.hint':'Sadece bu cüzdanın gönderdiği davalar.',
+        'mine.empty':'Henüz dava yok.','mine.loading':'yükleniyor …',
         'foot.contract':'Sözleşme','foot.chain':'Ağ',
-        'foot.pattern':'Uzlaşı: 2× strict_eq · tek kelimelik cevap · gerisi deterministik',
+        'foot.pattern':'Uzlaşı',
         'picker.title':'Cüzdan seç','picker.cancel':'iptal',
-        'detail.age':'Yaş','detail.sex':'Cinsiyet','detail.symptoms':'Belirtiler','detail.diag':'Tanı','detail.treat':'Tedavi',
-        'detail.vplaus':'Tanının makullüğü','detail.vurg':'Uzman aciliyeti','detail.filed':'Gönderen',
-        'vhint.PLAUSIBLE':'Önerilen tanı belirtilerle uyumlu.',
-        'vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.',
-        'vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.',
-        'vhint.URGENT':'24–48 saat içinde uzman görüşü.',
-        'vhint.MODERATE':'1–2 hafta içinde uzman görüşü.',
-        'vhint.ROUTINE':'Acil uzman görüşü gerekmez.',
-        'vhint.UNREVIEWED':'Jüri net bir yanıt vermedi.',
-        'toast.notconn':'Lütfen önce cüzdan bağlayın.','toast.notset':'Sözleşme adresi ayarlanmadı.',
-        'toast.wrongnet':'Yanlış ağ. studioDevnet ağına geçin.',
-        'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.',
-        'toast.sent':'İşlem gönderildi — sonuç bekleniyor …',
-        'toast.done':'Dava sonuçlandı.','toast.err':'Hata',
-      },
+        'toast.notconn':'Cüzdan bağlayın.','toast.fields':'Alanları doldurun.',
+        'toast.sent':'İşlem gönderildi…','toast.done':'Tamamlandı.','toast.err':'Hata',
+      }
     };
     let lang = localStorage.getItem('so_lang') || 'de';
     function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -426,7 +352,6 @@
       b.addEventListener('click', () => { lang = b.dataset.lang; localStorage.setItem('so_lang', lang); applyI18n(); });
     });
 
-    // ---- Toast ----------------------------------------------------------
     let toastTimer = null;
     function toast(msg, err=false){
       const el = document.getElementById('toast');
@@ -435,7 +360,6 @@
       toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
     }
 
-    // ---- Wallet discovery (EIP-6963) ------------------------------------
     const providers = [];
     window.addEventListener('eip6963:announceProvider', (ev) => {
       const { info, provider } = ev.detail;
@@ -461,7 +385,7 @@
         list.appendChild(row);
       }
       if (!list.children.length){
-        list.innerHTML = `<div style="font-family:var(--sans);font-size:13px;color:var(--muted);padding:12px 0">Keine Wallet gefunden. Bitte MetaMask oder Rabby installieren.</div>`;
+        list.innerHTML = `<div style="font-family:var(--sans);font-size:13px;color:var(--muted);padding:12px 0">Keine Wallet gefunden.</div>`;
       }
       document.getElementById('picker').classList.add('open');
     }
@@ -469,7 +393,6 @@
     document.getElementById('pickerClose').addEventListener('click', closePicker);
     document.getElementById('picker').addEventListener('click', (e) => { if (e.target.id === 'picker') closePicker(); });
 
-    // ---- State ----------------------------------------------------------
     const state = {
       provider: null,
       providerName: null,
@@ -480,7 +403,7 @@
 
     function shortAddr(a){ return a ? `${a.slice(0,6)}…${a.slice(-4)}` : ''; }
 
-    function updateDebug(extra){
+    function updateDebug(){
       const el = document.getElementById('debug');
       if (!el) return;
       const parts = [
@@ -489,7 +412,6 @@
         'contract=' + (CONTRACT_ADDRESS === ZERO_ADDR ? 'NOT_SET' : CONTRACT_ADDRESS.slice(0,10)+'…'),
         'submit_enabled=' + (!document.getElementById('submitBtn').disabled ? 'YES' : 'NO'),
       ];
-      if (extra) parts.push('last=' + extra);
       el.textContent = 'Debug: ' + parts.join(' · ');
     }
 
@@ -497,7 +419,7 @@
       const line = document.getElementById('walletLine');
       const submit = document.getElementById('submitBtn');
       const addrLabel = document.getElementById('contractAddrLabel');
-      addrLabel.textContent = CONTRACT_ADDRESS === ZERO_ADDR ? t('foot.contract') + ' — nicht gesetzt' : CONTRACT_ADDRESS;
+      addrLabel.textContent = CONTRACT_ADDRESS === ZERO_ADDR ? 'nicht gesetzt' : CONTRACT_ADDRESS;
 
       line.innerHTML = '';
       if (!state.address){
@@ -506,6 +428,7 @@
         btn.onclick = connect;
         line.appendChild(badge); line.appendChild(btn);
         submit.disabled = true;
+        updateDebug();
         return;
       }
       const badge = document.createElement('span'); badge.className = 'netbadge ' + (state.chainOk ? 'ok' : 'warn');
@@ -524,174 +447,166 @@
     async function ensureChain(prov){
       try {
         const current = await prov.request({ method: 'eth_chainId' });
-        if (current === CHAIN_ID_HEX){ state.chainOk = true; updateWalletUI(); return true; }
+        if (current === CHAIN_ID_HEX || parseInt(current, 16) === 61997){ state.chainOk = true; updateWalletUI(); return true; }
         try {
           await prov.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID_HEX }] });
         } catch (e) {
           if (e && (e.code === 4902 || (e.data && e.data.originalError && e.data.originalError.code === 4902))){
-            await prov.request({ method: 'wallet_addEthereumChain', params: [CHAIN_PARAMS] });
+            await prov.request({ method: 'wallet_addEthereumChain', params: [{
+              chainId: CHAIN_ID_HEX,
+              chainName: 'GenLayer Studio Devnet',
+              nativeCurrency: { name: 'GEN Token', symbol: 'GEN', decimals: 18 },
+              rpcUrls: ['https://studio-dev.genlayer.com/api'],
+            }] });
           } else { throw e; }
         }
-        const after = await prov.request({ method: 'eth_chainId' });
-        state.chainOk = (after === CHAIN_ID_HEX);
-        updateWalletUI();
-        return state.chainOk;
-      } catch (e) {
-        console.warn('chain switch failed', e);
+        state.chainOk = true; updateWalletUI(); return true;
+      } catch (err) {
+        console.error(err);
         state.chainOk = false; updateWalletUI();
-        toast(t('toast.wrongnet'), true);
+        toast('Netzwechsel fehlgeschlagen. Bitte manuell zu Chain 61997 wechseln.', true);
         return false;
       }
     }
 
-    function detachWalletEvents(prov){
-      if (!prov || !prov.removeListener) return;
-      try { prov.removeListener('accountsChanged', onAccounts); } catch {}
-      try { prov.removeListener('chainChanged', onChain); } catch {}
-    }
-    function onAccounts(accs){
-      if (!accs || !accs.length){ disconnect(); return; }
-      state.address = accs[0];
-      state.client = createClient({ chain: studioDevnet, account: state.address, provider: state.provider });
-      updateWalletUI(); renderCaseList();
-    }
-    function onChain(){ ensureChain(state.provider); }
-
     async function connect(){
       openPicker(async (prov, name) => {
         try {
-          detachWalletEvents(state.provider);
-          state.provider = prov; state.providerName = name;
-          const accs = await prov.request({ method: 'eth_requestAccounts' });
-          if (!accs || !accs.length) return;
-          state.address = accs[0];
-          prov.on && prov.on('accountsChanged', onAccounts);
-          prov.on && prov.on('chainChanged', onChain);
+          const accounts = await prov.request({ method: 'eth_requestAccounts' });
+          if (!accounts || !accounts.length) return;
+          state.provider = prov; state.providerName = name; state.address = accounts.length ? accounts[0] : null;
+          state.client = createClient({ chain: studioDevnet, transport: prov });
           await ensureChain(prov);
-          state.client = createClient({ chain: studioDevnet, account: state.address, provider: prov });
-          updateWalletUI(); renderCaseList();
+          prov.on?.('accountsChanged', (accts) => {
+            state.address = accts.length ? accts[0] : null;
+            if (!state.address) disconnect(); else updateWalletUI();
+          });
+          prov.on?.('chainChanged', async () => { await ensureChain(prov); });
+          updateWalletUI();
+          renderCaseList();
+          toast('Wallet verbunden.');
         } catch (e) {
-          console.error(e); toast(t('toast.err') + ': ' + (e.message || e), true);
+          console.error(e);
+          toast('Verbindung abgelehnt.', true);
         }
       });
     }
+
     function disconnect(){
-      detachWalletEvents(state.provider);
-      state.provider = null; state.address = null; state.client = null; state.chainOk = false;
+      state.provider = null; state.providerName = null; state.address = null; state.client = null; state.chainOk = false;
       updateWalletUI();
-      const list = document.getElementById('caseList');
-      list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`;
+      document.getElementById('caseList').innerHTML = `<div class="empty" id="caseListEmpty">${esc(t('mine.empty'))}</div>`;
     }
 
-    // ---- Contract reads / writes ---------------------------------------
-    async function readContract(functionName, args){
-      return await state.client.readContract({ address: CONTRACT_ADDRESS, functionName, args });
-    }
+    document.getElementById('connectBtn')?.addEventListener('click', connect);
 
-    async function writeContract(functionName, args){
-      const fees = await state.client.estimateTransactionFees({
-        address: CONTRACT_ADDRESS, functionName, args,
-      });
-      const hash = await state.client.writeContract({
-        address: CONTRACT_ADDRESS, functionName, args, value: 0n, fees,
-      });
-      return hash;
-    }
-
-    // ---- Render case list ----------------------------------------------
+    // ---- Render case list & submission ----------------------------------
     async function renderCaseList(){
-      const list = document.getElementById('caseList');
-      if (!state.address){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
-      if (CONTRACT_ADDRESS === ZERO_ADDR){
-        list.innerHTML = `<div class="empty">${esc(t('toast.notset'))}</div>`; return;
-      }
-      list.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
+      const container = document.getElementById('caseList');
+      if (!state.client || CONTRACT_ADDRESS === ZERO_ADDR) return;
+      container.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
       try {
-        const raw = await readContract('list_cases_by', [state.address]);
-        const ids = JSON.parse(raw || '[]');
-        if (!ids.length){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
-        // Fetch all cases in parallel
-        const rows = await Promise.all(ids.map(async id => {
-          try { const j = JSON.parse(await readContract('get_case', [id])); return j; } catch { return null; }
-        }));
-        list.innerHTML = '';
-        rows.filter(Boolean).reverse().forEach(c => {
-          const row = document.createElement('div'); row.className = 'case-row';
-          const summary = (c.symptoms || '').slice(0, 60);
-          row.innerHTML = `
-            <span class="case-id">${esc(c.case_id)}</span>
-            <span class="case-summary">${esc(summary)}</span>
-            <span class="case-verdict">${esc(c.plausibility || '—')} · ${esc(c.urgency || '—')}</span>`;
-          row.onclick = () => showDetail(c);
-          list.appendChild(row);
+        // Read cases from contract storage via read method (adjust method name according to your contract python definition, e.g. get_cases or get_user_cases)
+        const raw = await state.client.readContract({
+          address: CONTRACT_ADDRESS,
+          method: 'get_user_cases',
+          args: [state.address]
         });
-      } catch (e) {
-        console.error(e);
-        list.innerHTML = `<div class="empty">${esc(t('toast.err'))}: ${esc(e.message || e)}</div>`;
+        const cases = typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+        if (!cases.length){
+          container.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`;
+          return;
+        }
+        container.innerHTML = '';
+        cases.forEach(c => {
+          const row = document.createElement('div');
+          row.className = 'case-row';
+          row.innerHTML = `
+            <span class="case-id">${esc(c.id || 'SO-CASE')}</span>
+            <span class="case-summary">${esc(c.symptoms || '')}</span>
+            <span class="case-verdict">${esc(c.verdict_plausible || 'PENDING')}</span>
+          `;
+          row.onclick = () => openDetail(c);
+          container.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="empty">Fehler beim Laden der Fälle (oder Contract speichert anders).</div>`;
       }
     }
 
-    // ---- Detail sheet ---------------------------------------------------
-    const VERDICT_CLASSES = {
-      PLAUSIBLE:'plausible', QUESTIONABLE:'questionable', INSUFFICIENT_DATA:'insufficient',
-      URGENT:'urgent', MODERATE:'moderate', ROUTINE:'routine', UNREVIEWED:'unreviewed',
-    };
-    function showDetail(c){
-      document.getElementById('detailId').textContent = c.case_id || '—';
-      document.getElementById('detailFiled').textContent = `${t('detail.filed')}: ${c.filed_by || '—'}`;
-      document.getElementById('dAge').textContent = c.age || '—';
-      document.getElementById('dSex').textContent = c.sex || '—';
-      document.getElementById('dSymptoms').textContent = c.symptoms || '—';
-      document.getElementById('dDiag').textContent = c.current_diagnosis || '—';
-      document.getElementById('dTreat').textContent = c.current_treatment || '—';
-
-      const pWord = c.plausibility || 'UNREVIEWED';
-      const uWord = c.urgency || 'UNREVIEWED';
-      const vP = document.getElementById('vPlaus');
-      const vU = document.getElementById('vUrg');
-      vP.className = 'verdict ' + (VERDICT_CLASSES[pWord] || 'unreviewed');
-      vU.className = 'verdict ' + (VERDICT_CLASSES[uWord] || 'unreviewed');
-      document.getElementById('vPlausWord').textContent = pWord;
-      document.getElementById('vUrgWord').textContent = uWord;
-      document.getElementById('vPlausHint').textContent = t('vhint.' + pWord) || '';
-      document.getElementById('vUrgHint').textContent = t('vhint.' + uWord) || '';
+    function openDetail(c){
+      document.getElementById('detailId').textContent = c.id || 'SO-CASE';
+      document.getElementById('detailFiled').textContent = 'Eingereicht: ' + (c.sender || '');
+      document.getElementById('dAge').textContent = c.age || '-';
+      document.getElementById('dSex').textContent = c.sex || '-';
+      document.getElementById('dSymptoms').textContent = c.symptoms || '-';
+      document.getElementById('dDiag').textContent = c.diag || '-';
+      document.getElementById('dTreat').textContent = c.treat || '-';
+      document.getElementById('vPlausWord').textContent = c.verdict_plausible || 'PENDING';
+      document.getElementById('vUrgWord').textContent = c.verdict_urgency || 'PENDING';
       document.getElementById('detail').classList.add('open');
     }
-    document.getElementById('detailClose').addEventListener('click', () => document.getElementById('detail').classList.remove('open'));
-    document.getElementById('detail').addEventListener('click', (e) => { if (e.target.id === 'detail') e.target.classList.remove('open'); });
 
-    // ---- Submit ---------------------------------------------------------
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-      if (!state.address){ toast(t('toast.notconn'), true); return; }
-      if (!state.chainOk){ toast(t('toast.wrongnet'), true); return; }
-      if (CONTRACT_ADDRESS === ZERO_ADDR){ toast(t('toast.notset'), true); return; }
+    document.getElementById('detailClose').onclick = () => document.getElementById('detail').classList.remove('open');
+    document.getElementById('detail').onclick = (e) => { if (e.target.id === 'detail') document.getElementById('detail').classList.remove('open'); };
+
+    // Submit Action fix with fee estimation & auto-refresh
+    document.getElementById('submitBtn').onclick = async () => {
       const age = document.getElementById('age').value.trim();
       const sex = document.getElementById('sex').value;
       const symptoms = document.getElementById('symptoms').value.trim();
       const diag = document.getElementById('diag').value.trim();
       const treat = document.getElementById('treat').value.trim();
-      if (!age || !symptoms){ toast(t('toast.fields'), true); return; }
 
-      const year = String(new Date().getFullYear());
-      const btn = document.getElementById('submitBtn'); btn.disabled = true;
+      if (!age || !symptoms) {
+        toast(t('toast.fields'), true);
+        return;
+      }
+
+      if (!state.client || !state.address) {
+        toast(t('toast.notconn'), true);
+        return;
+      }
+
       try {
         toast(t('toast.sent'));
-        const hash = await writeContract('submit_case', [age, sex, symptoms, diag, treat, year]);
-        await state.client.waitForTransactionReceipt({ hash, waitUntil: 'finalized' });
+        document.getElementById('submitBtn').disabled = true;
+
+        // v0.6 fee estimation stack for GenLayer Studio NEXT
+        const fees = await state.client.estimateTransactionFees({
+          address: CONTRACT_ADDRESS,
+          method: 'submit_case',
+          args: [age, sex, symptoms, diag, treat],
+          account: state.address,
+        });
+
+        const tx = await state.client.writeContract({
+          address: CONTRACT_ADDRESS,
+          method: 'submit_case',
+          args: [age, sex, symptoms, diag, treat],
+          account: state.address,
+          ...fees,
+        });
+
         toast(t('toast.done'));
+        // Form leeren
         document.getElementById('age').value = '';
         document.getElementById('symptoms').value = '';
         document.getElementById('diag').value = '';
         document.getElementById('treat').value = '';
-        renderCaseList();
-      } catch (e) {
-        console.error(e); toast(t('toast.err') + ': ' + (e.message || e), true);
-      } finally {
-        btn.disabled = false;
-      }
-    });
 
-    // ---- Init -----------------------------------------------------------
+        // Liste direkt neu laden
+        setTimeout(renderCaseList, 2000);
+      } catch (err) {
+        console.error(err);
+        toast(t('toast.err') + ': ' + (err.message || err), true);
+      } finally {
+        document.getElementById('submitBtn').disabled = false;
+        updateWalletUI();
+      }
+    };
+
     applyI18n();
     updateWalletUI();
   </script>
