@@ -34,21 +34,22 @@ def _pick(text: str, options: list) -> str:
 
 
 class SecondOpinion(gl.contract.Contract):
-    # Medical second opinion.
+    # Medical second opinion with a comprehensive intake and an optional
+    # document field (e.g. a doctor's report pasted as text).
     #
-    # A user submits a case (age, sex, symptoms, current diagnosis,
-    # current treatment). A GenLayer validator jury answers two separate
-    # single-word questions with strict equivalence:
+    # A GenLayer validator jury answers TWO separate single-word questions
+    # with strict equivalence:
     #   1) Plausibility of the current diagnosis:
     #        PLAUSIBLE | QUESTIONABLE | INSUFFICIENT_DATA
     #   2) Urgency of specialist referral:
     #        URGENT | MODERATE | ROUTINE
     # Single tokens are what let independent validator models reach consensus.
     #
-    # IMPORTANT: this contract stores case data unencrypted on-chain. The
-    # "private" behaviour is only a UI filter (list_cases_by scopes to one
-    # wallet address); anyone with a case id can call get_case and read the
-    # payload. The frontend must warn users not to submit personal identifiers.
+    # PRIVACY: this contract stores case data unencrypted on-chain, AND every
+    # argument passed to submit_case is permanently public in the transaction
+    # calldata regardless of what is stored. The "private" behaviour is only a
+    # UI filter (list_cases_by scopes to one wallet). Do NOT submit real
+    # patient records; use synthetic data only.
     #
     # Storage:
     #   cases        : case_id (str) -> JSON string of the full case record
@@ -129,15 +130,29 @@ class SecondOpinion(gl.contract.Contract):
         age: str,
         sex: str,
         symptoms: str,
+        duration: str,
+        severity: str,
+        conditions: str,
+        medications: str,
+        allergies: str,
+        family_history: str,
         current_diagnosis: str,
         current_treatment: str,
+        document: str,
         year: str,
     ) -> str:
         age_l = _norm(age)
         sex_l = _norm(sex)
         symptoms_l = _norm(symptoms)
+        duration_l = _norm(duration)
+        severity_l = _norm(severity)
+        conditions_l = _norm(conditions)
+        medications_l = _norm(medications)
+        allergies_l = _norm(allergies)
+        family_l = _norm(family_history)
         diag_l = _norm(current_diagnosis)
         treat_l = _norm(current_treatment)
+        document_l = _norm(document)
 
         # Year is passed in, never read from a clock: a contract has no
         # consensus-safe wall clock, so validators must all receive the same
@@ -153,12 +168,23 @@ class SecondOpinion(gl.contract.Contract):
             filed_by = ""
 
         # Deterministic input digest that both jury prompts share.
+        doc_block = ""
+        if document_l:
+            doc_block = "\nAttached document (e.g. doctor's report):\n" + document_l
+
         case_text = (
             "Age: " + age_l + "\n"
             + "Sex: " + sex_l + "\n"
-            + "Symptoms: " + symptoms_l + "\n"
+            + "Main symptoms: " + symptoms_l + "\n"
+            + "Duration of symptoms: " + duration_l + "\n"
+            + "Severity (patient-reported): " + severity_l + "\n"
+            + "Pre-existing conditions: " + conditions_l + "\n"
+            + "Current medications: " + medications_l + "\n"
+            + "Allergies: " + allergies_l + "\n"
+            + "Relevant family history: " + family_l + "\n"
             + "Current diagnosis (as reported by the patient): " + diag_l + "\n"
             + "Current treatment (as reported by the patient): " + treat_l
+            + doc_block
         )
 
         # ---- Jury question 1: plausibility ---------------------------------
@@ -168,10 +194,10 @@ class SecondOpinion(gl.contract.Contract):
                 "non-binding second opinion. You are NOT giving medical "
                 "advice to a patient. Given ONLY the case description below, "
                 "judge whether the currently proposed diagnosis plausibly "
-                "fits the reported symptoms in the given age and sex context.\n\n"
+                "fits the reported symptoms and history.\n\n"
                 "Answer with EXACTLY ONE of these three words, uppercase, "
                 "no punctuation, no explanation:\n"
-                "  PLAUSIBLE          - the diagnosis reasonably fits the symptoms\n"
+                "  PLAUSIBLE          - the diagnosis reasonably fits the case\n"
                 "  QUESTIONABLE       - the diagnosis does not fit well or "
                 "something is inconsistent\n"
                 "  INSUFFICIENT_DATA  - not enough information to judge\n\n"
@@ -222,11 +248,18 @@ class SecondOpinion(gl.contract.Contract):
             "age": age_l,
             "sex": sex_l,
             "symptoms": symptoms_l,
+            "duration": duration_l,
+            "severity": severity_l,
+            "conditions": conditions_l,
+            "medications": medications_l,
+            "allergies": allergies_l,
+            "family_history": family_l,
             "current_diagnosis": diag_l,
             "current_treatment": treat_l,
+            "document": document_l,
             "plausibility": plausibility,
             "urgency": urgency,
-            "version": 1,
+            "version": 2,
         }
         self.cases[case_id] = json.dumps(payload)
 
