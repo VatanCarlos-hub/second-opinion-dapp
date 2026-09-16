@@ -9,26 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root{
-      --paper:#fbfaf7;
-      --ink:#1a1f26;
-      --muted:#6b7280;
-      --rule:#d4d0c8;
-      --seal:#2d5f4e;
-      --seal-soft:#e6ede9;
-      --alert:#a63e2e;
-      --warn:#8a6a1c;
+      --paper:#fbfaf7; --ink:#1a1f26; --muted:#6b7280; --rule:#d4d0c8;
+      --seal:#2d5f4e; --seal-soft:#e6ede9; --alert:#a63e2e; --warn:#8a6a1c;
       --serif:'Vollkorn', Georgia, 'Times New Roman', serif;
       --sans:'Inter', ui-sans-serif, system-ui, sans-serif;
     }
     *{box-sizing:border-box}
     html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
-    body{min-height:100vh;padding:0 24px 64px}
+    body{min-height:100vh;padding:0 24px 80px}
     a{color:var(--seal)}
     button{font-family:var(--sans);cursor:pointer}
     input,select,textarea{font-family:var(--serif);color:var(--ink)}
     .container{max-width:1180px;margin:0 auto}
 
-    /* ---------- Masthead ---------- */
     .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:28px 0 20px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
     .brand h1{font-size:34px;line-height:1.05;margin:0;font-weight:600;letter-spacing:-0.005em}
     .brand .subtitle{margin-top:6px;font-family:var(--sans);font-size:13px;color:var(--muted);letter-spacing:0.02em}
@@ -37,7 +30,7 @@
     .lang button{background:transparent;border:0;padding:5px 10px;color:var(--muted);border-right:1px solid var(--rule)}
     .lang button:last-child{border-right:0}
     .lang button.active{background:var(--ink);color:var(--paper)}
-    .wallet-line{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px}
+    .wallet-line{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px;flex-wrap:wrap;justify-content:flex-end}
     .wallet-line .addr{color:var(--ink);font-variant-numeric:tabular-nums}
     .wallet-line .netbadge{padding:2px 8px;border:1px solid var(--rule);border-radius:2px;color:var(--muted);font-size:11px;letter-spacing:0.03em}
     .wallet-line .netbadge.ok{border-color:var(--seal);color:var(--seal)}
@@ -45,32 +38,44 @@
     .btn{font-family:var(--sans);font-size:13px;padding:7px 14px;background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:2px}
     .btn.ghost{background:transparent;color:var(--ink)}
     .btn.seal{background:var(--seal);border-color:var(--seal)}
-    .btn:disabled{opacity:0.45;cursor:not-allowed}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
     .btn.small{padding:4px 10px;font-size:12px}
 
-    /* ---------- Warning banner ---------- */
-    .warnbox{margin:20px 0 24px;border:1px solid var(--warn);background:#fbf6e7;padding:14px 16px;font-family:var(--sans);font-size:13px;color:#4a3a10;line-height:1.55}
-    .warnbox strong{color:#4a3a10}
+    .warnbox{margin:20px 0 10px;border:1px solid var(--warn);background:#fbf6e7;padding:14px 16px;font-family:var(--sans);font-size:13px;color:#4a3a10;line-height:1.55}
+    .warnbox.strong{border-color:var(--alert);background:#faece8;color:#5a1c12}
+    .warnbox strong{color:inherit}
 
-    /* ---------- Layout ---------- */
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:8px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr;gap:28px}}
+    .statusbar{margin:14px 0 24px;font-family:var(--sans);font-size:13px;padding:10px 14px;border:1px solid var(--rule);background:var(--paper);display:flex;align-items:center;gap:10px}
+    .statusbar .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0}
+    .statusbar.ready .dot{background:var(--seal)}
+    .statusbar.blocked .dot{background:var(--alert)}
+    .statusbar .msg{color:var(--ink)}
+    .statusbar .act{margin-left:auto}
+
+    .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:36px;margin-top:8px}
+    @media (max-width:960px){.grid{grid-template-columns:1fr;gap:28px}}
 
     section h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;letter-spacing:-0.005em}
     section .sechint{font-family:var(--sans);color:var(--muted);font-size:12.5px;margin-bottom:16px}
 
-    /* ---------- Form ---------- */
     .form{border:1px solid var(--rule);background:var(--paper);padding:22px}
+    .fieldset-title{font-family:var(--sans);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--seal);margin:8px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+    .fieldset-title:first-child{margin-top:0}
     .field{margin-bottom:16px}
     .field label{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:5px;letter-spacing:0.02em}
     .field input,.field select,.field textarea{width:100%;background:var(--paper);border:0;border-bottom:1px solid var(--rule);padding:8px 2px;font-size:16px;outline:none;font-family:var(--serif)}
-    .field textarea{min-height:96px;resize:vertical;line-height:1.5}
+    .field textarea{min-height:74px;resize:vertical;line-height:1.5}
+    .field textarea.big{min-height:130px}
     .field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--seal)}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .submit-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;padding-top:14px;border-top:1px solid var(--rule)}
+    @media (max-width:520px){.row2{grid-template-columns:1fr}}
+    .doc-tools{display:flex;align-items:center;gap:12px;margin-top:6px;font-family:var(--sans);font-size:12px;color:var(--muted)}
+    .doc-tools input[type=file]{font-family:var(--sans);font-size:12px}
+    .charcount{font-family:var(--sans);font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
+    .charcount.over{color:var(--alert)}
+    .submit-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;padding-top:16px;border-top:1px solid var(--rule)}
     .cost-hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
 
-    /* ---------- Case list ---------- */
     .caselist{border:1px solid var(--rule);background:var(--paper);padding:22px;min-height:220px}
     .case-row{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer;gap:14px}
     .case-row:last-child{border-bottom:0}
@@ -80,16 +85,15 @@
     .case-verdict{font-family:var(--sans);font-size:11px;letter-spacing:0.06em;color:var(--ink);flex-shrink:0}
     .empty{font-family:var(--sans);font-size:13px;color:var(--muted);padding:20px 0}
 
-    /* ---------- Detail modal ---------- */
     .backdrop{position:fixed;inset:0;background:rgba(20,25,32,0.5);display:none;align-items:flex-start;justify-content:center;padding:48px 20px;overflow-y:auto;z-index:50}
     .backdrop.open{display:flex}
-    .sheet{background:var(--paper);width:100%;max-width:720px;border:1px solid var(--ink);padding:32px 36px;position:relative}
+    .sheet{background:var(--paper);width:100%;max-width:760px;border:1px solid var(--ink);padding:32px 36px;position:relative}
     .sheet .close{position:absolute;top:14px;right:14px;background:transparent;border:0;font-size:22px;color:var(--muted);cursor:pointer;padding:4px 10px}
     .sheet h3{font-family:var(--serif);font-weight:600;font-size:26px;margin:0 0 4px;color:var(--seal);font-feature-settings:"onum" 1}
-    .sheet .filed{font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:20px}
-    .sheet dl{display:grid;grid-template-columns:150px 1fr;gap:8px 20px;font-size:15px;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--rule)}
+    .sheet .filed{font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:20px;word-break:break-all}
+    .sheet dl{display:grid;grid-template-columns:170px 1fr;gap:8px 20px;font-size:15px;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--rule)}
     .sheet dt{font-family:var(--sans);font-size:12px;color:var(--muted);padding-top:4px;letter-spacing:0.02em}
-    .sheet dd{margin:0;font-family:var(--serif)}
+    .sheet dd{margin:0;font-family:var(--serif);white-space:pre-wrap}
     .verdictblock{display:grid;grid-template-columns:1fr 1fr;gap:24px}
     .verdict{border:1px solid var(--rule);padding:16px}
     .verdict .vlabel{font-family:var(--sans);font-size:11px;color:var(--muted);letter-spacing:0.06em;margin-bottom:8px}
@@ -104,31 +108,27 @@
     .verdict.unreviewed .vword{color:var(--muted);font-style:italic}
     @media (max-width:640px){.verdictblock{grid-template-columns:1fr} .sheet dl{grid-template-columns:1fr}}
 
-    /* ---------- Wallet picker ---------- */
     .picker{background:var(--paper);border:1px solid var(--ink);max-width:420px;width:100%;padding:22px}
     .picker h4{font-family:var(--serif);margin:0 0 14px;font-size:19px;font-weight:600}
-    .picker .wopt{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--rule);margin-bottom:8px;cursor:pointer;font-family:var(--sans);font-size:14px;background:var(--paper)}
+    .picker .wopt{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--rule);margin-bottom:8px;cursor:pointer;font-family:var(--sans);font-size:14px;background:var(--paper);width:100%;text-align:left}
     .picker .wopt:hover{background:#f4f2ec}
     .picker .wopt img{width:22px;height:22px;object-fit:contain}
     .picker .close{margin-top:8px;font-family:var(--sans);font-size:12px;color:var(--muted);background:transparent;border:0;cursor:pointer}
 
-    /* ---------- Toast ---------- */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;font-family:var(--sans);font-size:13px;z-index:60;opacity:0;transition:opacity 0.2s;max-width:560px;line-height:1.5}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;font-family:var(--sans);font-size:13px;z-index:60;opacity:0;transition:opacity 0.2s;max-width:560px;line-height:1.5;text-align:center}
     .toast.show{opacity:1}
     .toast.err{background:var(--alert)}
 
-    /* ---------- Footer ---------- */
     footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);font-family:var(--sans);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-    footer a{color:var(--muted)}
-    .mono{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:11.5px}
+    .mono{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:11.5px;word-break:break-all}
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Masthead -->
+
     <header class="masthead">
       <div class="brand">
-        <h1 data-i18n="brand.title">Second Opinion</h1>
+        <h1>Second Opinion</h1>
         <div class="subtitle" data-i18n="brand.subtitle">Zweitmeinung on-chain · GenLayer Studio NEXT</div>
       </div>
       <div class="masthead-right">
@@ -137,30 +137,32 @@
           <button data-lang="en">EN</button>
           <button data-lang="tr">TR</button>
         </div>
-        <div class="wallet-line" id="walletLine">
-          <span class="netbadge" id="netBadge" data-i18n="net.disconnected">nicht verbunden</span>
-          <button class="btn" id="connectBtn" data-i18n="wallet.connect">Wallet verbinden</button>
-        </div>
+        <div class="wallet-line" id="walletLine"></div>
       </div>
     </header>
 
-    <!-- Warning banner -->
-    <div class="warnbox" role="alert">
-      <strong data-i18n="warn.title">Wichtig — vor der Nutzung lesen:</strong>
-      <span data-i18n="warn.body">
-        Diese Anwendung ersetzt keinen ärztlichen Rat. Sie liefert nur eine nicht-bindende
-        KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Alle eingegebenen Angaben werden
-        unverschlüsselt auf einer öffentlichen Blockchain gespeichert und sind mit der
-        Fall-Kennung dauerhaft für jeden lesbar.
-      </span>
+    <div class="warnbox" role="note">
+      <strong data-i18n="warn.title">Kein Arztersatz.</strong>
+      <span data-i18n="warn.body"> Diese Anwendung liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Bei ernsten Beschwerden immer eine Ärztin oder einen Arzt aufsuchen.</span>
+    </div>
+    <div class="warnbox strong" role="alert">
+      <strong data-i18n="warn2.title">Datenschutz — unbedingt beachten:</strong>
+      <span data-i18n="warn2.body"> Alle Eingaben inkl. hochgeladener Dokumente werden unverschlüsselt und dauerhaft auf einer öffentlichen Blockchain gespeichert und sind für jeden lesbar. Eine Löschung ist technisch nicht möglich. Gesundheitsdaten sind besondere personenbezogene Daten (Art. 9 DSGVO). Verwenden Sie ausschließlich erfundene Beispieldaten — niemals echte Patientendaten, keine Namen, Geburtsdaten oder Adressen.</span>
+    </div>
+
+    <div class="statusbar" id="statusbar">
+      <span class="dot"></span>
+      <span class="msg" id="statusMsg">…</span>
+      <span class="act" id="statusAct"></span>
     </div>
 
     <div class="grid">
-      <!-- LEFT: Fall einreichen -->
       <section>
         <h2 data-i18n="form.title">Neuen Fall einreichen</h2>
-        <div class="sechint" data-i18n="form.hint">Fünf Felder. Antwort der Jury: zwei Ein-Wort-Befunde.</div>
+        <div class="sechint" data-i18n="form.hint">Umfassende Anamnese. Antwort der Jury: zwei Ein-Wort-Befunde.</div>
         <div class="form">
+
+          <div class="fieldset-title" data-i18n="fs.basics">Basisangaben</div>
           <div class="row2">
             <div class="field">
               <label data-i18n="form.age">Alter (Jahre)</label>
@@ -176,31 +178,83 @@
               </select>
             </div>
           </div>
+
+          <div class="fieldset-title" data-i18n="fs.symptoms">Beschwerden</div>
           <div class="field">
-            <label data-i18n="form.symptoms">Symptome (allgemein, ohne persönliche Details)</label>
-            <textarea id="symptoms" placeholder="z. B. seit 3 Wochen Kopfschmerzen morgens, Übelkeit, Sehstörungen …"></textarea>
+            <label data-i18n="form.symptoms">Hauptsymptome (allgemein, ohne persönliche Details)</label>
+            <textarea id="symptoms" placeholder="z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit, Sehstörungen …"></textarea>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label data-i18n="form.duration">Dauer der Beschwerden</label>
+              <input type="text" id="duration" placeholder="z. B. 3 Wochen" />
+            </div>
+            <div class="field">
+              <label data-i18n="form.severity">Schweregrad (selbst eingeschätzt)</label>
+              <select id="severity">
+                <option value="" data-i18n="form.sev.none">nicht angegeben</option>
+                <option value="mild" data-i18n="form.sev.mild">leicht</option>
+                <option value="moderate" data-i18n="form.sev.mod">mittel</option>
+                <option value="severe" data-i18n="form.sev.sev">stark</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fieldset-title" data-i18n="fs.history">Vorgeschichte</div>
+          <div class="field">
+            <label data-i18n="form.conditions">Vorerkrankungen</label>
+            <textarea id="conditions" placeholder="z. B. Bluthochdruck, Migräne"></textarea>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label data-i18n="form.medications">Aktuelle Medikamente</label>
+              <textarea id="medications" placeholder="z. B. Ramipril, Ibuprofen bei Bedarf"></textarea>
+            </div>
+            <div class="field">
+              <label data-i18n="form.allergies">Allergien</label>
+              <textarea id="allergies" placeholder="z. B. Penicillin"></textarea>
+            </div>
           </div>
           <div class="field">
-            <label data-i18n="form.diag">Bisherige Diagnose (falls vorhanden)</label>
-            <textarea id="diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
+            <label data-i18n="form.family">Relevante Familienanamnese</label>
+            <textarea id="family" placeholder="z. B. Herzinfarkt beim Vater mit 55"></textarea>
           </div>
+
+          <div class="fieldset-title" data-i18n="fs.current">Bisherige Einordnung</div>
+          <div class="row2">
+            <div class="field">
+              <label data-i18n="form.diag">Bisherige Diagnose (falls vorhanden)</label>
+              <textarea id="diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
+            </div>
+            <div class="field">
+              <label data-i18n="form.treat">Aktuelle Behandlung (falls vorhanden)</label>
+              <textarea id="treat" placeholder="z. B. Ibuprofen 400 bei Bedarf"></textarea>
+            </div>
+          </div>
+
+          <div class="fieldset-title" data-i18n="fs.document">Dokument (optional)</div>
           <div class="field">
-            <label data-i18n="form.treat">Aktuelle Behandlung (falls vorhanden)</label>
-            <textarea id="treat" placeholder="z. B. Ibuprofen 400 bei Bedarf"></textarea>
+            <label data-i18n="form.document">Arztbericht / Befund als Text (nur Beispieldaten!)</label>
+            <textarea id="document" class="big" placeholder="Text des Berichts hier einfügen, oder eine .txt-Datei laden …"></textarea>
+            <div class="doc-tools">
+              <input type="file" id="docFile" accept=".txt,text/plain" />
+              <span data-i18n="form.docfile">.txt-Datei laden (Inhalt wird ins Feld übernommen)</span>
+            </div>
+            <div class="charcount" id="docCount">0 / 6000</div>
           </div>
+
           <div class="submit-row">
-            <div class="cost-hint" data-i18n="form.cost">Kosten: wenige Cent GEN, Rückerstattung des Restbudgets automatisch.</div>
+            <div class="cost-hint" data-i18n="form.cost">Kosten: wenige Cent GEN, Rest wird automatisch erstattet.</div>
             <button class="btn seal" id="submitBtn" disabled data-i18n="form.submit">Fall einreichen</button>
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: Meine Fälle -->
       <section>
         <h2 data-i18n="mine.title">Meine Befunde</h2>
         <div class="sechint" data-i18n="mine.hint">Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.</div>
         <div class="caselist" id="caseList">
-          <div class="empty" id="caseListEmpty" data-i18n="mine.empty">Noch keine Fälle. Erst Wallet verbinden.</div>
+          <div class="empty" data-i18n="mine.empty">Noch keine Fälle. Erst Wallet verbinden.</div>
         </div>
       </section>
     </div>
@@ -208,28 +262,19 @@
     <footer>
       <div>
         <span data-i18n="foot.contract">Contract</span>:
-        <span class="mono" id="contractAddrLabel">nicht gesetzt</span>
+        <span class="mono" id="contractAddrLabel"></span>
         · <span data-i18n="foot.chain">Chain</span> studioDevnet (61997)
       </div>
-      <div>
-        <span data-i18n="foot.pattern">Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch</span>
-      </div>
+      <div><span data-i18n="foot.pattern">Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch</span></div>
     </footer>
   </div>
 
-  <!-- Detail sheet -->
   <div class="backdrop" id="detail">
     <div class="sheet" role="dialog" aria-modal="true">
       <button class="close" id="detailClose" aria-label="close">×</button>
       <h3 id="detailId">SO-YYYY-NNNN</h3>
       <div class="filed" id="detailFiled"></div>
-      <dl>
-        <dt data-i18n="detail.age">Alter</dt><dd id="dAge"></dd>
-        <dt data-i18n="detail.sex">Geschlecht</dt><dd id="dSex"></dd>
-        <dt data-i18n="detail.symptoms">Symptome</dt><dd id="dSymptoms"></dd>
-        <dt data-i18n="detail.diag">Diagnose</dt><dd id="dDiag"></dd>
-        <dt data-i18n="detail.treat">Behandlung</dt><dd id="dTreat"></dd>
-      </dl>
+      <dl id="detailDl"></dl>
       <div class="verdictblock">
         <div class="verdict" id="vPlaus">
           <div class="vlabel" data-i18n="detail.vplaus">Plausibilität der Diagnose</div>
@@ -245,7 +290,6 @@
     </div>
   </div>
 
-  <!-- Wallet picker -->
   <div class="backdrop" id="picker">
     <div class="picker">
       <h4 data-i18n="picker.title">Wallet auswählen</h4>
@@ -259,29 +303,16 @@
   <script type="module">
     import { createClient } from 'https://esm.sh/genlayer-js@2.0.0-rc.1';
     import { studioDevnet } from 'https://esm.sh/genlayer-js@2.0.0-rc.1/chains';
-    import { custom } from 'https://esm.sh/viem'; // WICHTIG: Erforderlich für den Browser-Provider
 
-    // ---- CONTRACT SETUP ----------------------------------------------
-    const DEFAULT_CONTRACT = '0x21C41fb4D99a786a6ae03cFE3B3D2E893EF3ECFc';
-    const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
+    // ===================================================================
+    // CONTRACT ADDRESS
+    // Nach jedem Neu-Deploy hier die neue Adresse eintragen,
+    // ODER die Seite mit ?contract=0x... öffnen.
+    // ===================================================================
+    const CONTRACT_FALLBACK = '0x21C41fb4D99a786a6ae03cFE3B3D2E893EF3ECFc';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
-    const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : DEFAULT_CONTRACT;
-
-    // ACHTUNG: Hier MUSST du deinen echten ABI einfügen! Dieser Dummy verhindert nur den direkten Absturz.
-    const CONTRACT_ABI = [{
-      "inputs": [
-        {"internalType": "string", "name": "age", "type": "string"},
-        {"internalType": "string", "name": "sex", "type": "string"},
-        {"internalType": "string", "name": "symptoms", "type": "string"},
-        {"internalType": "string", "name": "diag", "type": "string"},
-        {"internalType": "string", "name": "treat", "type": "string"}
-      ],
-      "name": "submit_case",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }];
+    const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : CONTRACT_FALLBACK;
 
     const CHAIN_ID_HEX = '0xf22d'; // 61997
     const CHAIN_PARAMS = {
@@ -290,66 +321,141 @@
       nativeCurrency: { name: 'GEN Token', symbol: 'GEN', decimals: 18 },
       rpcUrls: ['https://studio-dev.genlayer.com/api'],
     };
+    const DOC_MAX = 6000;
 
-    // ---- i18n (Gekürzt für Übersichtlichkeit, greift auf Fallbacks zurück) -----
+    // ---- i18n ----
     const I18N = {
       de: {
-        'brand.title':'Second Opinion', 'brand.subtitle':'Zweitmeinung on-chain · GenLayer Studio NEXT',
-        'net.disconnected':'nicht verbunden', 'net.wrong':'falsches Netz', 'net.ok':'studioDevnet',
-        'wallet.connect':'Wallet verbinden', 'wallet.switch':'Netz wechseln', 'wallet.disconnect':'trennen',
-        'warn.title':'Wichtig — vor der Nutzung lesen:',
-        'warn.body':'Diese Anwendung ersetzt keinen ärztlichen Rat...',
-        'form.title':'Neuen Fall einreichen', 'form.hint':'Fünf Felder. Antwort der Jury: zwei Ein-Wort-Befunde.',
+        'brand.subtitle':'Zweitmeinung on-chain · GenLayer Studio NEXT',
+        'net.disconnected':'nicht verbunden','net.wrong':'falsches Netz','net.ok':'studioDevnet',
+        'wallet.connect':'Wallet verbinden','wallet.switch':'Netz wechseln','wallet.disconnect':'trennen',
+        'warn.title':'Kein Arztersatz.',
+        'warn.body':' Diese Anwendung liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Bei ernsten Beschwerden immer eine Ärztin oder einen Arzt aufsuchen.',
+        'warn2.title':'Datenschutz — unbedingt beachten:',
+        'warn2.body':' Alle Eingaben inkl. hochgeladener Dokumente werden unverschlüsselt und dauerhaft auf einer öffentlichen Blockchain gespeichert und sind für jeden lesbar. Eine Löschung ist technisch nicht möglich. Gesundheitsdaten sind besondere personenbezogene Daten (Art. 9 DSGVO). Verwenden Sie ausschließlich erfundene Beispieldaten — niemals echte Patientendaten, keine Namen, Geburtsdaten oder Adressen.',
+        'status.connect':'Nicht verbunden. Bitte Wallet verbinden.',
+        'status.switch':'Falsches Netzwerk. Bitte zu studioDevnet wechseln.',
+        'status.ready':'Bereit. Fall kann eingereicht werden.',
+        'status.sending':'Transaktion läuft — warte auf Finalisierung …',
+        'form.title':'Neuen Fall einreichen','form.hint':'Umfassende Anamnese. Antwort der Jury: zwei Ein-Wort-Befunde.',
+        'fs.basics':'Basisangaben','fs.symptoms':'Beschwerden','fs.history':'Vorgeschichte','fs.current':'Bisherige Einordnung','fs.document':'Dokument (optional)',
         'form.age':'Alter (Jahre)','form.sex':'Geschlecht',
         'form.sex.unspec':'nicht angegeben','form.sex.f':'weiblich','form.sex.m':'männlich','form.sex.o':'divers',
-        'form.symptoms':'Symptome (allgemein, ohne persönliche Details)',
-        'form.diag':'Bisherige Diagnose (falls vorhanden)',
-        'form.treat':'Aktuelle Behandlung (falls vorhanden)',
-        'form.cost':'Kosten: wenige Cent GEN, Rückerstattung des Restbudgets automatisch.',
-        'form.submit':'Fall einreichen',
-        'mine.title':'Meine Befunde', 'mine.hint':'Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.',
-        'mine.empty':'Noch keine Fälle. Erst Wallet verbinden.', 'mine.loading':'lädt …',
-        'foot.contract':'Contract','foot.chain':'Chain',
-        'foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch',
-        'picker.title':'Wallet auswählen','picker.cancel':'abbrechen',
-        'detail.age':'Alter','detail.sex':'Geschlecht','detail.symptoms':'Symptome','detail.diag':'Diagnose','detail.treat':'Behandlung',
-        'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt',
-        'detail.filed':'Eingereicht von',
-        'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zu den Symptomen.',
-        'vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.',
-        'vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.',
-        'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.',
-        'vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.',
-        'vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.',
-        'vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
-        'toast.notconn':'Bitte zuerst Wallet verbinden.',
-        'toast.notset':'Contract-Adresse ist nicht gesetzt.',
-        'toast.wrongnet':'Falsches Netz. Wechsle zu studioDevnet.',
-        'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.',
-        'toast.sent':'Transaktion gesendet — prüfe Wallet …',
-        'toast.done':'Transaktion signiert.',
-        'toast.err':'Fehler',
-      }
+        'form.symptoms':'Hauptsymptome (allgemein, ohne persönliche Details)',
+        'form.duration':'Dauer der Beschwerden','form.severity':'Schweregrad (selbst eingeschätzt)',
+        'form.sev.none':'nicht angegeben','form.sev.mild':'leicht','form.sev.mod':'mittel','form.sev.sev':'stark',
+        'form.conditions':'Vorerkrankungen','form.medications':'Aktuelle Medikamente','form.allergies':'Allergien',
+        'form.family':'Relevante Familienanamnese',
+        'form.diag':'Bisherige Diagnose (falls vorhanden)','form.treat':'Aktuelle Behandlung (falls vorhanden)',
+        'form.document':'Arztbericht / Befund als Text (nur Beispieldaten!)',
+        'form.docfile':'.txt-Datei laden (Inhalt wird ins Feld übernommen)',
+        'form.cost':'Kosten: wenige Cent GEN, Rest wird automatisch erstattet.','form.submit':'Fall einreichen',
+        'mine.title':'Meine Befunde','mine.hint':'Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.',
+        'mine.empty':'Noch keine Fälle. Erst Wallet verbinden.','mine.loading':'lädt …',
+        'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch',
+        'picker.title':'Wallet auswählen','picker.cancel':'abbrechen','picker.none':'Keine Wallet gefunden. Bitte MetaMask oder Rabby installieren.',
+        'd.age':'Alter','d.sex':'Geschlecht','d.symptoms':'Symptome','d.duration':'Dauer','d.severity':'Schweregrad','d.conditions':'Vorerkrankungen','d.medications':'Medikamente','d.allergies':'Allergien','d.family':'Familienanamnese','d.diag':'Diagnose','d.treat':'Behandlung','d.document':'Dokument',
+        'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt','detail.filed':'Eingereicht von',
+        'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zum Fall.','vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.','vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.',
+        'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.','vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.','vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.','vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
+        'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.','toast.doclong':'Dokument ist zu lang und wurde gekürzt.',
+        'toast.sent':'Transaktion gesendet — warte auf Finalisierung …','toast.done':'Fall finalisiert.','toast.err':'Fehler',
+      },
+      en: {
+        'brand.subtitle':'On-chain second opinion · GenLayer Studio NEXT',
+        'net.disconnected':'not connected','net.wrong':'wrong network','net.ok':'studioDevnet',
+        'wallet.connect':'Connect wallet','wallet.switch':'Switch network','wallet.disconnect':'disconnect',
+        'warn.title':'Not a substitute for a doctor.',
+        'warn.body':' This app only provides a non-binding AI second opinion and is not a diagnostic tool. For serious symptoms, always see a physician.',
+        'warn2.title':'Privacy — read carefully:',
+        'warn2.body':' All input, including uploaded documents, is stored unencrypted and permanently on a public blockchain and is readable by anyone. Deletion is technically impossible. Health data is a special category of personal data. Use only synthetic sample data — never real patient records, names, dates of birth or addresses.',
+        'status.connect':'Not connected. Please connect a wallet.',
+        'status.switch':'Wrong network. Please switch to studioDevnet.',
+        'status.ready':'Ready. You can submit a case.',
+        'status.sending':'Transaction in progress — waiting for finalization …',
+        'form.title':'Submit a new case','form.hint':'Comprehensive intake. Jury returns two single-word findings.',
+        'fs.basics':'Basics','fs.symptoms':'Complaints','fs.history':'History','fs.current':'Current assessment','fs.document':'Document (optional)',
+        'form.age':'Age (years)','form.sex':'Sex',
+        'form.sex.unspec':'not specified','form.sex.f':'female','form.sex.m':'male','form.sex.o':'other',
+        'form.symptoms':'Main symptoms (general, no personal details)',
+        'form.duration':'Duration of symptoms','form.severity':'Severity (self-assessed)',
+        'form.sev.none':'not specified','form.sev.mild':'mild','form.sev.mod':'moderate','form.sev.sev':'severe',
+        'form.conditions':'Pre-existing conditions','form.medications':'Current medications','form.allergies':'Allergies',
+        'form.family':'Relevant family history',
+        'form.diag':'Current diagnosis (if any)','form.treat':'Current treatment (if any)',
+        'form.document':'Doctor\u2019s report / findings as text (sample data only!)',
+        'form.docfile':'Load a .txt file (content copied into the field)',
+        'form.cost':'Cost: a few cents of GEN, remainder refunded automatically.','form.submit':'Submit case',
+        'mine.title':'My findings','mine.hint':'Only cases this wallet submitted. Still publicly readable on-chain.',
+        'mine.empty':'No cases yet. Connect a wallet first.','mine.loading':'loading …',
+        'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Consensus: 2× strict_eq · single-word answers · rest deterministic',
+        'picker.title':'Select wallet','picker.cancel':'cancel','picker.none':'No wallet found. Please install MetaMask or Rabby.',
+        'd.age':'Age','d.sex':'Sex','d.symptoms':'Symptoms','d.duration':'Duration','d.severity':'Severity','d.conditions':'Conditions','d.medications':'Medications','d.allergies':'Allergies','d.family':'Family history','d.diag':'Diagnosis','d.treat':'Treatment','d.document':'Document',
+        'detail.vplaus':'Plausibility of diagnosis','detail.vurg':'Specialist urgency','detail.filed':'Filed by',
+        'vhint.PLAUSIBLE':'The proposed diagnosis fits the case.','vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.','vhint.INSUFFICIENT_DATA':'Not enough information to judge.',
+        'vhint.URGENT':'Specialist consultation within 24–48h.','vhint.MODERATE':'Specialist consultation within 1–2 weeks.','vhint.ROUTINE':'No acute specialist consultation needed.','vhint.UNREVIEWED':'Jury returned no clear answer.',
+        'toast.fields':'Please fill in at least age and symptoms.','toast.doclong':'Document too long and was truncated.',
+        'toast.sent':'Transaction sent — waiting for finalization …','toast.done':'Case finalized.','toast.err':'Error',
+      },
+      tr: {
+        'brand.subtitle':'Zincir üstü ikinci görüş · GenLayer Studio NEXT',
+        'net.disconnected':'bağlı değil','net.wrong':'yanlış ağ','net.ok':'studioDevnet',
+        'wallet.connect':'Cüzdanı bağla','wallet.switch':'Ağ değiştir','wallet.disconnect':'ayır',
+        'warn.title':'Doktorun yerine geçmez.',
+        'warn.body':' Bu uygulama yalnızca bağlayıcı olmayan bir yapay zekâ ikinci görüşü sunar ve tanı aracı değildir. Ciddi şikâyetlerde mutlaka hekime başvurun.',
+        'warn2.title':'Gizlilik — dikkatle okuyun:',
+        'warn2.body':' Yüklenen belgeler dâhil tüm girdiler açık bir blockchain üzerinde şifresiz ve kalıcı olarak saklanır ve herkes tarafından okunabilir. Silme teknik olarak mümkün değildir. Sağlık verileri özel nitelikli kişisel veridir. Yalnızca uydurma örnek veri kullanın — asla gerçek hasta kaydı, ad, doğum tarihi veya adres girmeyin.',
+        'status.connect':'Bağlı değil. Lütfen cüzdan bağlayın.',
+        'status.switch':'Yanlış ağ. Lütfen studioDevnet ağına geçin.',
+        'status.ready':'Hazır. Dava gönderebilirsiniz.',
+        'status.sending':'İşlem sürüyor — sonuç bekleniyor …',
+        'form.title':'Yeni dava gönder','form.hint':'Kapsamlı anamnez. Jüri iki tek kelimelik bulgu döner.',
+        'fs.basics':'Temel bilgiler','fs.symptoms':'Şikâyetler','fs.history':'Geçmiş','fs.current':'Mevcut değerlendirme','fs.document':'Belge (isteğe bağlı)',
+        'form.age':'Yaş (yıl)','form.sex':'Cinsiyet',
+        'form.sex.unspec':'belirtilmedi','form.sex.f':'kadın','form.sex.m':'erkek','form.sex.o':'diğer',
+        'form.symptoms':'Ana belirtiler (genel, kişisel ayrıntı yok)',
+        'form.duration':'Belirtilerin süresi','form.severity':'Şiddet (kendi değerlendirmeniz)',
+        'form.sev.none':'belirtilmedi','form.sev.mild':'hafif','form.sev.mod':'orta','form.sev.sev':'şiddetli',
+        'form.conditions':'Mevcut hastalıklar','form.medications':'Kullanılan ilaçlar','form.allergies':'Alerjiler',
+        'form.family':'İlgili aile öyküsü',
+        'form.diag':'Mevcut tanı (varsa)','form.treat':'Mevcut tedavi (varsa)',
+        'form.document':'Doktor raporu / bulgu metni (yalnızca örnek veri!)',
+        'form.docfile':'.txt dosyası yükle (içerik alana kopyalanır)',
+        'form.cost':'Ücret: birkaç sent GEN, kalanı otomatik iade edilir.','form.submit':'Davayı gönder',
+        'mine.title':'Bulgularım','mine.hint':'Sadece bu cüzdanın gönderdiği davalar. Zincir üstünde yine herkese açık.',
+        'mine.empty':'Henüz dava yok. Önce cüzdan bağlayın.','mine.loading':'yükleniyor …',
+        'foot.contract':'Sözleşme','foot.chain':'Ağ','foot.pattern':'Uzlaşı: 2× strict_eq · tek kelime · gerisi deterministik',
+        'picker.title':'Cüzdan seç','picker.cancel':'iptal','picker.none':'Cüzdan bulunamadı. Lütfen MetaMask veya Rabby kurun.',
+        'd.age':'Yaş','d.sex':'Cinsiyet','d.symptoms':'Belirtiler','d.duration':'Süre','d.severity':'Şiddet','d.conditions':'Hastalıklar','d.medications':'İlaçlar','d.allergies':'Alerjiler','d.family':'Aile öyküsü','d.diag':'Tanı','d.treat':'Tedavi','d.document':'Belge',
+        'detail.vplaus':'Tanının makullüğü','detail.vurg':'Uzman aciliyeti','detail.filed':'Gönderen',
+        'vhint.PLAUSIBLE':'Önerilen tanı vakayla uyumlu.','vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.','vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.',
+        'vhint.URGENT':'24–48 saat içinde uzman görüşü.','vhint.MODERATE':'1–2 hafta içinde uzman görüşü.','vhint.ROUTINE':'Acil uzman görüşü gerekmez.','vhint.UNREVIEWED':'Jüri net yanıt vermedi.',
+        'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.','toast.doclong':'Belge çok uzun, kısaltıldı.',
+        'toast.sent':'İşlem gönderildi — bekleniyor …','toast.done':'Dava sonuçlandı.','toast.err':'Hata',
+      },
     };
-
-    let lang = 'de';
-    function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-    function t(key){ return I18N[lang][key] ?? key; }
+    let lang = localStorage.getItem('so_lang') || 'de';
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const t = key => (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
     function applyI18n(){
       document.documentElement.lang = lang;
       document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      updateWalletUI(); updateStatus();
+      if (state.address) renderCaseList();
     }
+    document.querySelectorAll('.lang button').forEach(b => {
+      b.addEventListener('click', () => { lang = b.dataset.lang; localStorage.setItem('so_lang', lang); applyI18n(); });
+    });
 
-    // ---- Toast ----------------------------------------------------------
     let toastTimer = null;
     function toast(msg, err=false){
       const el = document.getElementById('toast');
       el.textContent = msg; el.classList.toggle('err', err); el.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
     }
 
-    // ---- Wallet discovery (EIP-6963) ------------------------------------
+    // ---- Wallet discovery (EIP-6963) ----
     const providers = [];
     window.addEventListener('eip6963:announceProvider', (ev) => {
       const { info, provider } = ev.detail;
@@ -375,135 +481,244 @@
         list.appendChild(row);
       }
       if (!list.children.length){
-        list.innerHTML = `<div style="font-family:var(--sans);font-size:13px;color:var(--muted);padding:12px 0">Keine Wallet gefunden.</div>`;
+        list.innerHTML = `<div style="font-family:var(--sans);font-size:13px;color:var(--muted);padding:12px 0">${esc(t('picker.none'))}</div>`;
       }
       document.getElementById('picker').classList.add('open');
     }
     function closePicker(){ document.getElementById('picker').classList.remove('open'); }
     document.getElementById('pickerClose').addEventListener('click', closePicker);
+    document.getElementById('picker').addEventListener('click', (e) => { if (e.target.id === 'picker') closePicker(); });
 
-    // ---- State ----------------------------------------------------------
-    const state = { provider: null, address: null, client: null, chainOk: false };
-    function shortAddr(a){ return a ? `${a.slice(0,6)}…${a.slice(-4)}` : ''; }
+    // ---- State ----
+    const state = { provider:null, providerName:null, address:null, client:null, chainOk:false };
+    const shortAddr = a => a ? `${a.slice(0,6)}…${a.slice(-4)}` : '';
+
+    function submitEnabled(){ return !!(state.address && state.chainOk); }
+
+    function updateStatus(){
+      const bar = document.getElementById('statusbar');
+      const msg = document.getElementById('statusMsg');
+      const act = document.getElementById('statusAct');
+      act.innerHTML = '';
+      bar.classList.remove('ready','blocked');
+      if (!state.address){
+        bar.classList.add('blocked'); msg.textContent = t('status.connect');
+        const b = document.createElement('button'); b.className='btn small'; b.textContent=t('wallet.connect'); b.onclick=connect; act.appendChild(b);
+      } else if (!state.chainOk){
+        bar.classList.add('blocked'); msg.textContent = t('status.switch');
+        const b = document.createElement('button'); b.className='btn small'; b.textContent=t('wallet.switch'); b.onclick=()=>ensureChain(state.provider); act.appendChild(b);
+      } else {
+        bar.classList.add('ready'); msg.textContent = t('status.ready');
+      }
+    }
 
     function updateWalletUI(){
       const line = document.getElementById('walletLine');
       const submit = document.getElementById('submitBtn');
       document.getElementById('contractAddrLabel').textContent = CONTRACT_ADDRESS;
-
       line.innerHTML = '';
       if (!state.address){
-        const badge = document.createElement('span'); badge.className = 'netbadge'; badge.textContent = t('net.disconnected');
-        const btn = document.createElement('button'); btn.className = 'btn'; btn.id = 'connectBtn'; btn.textContent = t('wallet.connect');
-        btn.onclick = connect;
+        const badge = document.createElement('span'); badge.className='netbadge'; badge.textContent=t('net.disconnected');
+        const btn = document.createElement('button'); btn.className='btn'; btn.textContent=t('wallet.connect'); btn.onclick=connect;
         line.appendChild(badge); line.appendChild(btn);
-        submit.disabled = true;
-        return;
+      } else {
+        const badge = document.createElement('span'); badge.className='netbadge '+(state.chainOk?'ok':'warn');
+        badge.textContent = state.chainOk ? t('net.ok') : t('net.wrong');
+        const addr = document.createElement('span'); addr.className='addr'; addr.textContent=shortAddr(state.address);
+        const disc = document.createElement('button'); disc.className='btn ghost small'; disc.textContent=t('wallet.disconnect'); disc.onclick=disconnect;
+        line.appendChild(badge); line.appendChild(addr);
+        if (!state.chainOk){ const sw=document.createElement('button'); sw.className='btn small'; sw.textContent=t('wallet.switch'); sw.onclick=()=>ensureChain(state.provider); line.appendChild(sw); }
+        line.appendChild(disc);
       }
-      const badge = document.createElement('span'); badge.className = 'netbadge ' + (state.chainOk ? 'ok' : 'warn');
-      badge.textContent = state.chainOk ? t('net.ok') : t('net.wrong');
-      const addr = document.createElement('span'); addr.className = 'addr'; addr.textContent = shortAddr(state.address);
-      const disc = document.createElement('button'); disc.className = 'btn ghost small'; disc.textContent = t('wallet.disconnect'); disc.onclick = disconnect;
-      line.appendChild(badge); line.appendChild(addr); line.appendChild(disc);
-      
-      if (!state.chainOk){
-        const sw = document.createElement('button'); sw.className = 'btn small'; sw.textContent = t('wallet.switch'); sw.onclick = () => ensureChain(state.provider);
-        line.appendChild(sw);
-      }
-      submit.disabled = !(state.chainOk && CONTRACT_ADDRESS !== ZERO_ADDR);
+      submit.disabled = !submitEnabled();
     }
 
     async function ensureChain(prov){
+      if (!prov) return false;
       try {
-        const current = await prov.request({ method: 'eth_chainId' });
-        if (current === CHAIN_ID_HEX){ state.chainOk = true; updateWalletUI(); return true; }
+        const current = await prov.request({ method:'eth_chainId' });
+        if (current === CHAIN_ID_HEX){ state.chainOk=true; updateWalletUI(); updateStatus(); return true; }
         try {
-          await prov.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID_HEX }] });
+          await prov.request({ method:'wallet_switchEthereumChain', params:[{ chainId: CHAIN_ID_HEX }] });
         } catch (e) {
-          if (e && (e.code === 4902 || (e.data && e.data.originalError && e.data.originalError.code === 4902))){
-            await prov.request({ method: 'wallet_addEthereumChain', params: [CHAIN_PARAMS] });
-          }
+          const code = e && (e.code || (e.data && e.data.originalError && e.data.originalError.code));
+          if (code === 4902){ await prov.request({ method:'wallet_addEthereumChain', params:[CHAIN_PARAMS] }); }
+          else { throw e; }
         }
-        const after = await prov.request({ method: 'eth_chainId' });
+        const after = await prov.request({ method:'eth_chainId' });
         state.chainOk = (after === CHAIN_ID_HEX);
-        updateWalletUI();
-        return state.chainOk;
-      } catch (err) {
-        console.error('ensureChain error', err);
-        return false;
+      } catch (e) {
+        console.warn('chain switch failed', e); state.chainOk=false; toast(t('status.switch'), true);
       }
+      updateWalletUI(); updateStatus(); return state.chainOk;
     }
+
+    function detachWalletEvents(prov){
+      if (!prov || !prov.removeListener) return;
+      try { prov.removeListener('accountsChanged', onAccounts); } catch {}
+      try { prov.removeListener('chainChanged', onChain); } catch {}
+    }
+    function mkClient(){
+      state.client = createClient({ chain: studioDevnet, account: state.address, provider: state.provider });
+    }
+    function onAccounts(accs){
+      if (!accs || !accs.length){ disconnect(); return; }
+      state.address = accs[0]; mkClient(); updateWalletUI(); updateStatus(); renderCaseList();
+    }
+    function onChain(){ ensureChain(state.provider); }
 
     async function connect(){
       openPicker(async (prov, name) => {
         try {
-          const acts = await prov.request({ method: 'eth_requestAccounts' });
-          if (!acts || !acts[0]) return;
-          state.provider = prov;
-          state.address = acts[0];
+          detachWalletEvents(state.provider);
+          state.provider = prov; state.providerName = name;
+          const accs = await prov.request({ method:'eth_requestAccounts' });
+          if (!accs || !accs.length) return;
+          state.address = accs[0];
+          prov.on && prov.on('accountsChanged', onAccounts);
+          prov.on && prov.on('chainChanged', onChain);
           await ensureChain(prov);
-          
-          // HIER IST DER FIX: transport: custom(prov)
-          if (typeof createClient === 'function') {
-            state.client = createClient({ 
-              chain: studioDevnet,
-              transport: custom(prov) 
-            });
-          }
-          updateWalletUI();
-        } catch (err) {
-          console.error('Connect failed:', err);
-          toast('Verbindung fehlgeschlagen', true);
-        }
+          mkClient();
+          updateWalletUI(); updateStatus(); renderCaseList();
+        } catch (e) { console.error(e); toast(t('toast.err')+': '+(e.message||e), true); }
       });
     }
-
     function disconnect(){
-      state.provider = null;
-      state.address = null;
-      state.client = null;
-      state.chainOk = false;
-      updateWalletUI();
+      detachWalletEvents(state.provider);
+      state.provider=null; state.address=null; state.client=null; state.chainOk=false;
+      updateWalletUI(); updateStatus();
+      document.getElementById('caseList').innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`;
     }
 
-    // ---- Contract Interaction (Submit Case) -----------------------------
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-      if (!state.address || !state.chainOk) return toast(t('toast.notconn'), true);
-      
-      const age = document.getElementById('age').value.trim();
-      const sex = document.getElementById('sex').value;
-      const symptoms = document.getElementById('symptoms').value.trim();
-      const diag = document.getElementById('diag').value.trim();
-      const treat = document.getElementById('treat').value.trim();
+    // ---- Contract reads/writes ----
+    async function readContract(functionName, args){
+      return await state.client.readContract({ address: CONTRACT_ADDRESS, functionName, args });
+    }
+    async function writeContract(functionName, args){
+      const fees = await state.client.estimateTransactionFees({ address: CONTRACT_ADDRESS, functionName, args });
+      return await state.client.writeContract({ address: CONTRACT_ADDRESS, functionName, args, value: 0n, fees });
+    }
 
-      if (!age || !symptoms) return toast(t('toast.fields'), true);
-
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.textContent = '...';
-
+    // ---- Case list ----
+    async function renderCaseList(){
+      const list = document.getElementById('caseList');
+      if (!state.address){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
+      list.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
       try {
-        toast(t('toast.sent'));
-        
-        // HIER IST DER FIX: account übergeben und ABI bereitstellen
-        const txHash = await state.client.writeContract({
-           address: CONTRACT_ADDRESS,
-           abi: CONTRACT_ABI,
-           functionName: 'submit_case', 
-           args: [age, sex, symptoms, diag, treat],
-           account: state.address 
+        const raw = await readContract('list_cases_by', [state.address]);
+        const ids = JSON.parse(raw || '[]');
+        if (!ids.length){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
+        const rows = await Promise.all(ids.map(async id => {
+          try { return JSON.parse(await readContract('get_case', [id])); } catch { return null; }
+        }));
+        list.innerHTML = '';
+        rows.filter(Boolean).reverse().forEach(c => {
+          const row = document.createElement('div'); row.className='case-row';
+          const summary = (c.symptoms || '').slice(0, 55);
+          row.innerHTML = `<span class="case-id">${esc(c.case_id)}</span>
+            <span class="case-summary">${esc(summary)}</span>
+            <span class="case-verdict">${esc(c.plausibility||'—')} · ${esc(c.urgency||'—')}</span>`;
+          row.onclick = () => showDetail(c);
+          list.appendChild(row);
         });
-        
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = `<div class="empty">${esc(t('toast.err'))}: ${esc(e.message||e)}</div>`;
+      }
+    }
+
+    const VC = { PLAUSIBLE:'plausible',QUESTIONABLE:'questionable',INSUFFICIENT_DATA:'insufficient',URGENT:'urgent',MODERATE:'moderate',ROUTINE:'routine',UNREVIEWED:'unreviewed' };
+    function detailRow(labelKey, val){
+      if (!val) return '';
+      return `<dt>${esc(t(labelKey))}</dt><dd>${esc(val)}</dd>`;
+    }
+    function showDetail(c){
+      document.getElementById('detailId').textContent = c.case_id || '—';
+      document.getElementById('detailFiled').textContent = `${t('detail.filed')}: ${c.filed_by || '—'}`;
+      const dl = document.getElementById('detailDl');
+      dl.innerHTML =
+        detailRow('d.age', c.age) + detailRow('d.sex', c.sex) +
+        detailRow('d.symptoms', c.symptoms) + detailRow('d.duration', c.duration) +
+        detailRow('d.severity', c.severity) + detailRow('d.conditions', c.conditions) +
+        detailRow('d.medications', c.medications) + detailRow('d.allergies', c.allergies) +
+        detailRow('d.family', c.family_history) + detailRow('d.diag', c.current_diagnosis) +
+        detailRow('d.treat', c.current_treatment) + detailRow('d.document', c.document);
+      const pWord = c.plausibility || 'UNREVIEWED';
+      const uWord = c.urgency || 'UNREVIEWED';
+      document.getElementById('vPlaus').className = 'verdict ' + (VC[pWord]||'unreviewed');
+      document.getElementById('vUrg').className = 'verdict ' + (VC[uWord]||'unreviewed');
+      document.getElementById('vPlausWord').textContent = pWord;
+      document.getElementById('vUrgWord').textContent = uWord;
+      document.getElementById('vPlausHint').textContent = t('vhint.'+pWord) || '';
+      document.getElementById('vUrgHint').textContent = t('vhint.'+uWord) || '';
+      document.getElementById('detail').classList.add('open');
+    }
+    document.getElementById('detailClose').addEventListener('click', ()=>document.getElementById('detail').classList.remove('open'));
+    document.getElementById('detail').addEventListener('click', (e)=>{ if (e.target.id==='detail') e.target.classList.remove('open'); });
+
+    // ---- Document field: file loader + char count ----
+    const docEl = document.getElementById('document');
+    const docCount = document.getElementById('docCount');
+    function updateDocCount(){
+      const n = docEl.value.length;
+      docCount.textContent = `${n} / ${DOC_MAX}`;
+      docCount.classList.toggle('over', n > DOC_MAX);
+    }
+    docEl.addEventListener('input', updateDocCount);
+    document.getElementById('docFile').addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { docEl.value = String(reader.result || '').slice(0, DOC_MAX); updateDocCount(); };
+      reader.onerror = () => toast(t('toast.err'), true);
+      reader.readAsText(f);
+    });
+
+    // ---- Submit ----
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      if (!submitEnabled()) return;
+      const val = id => document.getElementById(id).value.trim();
+      const age = val('age'), symptoms = val('symptoms');
+      if (!age || !symptoms){ toast(t('toast.fields'), true); return; }
+      let document_text = docEl.value.trim();
+      if (document_text.length > DOC_MAX){ document_text = document_text.slice(0, DOC_MAX); toast(t('toast.doclong'), true); }
+
+      const args = [
+        age,
+        document.getElementById('sex').value,
+        symptoms,
+        val('duration'),
+        document.getElementById('severity').value,
+        val('conditions'),
+        val('medications'),
+        val('allergies'),
+        val('family'),
+        val('diag'),
+        val('treat'),
+        document_text,
+        String(new Date().getFullYear()),
+      ];
+
+      const btn = document.getElementById('submitBtn'); btn.disabled = true;
+      const bar = document.getElementById('statusbar'); const msg = document.getElementById('statusMsg');
+      try {
+        msg.textContent = t('status.sending'); toast(t('toast.sent'));
+        const hash = await writeContract('submit_case', args);
+        await state.client.waitForTransactionReceipt({ hash, waitUntil: 'finalized' });
         toast(t('toast.done'));
-        btn.disabled = false; btn.textContent = t('form.submit');
-      } catch (err) {
-        console.error('Submit error:', err);
-        toast(t('toast.err') + ': ' + (err.shortMessage || err.message || err), true);
-        btn.disabled = false; btn.textContent = t('form.submit');
+        ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
+        updateDocCount();
+        renderCaseList();
+      } catch (e) {
+        console.error(e); toast(t('toast.err')+': '+(e.message||e), true);
+      } finally {
+        btn.disabled = !submitEnabled(); updateStatus();
       }
     });
 
+    // ---- Init ----
     applyI18n();
-    updateWalletUI();
+    updateDocCount();
   </script>
 </body>
 </html>
