@@ -301,15 +301,15 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { createClient } from 'https://esm.sh/genlayer-js@2.0.0-rc.1';
-    import { studioDevnet } from 'https://esm.sh/genlayer-js@2.0.0-rc.1/chains';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/genlayer-js@2.0.0-rc.1/+esm';
+    import { studioDevnet } from 'https://cdn.jsdelivr.net/npm/genlayer-js@2.0.0-rc.1/chains/+esm';
 
     // ===================================================================
     // CONTRACT ADDRESS
     // Nach jedem Neu-Deploy hier die neue Adresse eintragen,
     // ODER die Seite mit ?contract=0x... öffnen.
     // ===================================================================
-    const CONTRACT_FALLBACK = '0x21C41fb4D99a786a6ae03cFE3B3D2E893EF3ECFc';
+    const CONTRACT_FALLBACK = '0x518B3E667Cf75F9cF016FDB62bD015Adbd7eA160';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
     const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : CONTRACT_FALLBACK;
