@@ -309,7 +309,7 @@
     // Nach jedem Neu-Deploy hier die neue Adresse eintragen,
     // ODER die Seite mit ?contract=0x... öffnen.
     // ===================================================================
-    const CONTRACT_FALLBACK = '0x518B3E667Cf75F9cF016FDB62bD015Adbd7eA160';
+    const CONTRACT_FALLBACK = '0x48e8243882f6422e9ed44a0F3487Dd257579f19F';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
     const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : CONTRACT_FALLBACK;
@@ -356,7 +356,7 @@
         'picker.title':'Wallet auswählen','picker.cancel':'abbrechen','picker.none':'Keine Wallet gefunden. Bitte MetaMask oder Rabby installieren.',
         'd.age':'Alter','d.sex':'Geschlecht','d.symptoms':'Symptome','d.duration':'Dauer','d.severity':'Schweregrad','d.conditions':'Vorerkrankungen','d.medications':'Medikamente','d.allergies':'Allergien','d.family':'Familienanamnese','d.diag':'Diagnose','d.treat':'Behandlung','d.document':'Dokument',
         'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt','detail.filed':'Eingereicht von',
-        'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zum Fall.','vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.','vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.',
+        'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zum Fall.','vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.','vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.','vhint.NO_DIAGNOSIS':'Keine Diagnose angegeben – nur die Dringlichkeit wurde bewertet.',
         'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.','vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.','vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.','vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
         'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.','toast.doclong':'Dokument ist zu lang und wurde gekürzt.',
         'toast.sent':'Transaktion gesendet — warte auf Finalisierung …','toast.done':'Fall finalisiert.','toast.err':'Fehler',
@@ -392,7 +392,7 @@
         'picker.title':'Select wallet','picker.cancel':'cancel','picker.none':'No wallet found. Please install MetaMask or Rabby.',
         'd.age':'Age','d.sex':'Sex','d.symptoms':'Symptoms','d.duration':'Duration','d.severity':'Severity','d.conditions':'Conditions','d.medications':'Medications','d.allergies':'Allergies','d.family':'Family history','d.diag':'Diagnosis','d.treat':'Treatment','d.document':'Document',
         'detail.vplaus':'Plausibility of diagnosis','detail.vurg':'Specialist urgency','detail.filed':'Filed by',
-        'vhint.PLAUSIBLE':'The proposed diagnosis fits the case.','vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.','vhint.INSUFFICIENT_DATA':'Not enough information to judge.',
+        'vhint.PLAUSIBLE':'The proposed diagnosis fits the case.','vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.','vhint.INSUFFICIENT_DATA':'Not enough information to judge.','vhint.NO_DIAGNOSIS':'No diagnosis provided – only urgency was assessed.',
         'vhint.URGENT':'Specialist consultation within 24–48h.','vhint.MODERATE':'Specialist consultation within 1–2 weeks.','vhint.ROUTINE':'No acute specialist consultation needed.','vhint.UNREVIEWED':'Jury returned no clear answer.',
         'toast.fields':'Please fill in at least age and symptoms.','toast.doclong':'Document too long and was truncated.',
         'toast.sent':'Transaction sent — waiting for finalization …','toast.done':'Case finalized.','toast.err':'Error',
@@ -428,7 +428,7 @@
         'picker.title':'Cüzdan seç','picker.cancel':'iptal','picker.none':'Cüzdan bulunamadı. Lütfen MetaMask veya Rabby kurun.',
         'd.age':'Yaş','d.sex':'Cinsiyet','d.symptoms':'Belirtiler','d.duration':'Süre','d.severity':'Şiddet','d.conditions':'Hastalıklar','d.medications':'İlaçlar','d.allergies':'Alerjiler','d.family':'Aile öyküsü','d.diag':'Tanı','d.treat':'Tedavi','d.document':'Belge',
         'detail.vplaus':'Tanının makullüğü','detail.vurg':'Uzman aciliyeti','detail.filed':'Gönderen',
-        'vhint.PLAUSIBLE':'Önerilen tanı vakayla uyumlu.','vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.','vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.',
+        'vhint.PLAUSIBLE':'Önerilen tanı vakayla uyumlu.','vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.','vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.','vhint.NO_DIAGNOSIS':'Tanı girilmedi – yalnızca aciliyet değerlendirildi.',
         'vhint.URGENT':'24–48 saat içinde uzman görüşü.','vhint.MODERATE':'1–2 hafta içinde uzman görüşü.','vhint.ROUTINE':'Acil uzman görüşü gerekmez.','vhint.UNREVIEWED':'Jüri net yanıt vermedi.',
         'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.','toast.doclong':'Belge çok uzun, kısaltıldı.',
         'toast.sent':'İşlem gönderildi — bekleniyor …','toast.done':'Dava sonuçlandı.','toast.err':'Hata',
@@ -627,7 +627,7 @@
       }
     }
 
-    const VC = { PLAUSIBLE:'plausible',QUESTIONABLE:'questionable',INSUFFICIENT_DATA:'insufficient',URGENT:'urgent',MODERATE:'moderate',ROUTINE:'routine',UNREVIEWED:'unreviewed' };
+    const VC = { PLAUSIBLE:'plausible',QUESTIONABLE:'questionable',INSUFFICIENT_DATA:'insufficient',NO_DIAGNOSIS:'insufficient',URGENT:'urgent',MODERATE:'moderate',ROUTINE:'routine',UNREVIEWED:'unreviewed' };
     function detailRow(labelKey, val){
       if (!val) return '';
       return `<dt>${esc(t(labelKey))}</dt><dd>${esc(val)}</dd>`;
