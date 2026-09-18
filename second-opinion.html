@@ -359,7 +359,7 @@
         'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zum Fall.','vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.','vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.','vhint.NO_DIAGNOSIS':'Keine Diagnose angegeben – nur die Dringlichkeit wurde bewertet.',
         'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.','vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.','vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.','vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
         'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.','toast.doclong':'Dokument ist zu lang und wurde gekürzt.',
-        'toast.sent':'Transaktion gesendet — warte auf Finalisierung …','toast.done':'Fall finalisiert.','toast.err':'Fehler',
+        'toast.sent':'Transaktion gesendet — warte auf Finalisierung …','toast.done':'Fall gespeichert — Befund wird angezeigt.','toast.nocons':'Transaktion durch, aber kein Fall gespeichert — die Jury hat keinen Konsens erreicht (UNDETERMINED). Bitte erneut oder mit klarerem Fall versuchen.','toast.err':'Fehler',
       },
       en: {
         'brand.subtitle':'On-chain second opinion · GenLayer Studio NEXT',
@@ -395,7 +395,7 @@
         'vhint.PLAUSIBLE':'The proposed diagnosis fits the case.','vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.','vhint.INSUFFICIENT_DATA':'Not enough information to judge.','vhint.NO_DIAGNOSIS':'No diagnosis provided – only urgency was assessed.',
         'vhint.URGENT':'Specialist consultation within 24–48h.','vhint.MODERATE':'Specialist consultation within 1–2 weeks.','vhint.ROUTINE':'No acute specialist consultation needed.','vhint.UNREVIEWED':'Jury returned no clear answer.',
         'toast.fields':'Please fill in at least age and symptoms.','toast.doclong':'Document too long and was truncated.',
-        'toast.sent':'Transaction sent — waiting for finalization …','toast.done':'Case finalized.','toast.err':'Error',
+        'toast.sent':'Transaction sent — waiting for finalization …','toast.done':'Case stored — showing the finding.','toast.nocons':'Transaction went through but no case was stored — the jury did not reach consensus (UNDETERMINED). Please retry or use a clearer case.','toast.err':'Error',
       },
       tr: {
         'brand.subtitle':'Zincir üstü ikinci görüş · GenLayer Studio NEXT',
@@ -431,7 +431,7 @@
         'vhint.PLAUSIBLE':'Önerilen tanı vakayla uyumlu.','vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.','vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.','vhint.NO_DIAGNOSIS':'Tanı girilmedi – yalnızca aciliyet değerlendirildi.',
         'vhint.URGENT':'24–48 saat içinde uzman görüşü.','vhint.MODERATE':'1–2 hafta içinde uzman görüşü.','vhint.ROUTINE':'Acil uzman görüşü gerekmez.','vhint.UNREVIEWED':'Jüri net yanıt vermedi.',
         'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.','toast.doclong':'Belge çok uzun, kısaltıldı.',
-        'toast.sent':'İşlem gönderildi — bekleniyor …','toast.done':'Dava sonuçlandı.','toast.err':'Hata',
+        'toast.sent':'İşlem gönderildi — bekleniyor …','toast.done':'Dava kaydedildi — bulgu gösteriliyor.','toast.nocons':'İşlem geçti ama dava kaydedilmedi — jüri uzlaşıya varamadı (UNDETERMINED). Lütfen tekrar deneyin veya daha net bir vaka girin.','toast.err':'Hata',
       },
     };
     let lang = localStorage.getItem('so_lang') || 'de';
@@ -600,13 +600,29 @@
     }
 
     // ---- Case list ----
+    // Query list_cases_by with BOTH address casings (the contract stores the
+    // sender as str(gl.message.sender_address); MetaMask may hand us a
+    // differently-cased string, and TreeMap keys match exactly).
+    async function fetchMyIds(){
+      if (!state.address) return [];
+      const variants = [...new Set([state.address, state.address.toLowerCase()])];
+      const seen = new Set(); const ids = [];
+      for (const a of variants){
+        try {
+          const raw = await readContract('list_cases_by', [a]);
+          const arr = JSON.parse(raw || '[]');
+          if (Array.isArray(arr)) for (const id of arr){ if (!seen.has(id)){ seen.add(id); ids.push(id); } }
+        } catch (e) { console.warn('list_cases_by failed for', a, e); }
+      }
+      return ids;
+    }
+
     async function renderCaseList(){
       const list = document.getElementById('caseList');
       if (!state.address){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
       list.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
       try {
-        const raw = await readContract('list_cases_by', [state.address]);
-        const ids = JSON.parse(raw || '[]');
+        const ids = await fetchMyIds();
         if (!ids.length){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
         const rows = await Promise.all(ids.map(async id => {
           try { return JSON.parse(await readContract('get_case', [id])); } catch { return null; }
@@ -702,16 +718,40 @@
       const btn = document.getElementById('submitBtn'); btn.disabled = true;
       const bar = document.getElementById('statusbar'); const msg = document.getElementById('statusMsg');
       try {
+        // Snapshot existing cases so we can detect the NEW one afterwards.
+        const beforeIds = new Set(await fetchMyIds());
+
         msg.textContent = t('status.sending'); toast(t('toast.sent'));
         const hash = await writeContract('submit_case', args);
-        // 'decided' loest bei ACCEPTED aus (Status 5) - da steht das Verdict bereits
-        // on-chain. 'finalized' (Status 7) kaeme erst nach dem Appeal-Fenster und
-        // ueberschreitet das Timeout. interval*retries = 3s * 40 = 120s Puffer.
+        // 'decided' resolves at ACCEPTED (status 5) - verdict is on-chain then.
+        // NOTE: 'decided' ALSO resolves on UNDETERMINED (no state written), so
+        // we must not claim success here - we verify by reading the case back.
         await state.client.waitForTransactionReceipt({ hash, waitUntil: 'decided', interval: 3000, retries: 40 });
-        toast(t('toast.done'));
-        ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
-        updateDocCount();
-        renderCaseList();
+
+        // Poll for the actually-stored new case (handles read lag AND tells us
+        // honestly whether consensus wrote state at all).
+        let newCase = null;
+        for (let i = 0; i < 8 && !newCase; i++){
+          const ids = await fetchMyIds();
+          const fresh = ids.find(id => !beforeIds.has(id));
+          if (fresh){
+            try { newCase = JSON.parse(await readContract('get_case', [fresh])); } catch {}
+          }
+          if (!newCase) await new Promise(r => setTimeout(r, 2500));
+        }
+
+        if (newCase){
+          toast(t('toast.done'));
+          ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
+          updateDocCount();
+          await renderCaseList();
+          showDetail(newCase); // open the verdict immediately
+        } else {
+          // Transaction went through but no case was stored -> no consensus
+          // (UNDETERMINED) or still settling. Be honest, don't fake a verdict.
+          toast(t('toast.nocons'), true);
+          await renderCaseList();
+        }
       } catch (e) {
         console.error(e); toast(t('toast.err')+': '+(e.message||e), true);
       } finally {
