@@ -188,21 +188,26 @@ class SecondOpinion(gl.contract.Contract):
         )
 
         # ---- Jury question 1: plausibility ---------------------------------
+        # Prescriptive, ordered decision procedure: different validator LLMs
+        # converge on the SAME single word far more reliably than with an
+        # open-ended judgment, which keeps strict_eq consensus stable.
         def get_plausibility() -> str:
             prompt = (
-                "You are one member of a medical review panel providing a "
-                "non-binding second opinion. You are NOT giving medical "
-                "advice to a patient. Given ONLY the case description below, "
-                "judge whether the currently proposed diagnosis plausibly "
-                "fits the reported symptoms and history.\n\n"
-                "Answer with EXACTLY ONE of these three words, uppercase, "
-                "no punctuation, no explanation:\n"
-                "  PLAUSIBLE          - the diagnosis reasonably fits the case\n"
-                "  QUESTIONABLE       - the diagnosis does not fit well or "
-                "something is inconsistent\n"
-                "  INSUFFICIENT_DATA  - not enough information to judge\n\n"
+                "You are one member of a medical review panel giving a "
+                "non-binding second opinion. Decide whether the CURRENT "
+                "DIAGNOSIS in the case fits the reported symptoms and history.\n\n"
+                "Apply these rules IN ORDER and stop at the FIRST that matches:\n"
+                "1. If the reported symptoms are too few or too vague to judge "
+                "the diagnosis at all -> INSUFFICIENT_DATA\n"
+                "2. If at least one reported symptom is clearly NOT explained by "
+                "the current diagnosis, or a clearly more likely diagnosis fits "
+                "the symptoms better -> QUESTIONABLE\n"
+                "3. Otherwise, if the current diagnosis is a standard and "
+                "reasonable explanation for the reported symptoms -> PLAUSIBLE\n\n"
+                "Answer with EXACTLY ONE word, uppercase, no punctuation, no "
+                "explanation: PLAUSIBLE or QUESTIONABLE or INSUFFICIENT_DATA.\n\n"
                 "Case:\n" + case_text + "\n\n"
-                "Answer with one word only."
+                "One word only."
             )
             try:
                 raw = gl.nondet.exec_prompt(prompt)
@@ -214,17 +219,24 @@ class SecondOpinion(gl.contract.Contract):
         # ---- Jury question 2: urgency --------------------------------------
         def get_urgency() -> str:
             prompt = (
-                "You are one member of a medical review panel providing a "
-                "non-binding second opinion. You are NOT giving medical "
-                "advice to a patient. Given ONLY the case description below, "
-                "judge how urgently a specialist consultation is warranted.\n\n"
-                "Answer with EXACTLY ONE of these three words, uppercase, "
-                "no punctuation, no explanation:\n"
-                "  URGENT   - same-day or 24-48h specialist consultation warranted\n"
-                "  MODERATE - specialist consultation within 1-2 weeks warranted\n"
-                "  ROUTINE  - no immediate specialist consultation needed\n\n"
+                "You are one member of a medical review panel giving a "
+                "non-binding second opinion. Decide how urgently an in-person "
+                "specialist consultation is warranted.\n\n"
+                "Apply these rules IN ORDER and stop at the FIRST that matches:\n"
+                "1. If the case contains ANY red-flag feature -> URGENT. "
+                "Red flags include: sudden severe onset of a symptom; chest pain "
+                "or pressure; difficulty breathing; sudden neurological change "
+                "(weakness, vision loss, confusion, slurred speech); signs of "
+                "stroke or heart attack; uncontrolled bleeding; high fever with "
+                "a stiff neck.\n"
+                "2. Else, if symptoms are persistent, worsening, or clearly "
+                "affecting daily life -> MODERATE\n"
+                "3. Otherwise, if symptoms are mild, stable, or long-standing "
+                "with no concerning features -> ROUTINE\n\n"
+                "Answer with EXACTLY ONE word, uppercase, no punctuation, no "
+                "explanation: URGENT or MODERATE or ROUTINE.\n\n"
                 "Case:\n" + case_text + "\n\n"
-                "Answer with one word only."
+                "One word only."
             )
             try:
                 raw = gl.nondet.exec_prompt(prompt)
@@ -233,7 +245,14 @@ class SecondOpinion(gl.contract.Contract):
             token = _pick(raw, ["URGENT", "MODERATE", "ROUTINE"])
             return token if token else "UNREVIEWED"
 
-        plausibility = gl.eq_principle.strict_eq(get_plausibility)
+        # Deterministic guard: asking "is the diagnosis plausible" makes no
+        # sense when no diagnosis was provided. Set it deterministically so the
+        # jury is never split over an unanswerable question.
+        if diag_l:
+            plausibility = gl.eq_principle.strict_eq(get_plausibility)
+        else:
+            plausibility = "NO_DIAGNOSIS"
+
         urgency = gl.eq_principle.strict_eq(get_urgency)
 
         # ---- Deterministic case_id + storage -------------------------------
