@@ -704,7 +704,10 @@
       try {
         msg.textContent = t('status.sending'); toast(t('toast.sent'));
         const hash = await writeContract('submit_case', args);
-        await state.client.waitForTransactionReceipt({ hash, waitUntil: 'finalized' });
+        // 'decided' loest bei ACCEPTED aus (Status 5) - da steht das Verdict bereits
+        // on-chain. 'finalized' (Status 7) kaeme erst nach dem Appeal-Fenster und
+        // ueberschreitet das Timeout. interval*retries = 3s * 40 = 120s Puffer.
+        await state.client.waitForTransactionReceipt({ hash, waitUntil: 'decided', interval: 3000, retries: 40 });
         toast(t('toast.done'));
         ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
         updateDocCount();
