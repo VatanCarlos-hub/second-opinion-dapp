@@ -6,132 +6,157 @@
   <title>Second Opinion — Zweitmeinung on-chain</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root{
-      --paper:#fbfaf7; --ink:#1a1f26; --muted:#6b7280; --rule:#d4d0c8;
-      --seal:#2d5f4e; --seal-soft:#e6ede9; --alert:#a63e2e; --warn:#8a6a1c;
-      --serif:'Vollkorn', Georgia, 'Times New Roman', serif;
+      --bg:#e9f0ee; --surface:#ffffff; --surface-2:#f3f8f6;
+      --ink:#13251f; --muted:#5a716a; --line:#d5e2de;
+      --brand:#157a63; --brand-deep:#0e5642;
+      --ok:#2b8c68; --amber:#a9760f; --red:#b5402a;
+      --serif:'Fraunces', Georgia, serif;
       --sans:'Inter', ui-sans-serif, system-ui, sans-serif;
+      --r:16px; --r-sm:10px;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
-    body{min-height:100vh;padding:0 24px 80px}
-    a{color:var(--seal)}
-    button{font-family:var(--sans);cursor:pointer}
-    input,select,textarea{font-family:var(--serif);color:var(--ink)}
-    .container{max-width:1180px;margin:0 auto}
+    html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    body{min-height:100vh;padding:0 20px 72px}
+    .wrap{max-width:1160px;margin:0 auto}
+    button{cursor:pointer;font-family:var(--sans)}
+    :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+    input,select,textarea{font-family:var(--sans);color:var(--ink)}
 
-    .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:28px 0 20px;border-bottom:1px solid var(--ink);flex-wrap:wrap}
-    .brand h1{font-size:34px;line-height:1.05;margin:0;font-weight:600;letter-spacing:-0.005em}
-    .brand .subtitle{margin-top:6px;font-family:var(--sans);font-size:13px;color:var(--muted);letter-spacing:0.02em}
-    .masthead-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-    .lang{display:flex;gap:0;font-family:var(--sans);font-size:12px;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
-    .lang button{background:transparent;border:0;padding:5px 10px;color:var(--muted);border-right:1px solid var(--rule)}
-    .lang button:last-child{border-right:0}
-    .lang button.active{background:var(--ink);color:var(--paper)}
-    .wallet-line{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px;flex-wrap:wrap;justify-content:flex-end}
-    .wallet-line .addr{color:var(--ink);font-variant-numeric:tabular-nums}
-    .wallet-line .netbadge{padding:2px 8px;border:1px solid var(--rule);border-radius:2px;color:var(--muted);font-size:11px;letter-spacing:0.03em}
-    .wallet-line .netbadge.ok{border-color:var(--seal);color:var(--seal)}
-    .wallet-line .netbadge.warn{border-color:var(--alert);color:var(--alert)}
-    .btn{font-family:var(--sans);font-size:13px;padding:7px 14px;background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:2px}
-    .btn.ghost{background:transparent;color:var(--ink)}
-    .btn.seal{background:var(--seal);border-color:var(--seal)}
-    .btn:disabled{opacity:0.4;cursor:not-allowed}
-    .btn.small{padding:4px 10px;font-size:12px}
+    /* Header */
+    .top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 0 22px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:13px}
+    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,var(--brand),var(--brand-deep));display:grid;place-items:center;color:#fff;flex-shrink:0;box-shadow:0 4px 14px rgba(14,86,66,.28)}
+    .mark svg{width:22px;height:22px}
+    .brand h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1;margin:0;letter-spacing:-0.01em}
+    .brand .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+    .top-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .lang{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+    .lang button{border:0;background:transparent;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500;color:var(--muted);transition:color .15s,background .15s}
+    .lang button.active{background:var(--brand);color:#fff}
+    .wallet-line{display:flex;align-items:center;gap:9px;font-size:13px;flex-wrap:wrap;justify-content:flex-end}
+    .wallet-line .addr{color:var(--ink);font-variant-numeric:tabular-nums;font-size:12.5px}
+    .netbadge{font-size:12px;padding:4px 11px;border-radius:999px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+    .netbadge.ok{color:var(--ok);border-color:rgba(43,140,104,.4);background:rgba(43,140,104,.09)}
+    .netbadge.warn{color:var(--red);border-color:rgba(181,64,42,.4);background:rgba(181,64,42,.08)}
 
-    .warnbox{margin:20px 0 10px;border:1px solid var(--warn);background:#fbf6e7;padding:14px 16px;font-family:var(--sans);font-size:13px;color:#4a3a10;line-height:1.55}
-    .warnbox.strong{border-color:var(--alert);background:#faece8;color:#5a1c12}
-    .warnbox strong{color:inherit}
+    .btn{font-size:14px;font-weight:600;padding:10px 18px;border-radius:var(--r-sm);border:1px solid var(--brand);background:var(--brand);color:#fff;transition:background .15s,transform .02s}
+    .btn:hover{background:var(--brand-deep)}
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn.ghost{background:transparent;color:var(--brand);border-color:var(--line)}
+    .btn.ghost:hover{background:var(--surface-2)}
+    .btn.small{padding:6px 12px;font-size:13px}
 
-    .statusbar{margin:14px 0 24px;font-family:var(--sans);font-size:13px;padding:10px 14px;border:1px solid var(--rule);background:var(--paper);display:flex;align-items:center;gap:10px}
+    /* Intro + notice */
+    .intro{font-family:var(--serif);font-size:20px;font-weight:400;line-height:1.4;color:var(--ink);max-width:60ch;margin:6px 0 20px}
+    .notice{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:18px;font-size:13.5px;line-height:1.55}
+    .notice .row{color:var(--muted)}
+    .notice .row + .row{margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+    .notice .row.privacy{color:#6a2417;padding-left:12px;border-left:3px solid var(--red);border-top:0;margin-top:12px}
+    .notice b{color:var(--ink)}
+    .notice .row.privacy b{color:#6a2417}
+
+    /* Status ribbon */
+    .statusbar{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;font-size:14px;color:var(--ink);margin-bottom:22px}
     .statusbar .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0}
-    .statusbar.ready .dot{background:var(--seal)}
-    .statusbar.blocked .dot{background:var(--alert)}
-    .statusbar .msg{color:var(--ink)}
+    .statusbar.ready .dot{background:var(--ok);box-shadow:0 0 0 4px rgba(43,140,104,.16)}
+    .statusbar.blocked .dot{background:var(--red);box-shadow:0 0 0 4px rgba(181,64,42,.13)}
     .statusbar .act{margin-left:auto}
 
-    .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:36px;margin-top:8px}
-    @media (max-width:960px){.grid{grid-template-columns:1fr;gap:28px}}
+    /* Layout */
+    .layout{display:grid;grid-template-columns:1.12fr .88fr;gap:24px;align-items:start}
+    @media (max-width:920px){.layout{grid-template-columns:1fr}}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+    .panel-head{margin-bottom:16px}
+    .panel-head h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 3px;letter-spacing:-0.01em}
+    .panel-head p{margin:0;font-size:13px;color:var(--muted)}
 
-    section h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;letter-spacing:-0.005em}
-    section .sechint{font-family:var(--sans);color:var(--muted);font-size:12.5px;margin-bottom:16px}
-
-    .form{border:1px solid var(--rule);background:var(--paper);padding:22px}
-    .fieldset-title{font-family:var(--sans);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--seal);margin:8px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
-    .fieldset-title:first-child{margin-top:0}
-    .field{margin-bottom:16px}
-    .field label{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:5px;letter-spacing:0.02em}
-    .field input,.field select,.field textarea{width:100%;background:var(--paper);border:0;border-bottom:1px solid var(--rule);padding:8px 2px;font-size:16px;outline:none;font-family:var(--serif)}
-    .field textarea{min-height:74px;resize:vertical;line-height:1.5}
-    .field textarea.big{min-height:130px}
-    .field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--seal)}
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .sec-title{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--brand-deep);margin:22px 0 12px}
+    .sec-title:first-of-type{margin-top:0}
+    .field{margin-bottom:15px}
+    .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+    .field input,.field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:15px;transition:border-color .15s,background .15s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);background:#fff;outline:none;box-shadow:0 0 0 3px rgba(21,122,99,.13)}
+    .field textarea{min-height:72px;resize:vertical;line-height:1.5}
+    .field textarea.big{min-height:128px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media (max-width:520px){.row2{grid-template-columns:1fr}}
-    .doc-tools{display:flex;align-items:center;gap:12px;margin-top:6px;font-family:var(--sans);font-size:12px;color:var(--muted)}
-    .doc-tools input[type=file]{font-family:var(--sans);font-size:12px}
-    .charcount{font-family:var(--sans);font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
-    .charcount.over{color:var(--alert)}
-    .submit-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;padding-top:16px;border-top:1px solid var(--rule)}
-    .cost-hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+    .doc-tools{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+    .doc-tools input[type=file]{font-size:12px;color:var(--muted)}
+    .charcount{font-size:11px;color:var(--muted);text-align:right;margin-top:5px}
+    .charcount.over{color:var(--red)}
+    .submit-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+    .cost-hint{font-size:12px;color:var(--muted);max-width:32ch}
+    #submitBtn{padding:12px 24px;font-size:15px}
 
-    .caselist{border:1px solid var(--rule);background:var(--paper);padding:22px;min-height:220px}
-    .case-row{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer;gap:14px}
-    .case-row:last-child{border-bottom:0}
-    .case-row:hover{background:#f4f2ec}
-    .case-id{font-family:var(--serif);font-feature-settings:"onum" 1;font-size:16px;color:var(--seal);font-weight:600;flex-shrink:0}
-    .case-summary{font-family:var(--sans);font-size:13px;color:var(--muted);flex-grow:1;text-align:left;padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .case-verdict{font-family:var(--sans);font-size:11px;letter-spacing:0.06em;color:var(--ink);flex-shrink:0}
-    .empty{font-family:var(--sans);font-size:13px;color:var(--muted);padding:20px 0}
+    /* Findings list */
+    .case-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--surface);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+    .case-row:hover{border-color:var(--brand);box-shadow:0 4px 16px rgba(14,86,66,.08)}
+    .case-id{font-family:var(--serif);font-weight:600;color:var(--brand-deep);flex-shrink:0}
+    .case-summary{font-size:13px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .case-verdict{font-size:11.5px;color:var(--ink);flex-shrink:0;font-weight:500}
+    .empty{font-size:14px;color:var(--muted);padding:28px 8px;text-align:center;line-height:1.6}
 
-    .backdrop{position:fixed;inset:0;background:rgba(20,25,32,0.5);display:none;align-items:flex-start;justify-content:center;padding:48px 20px;overflow-y:auto;z-index:50}
+    /* Modal */
+    .backdrop{position:fixed;inset:0;background:rgba(19,37,31,.46);display:none;align-items:flex-start;justify-content:center;padding:44px 18px;overflow-y:auto;z-index:50}
     .backdrop.open{display:flex}
-    .sheet{background:var(--paper);width:100%;max-width:760px;border:1px solid var(--ink);padding:32px 36px;position:relative}
-    .sheet .close{position:absolute;top:14px;right:14px;background:transparent;border:0;font-size:22px;color:var(--muted);cursor:pointer;padding:4px 10px}
-    .sheet h3{font-family:var(--serif);font-weight:600;font-size:26px;margin:0 0 4px;color:var(--seal);font-feature-settings:"onum" 1}
-    .sheet .filed{font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:20px;word-break:break-all}
-    .sheet dl{display:grid;grid-template-columns:170px 1fr;gap:8px 20px;font-size:15px;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--rule)}
-    .sheet dt{font-family:var(--sans);font-size:12px;color:var(--muted);padding-top:4px;letter-spacing:0.02em}
-    .sheet dd{margin:0;font-family:var(--serif);white-space:pre-wrap}
-    .verdictblock{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-    .verdict{border:1px solid var(--rule);padding:16px}
-    .verdict .vlabel{font-family:var(--sans);font-size:11px;color:var(--muted);letter-spacing:0.06em;margin-bottom:8px}
-    .verdict .vword{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink)}
-    .verdict .vhint{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45}
-    .verdict.plausible .vword{color:var(--seal)}
-    .verdict.questionable .vword{color:var(--warn)}
-    .verdict.insufficient .vword{color:var(--muted)}
-    .verdict.urgent .vword{color:var(--alert)}
-    .verdict.moderate .vword{color:var(--warn)}
-    .verdict.routine .vword{color:var(--seal)}
-    .verdict.unreviewed .vword{color:var(--muted);font-style:italic}
-    @media (max-width:640px){.verdictblock{grid-template-columns:1fr} .sheet dl{grid-template-columns:1fr}}
+    .sheet{background:var(--surface);border-radius:18px;max-width:720px;width:100%;padding:30px 34px;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.24);animation:pop .18s ease-out}
+    @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+    .sheet .close{position:absolute;top:16px;right:16px;background:transparent;border:0;font-size:24px;line-height:1;color:var(--muted);padding:4px 10px}
+    .sheet h3{font-family:var(--serif);font-weight:600;font-size:25px;margin:0 0 4px;color:var(--brand-deep)}
+    .sheet .filed{font-size:12px;color:var(--muted);margin-bottom:22px;word-break:break-all}
+    .sheet dl{display:grid;grid-template-columns:158px 1fr;gap:9px 20px;font-size:14.5px;margin:0 0 24px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+    .sheet dt{font-size:12px;color:var(--muted);padding-top:3px}
+    .sheet dd{margin:0;white-space:pre-wrap}
+    @media (max-width:560px){.sheet dl{grid-template-columns:1fr;gap:3px 0}.sheet dd{margin-bottom:8px}}
+    .verdictblock{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media (max-width:560px){.verdictblock{grid-template-columns:1fr}}
+    .verdict{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:14px;padding:18px;background:var(--surface-2)}
+    .verdict .vlabel{font-size:12px;color:var(--muted)}
+    .verdict .vword{font-family:var(--serif);font-size:29px;font-weight:600;margin-top:7px;line-height:1.1;color:var(--ink)}
+    .verdict .vhint{font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.5}
+    .verdict.plausible,.verdict.routine{border-top-color:var(--ok)} .verdict.plausible .vword,.verdict.routine .vword{color:var(--ok)}
+    .verdict.questionable,.verdict.moderate,.verdict.insufficient{border-top-color:var(--amber)} .verdict.questionable .vword,.verdict.moderate .vword,.verdict.insufficient .vword{color:var(--amber)}
+    .verdict.urgent{border-top-color:var(--red)} .verdict.urgent .vword{color:var(--red)}
+    .verdict.unreviewed .vword{color:var(--muted);font-style:italic;font-size:22px}
 
-    .picker{background:var(--paper);border:1px solid var(--ink);max-width:420px;width:100%;padding:22px}
-    .picker h4{font-family:var(--serif);margin:0 0 14px;font-size:19px;font-weight:600}
-    .picker .wopt{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--rule);margin-bottom:8px;cursor:pointer;font-family:var(--sans);font-size:14px;background:var(--paper);width:100%;text-align:left}
-    .picker .wopt:hover{background:#f4f2ec}
-    .picker .wopt img{width:22px;height:22px;object-fit:contain}
-    .picker .close{margin-top:8px;font-family:var(--sans);font-size:12px;color:var(--muted);background:transparent;border:0;cursor:pointer}
+    /* Wallet picker */
+    .picker{background:var(--surface);border-radius:16px;max-width:420px;width:100%;padding:24px}
+    .picker h4{font-family:var(--serif);margin:0 0 16px;font-size:19px;font-weight:600}
+    .wopt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);font-size:14px;margin-bottom:9px;transition:background .15s,border-color .15s}
+    .wopt:hover{background:var(--surface-2);border-color:var(--brand)}
+    .wopt img{width:24px;height:24px;object-fit:contain;border-radius:6px}
+    .picker .close{margin-top:6px;background:transparent;border:0;font-size:13px;color:var(--muted)}
 
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;font-family:var(--sans);font-size:13px;z-index:60;opacity:0;transition:opacity 0.2s;max-width:560px;line-height:1.5;text-align:center}
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;max-width:560px;text-align:center;line-height:1.5;box-shadow:0 10px 30px rgba(0,0,0,.25)}
     .toast.show{opacity:1}
-    .toast.err{background:var(--alert)}
+    .toast.err{background:var(--red)}
 
-    footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);font-family:var(--sans);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-    .mono{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:11.5px;word-break:break-all}
+    /* Footer */
+    .footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--ink);word-break:break-all}
+
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrap">
 
-    <header class="masthead">
+    <header class="top">
       <div class="brand">
-        <h1>Second Opinion</h1>
-        <div class="subtitle" data-i18n="brand.subtitle">Zweitmeinung on-chain · GenLayer Studio NEXT</div>
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div>
+          <h1>Second Opinion</h1>
+          <div class="sub" data-i18n="brand.subtitle">Zweitmeinung on-chain · GenLayer Studio NEXT</div>
+        </div>
       </div>
-      <div class="masthead-right">
+      <div class="top-right">
         <div class="lang">
           <button data-lang="de" class="active">DE</button>
           <button data-lang="en">EN</button>
@@ -141,13 +166,11 @@
       </div>
     </header>
 
-    <div class="warnbox" role="note">
-      <strong data-i18n="warn.title">Kein Arztersatz.</strong>
-      <span data-i18n="warn.body"> Diese Anwendung liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Bei ernsten Beschwerden immer eine Ärztin oder einen Arzt aufsuchen.</span>
-    </div>
-    <div class="warnbox strong" role="alert">
-      <strong data-i18n="warn2.title">Datenschutz — unbedingt beachten:</strong>
-      <span data-i18n="warn2.body"> Alle Eingaben inkl. hochgeladener Dokumente werden unverschlüsselt und dauerhaft auf einer öffentlichen Blockchain gespeichert und sind für jeden lesbar. Eine Löschung ist technisch nicht möglich. Gesundheitsdaten sind besondere personenbezogene Daten (Art. 9 DSGVO). Verwenden Sie ausschließlich erfundene Beispieldaten — niemals echte Patientendaten, keine Namen, Geburtsdaten oder Adressen.</span>
+    <p class="intro" data-i18n="form.hint">Umfassende Anamnese. Antwort der Jury: zwei Ein-Wort-Befunde.</p>
+
+    <div class="notice">
+      <div class="row"><b data-i18n="warn.title">Kein Arztersatz.</b><span data-i18n="warn.body"> Diese Anwendung liefert nur eine nicht-bindende KI-Zweitmeinung und ist kein Diagnose-Werkzeug. Bei ernsten Beschwerden immer eine Ärztin oder einen Arzt aufsuchen.</span></div>
+      <div class="row privacy"><b data-i18n="warn2.title">Datenschutz — unbedingt beachten:</b><span data-i18n="warn2.body"> Alle Eingaben inkl. Dokumente werden unverschlüsselt und dauerhaft auf einer öffentlichen Blockchain gespeichert. Eine Löschung ist nicht möglich. Nur erfundene Beispieldaten verwenden — keine echten Patientendaten.</span></div>
     </div>
 
     <div class="statusbar" id="statusbar">
@@ -156,122 +179,122 @@
       <span class="act" id="statusAct"></span>
     </div>
 
-    <div class="grid">
-      <section>
-        <h2 data-i18n="form.title">Neuen Fall einreichen</h2>
-        <div class="sechint" data-i18n="form.hint">Umfassende Anamnese. Antwort der Jury: zwei Ein-Wort-Befunde.</div>
-        <div class="form">
+    <div class="layout">
+      <!-- Intake -->
+      <section class="card">
+        <div class="panel-head">
+          <h2 data-i18n="form.title">Neuen Fall einreichen</h2>
+        </div>
 
-          <div class="fieldset-title" data-i18n="fs.basics">Basisangaben</div>
-          <div class="row2">
-            <div class="field">
-              <label data-i18n="form.age">Alter (Jahre)</label>
-              <input type="text" id="age" maxlength="3" placeholder="z. B. 42" />
-            </div>
-            <div class="field">
-              <label data-i18n="form.sex">Geschlecht</label>
-              <select id="sex">
-                <option value="unspecified" data-i18n="form.sex.unspec">nicht angegeben</option>
-                <option value="female" data-i18n="form.sex.f">weiblich</option>
-                <option value="male" data-i18n="form.sex.m">männlich</option>
-                <option value="other" data-i18n="form.sex.o">divers</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="fieldset-title" data-i18n="fs.symptoms">Beschwerden</div>
+        <div class="sec-title" data-i18n="fs.basics">Basisangaben</div>
+        <div class="row2">
           <div class="field">
-            <label data-i18n="form.symptoms">Hauptsymptome (allgemein, ohne persönliche Details)</label>
-            <textarea id="symptoms" placeholder="z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit, Sehstörungen …"></textarea>
-          </div>
-          <div class="row2">
-            <div class="field">
-              <label data-i18n="form.duration">Dauer der Beschwerden</label>
-              <input type="text" id="duration" placeholder="z. B. 3 Wochen" />
-            </div>
-            <div class="field">
-              <label data-i18n="form.severity">Schweregrad (selbst eingeschätzt)</label>
-              <select id="severity">
-                <option value="" data-i18n="form.sev.none">nicht angegeben</option>
-                <option value="mild" data-i18n="form.sev.mild">leicht</option>
-                <option value="moderate" data-i18n="form.sev.mod">mittel</option>
-                <option value="severe" data-i18n="form.sev.sev">stark</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="fieldset-title" data-i18n="fs.history">Vorgeschichte</div>
-          <div class="field">
-            <label data-i18n="form.conditions">Vorerkrankungen</label>
-            <textarea id="conditions" placeholder="z. B. Bluthochdruck, Migräne"></textarea>
-          </div>
-          <div class="row2">
-            <div class="field">
-              <label data-i18n="form.medications">Aktuelle Medikamente</label>
-              <textarea id="medications" placeholder="z. B. Ramipril, Ibuprofen bei Bedarf"></textarea>
-            </div>
-            <div class="field">
-              <label data-i18n="form.allergies">Allergien</label>
-              <textarea id="allergies" placeholder="z. B. Penicillin"></textarea>
-            </div>
+            <label for="age" data-i18n="form.age">Alter (Jahre)</label>
+            <input type="text" id="age" maxlength="3" placeholder="42" />
           </div>
           <div class="field">
-            <label data-i18n="form.family">Relevante Familienanamnese</label>
-            <textarea id="family" placeholder="z. B. Herzinfarkt beim Vater mit 55"></textarea>
+            <label for="sex" data-i18n="form.sex">Geschlecht</label>
+            <select id="sex">
+              <option value="unspecified" data-i18n="form.sex.unspec">nicht angegeben</option>
+              <option value="female" data-i18n="form.sex.f">weiblich</option>
+              <option value="male" data-i18n="form.sex.m">männlich</option>
+              <option value="other" data-i18n="form.sex.o">divers</option>
+            </select>
           </div>
+        </div>
 
-          <div class="fieldset-title" data-i18n="fs.current">Bisherige Einordnung</div>
-          <div class="row2">
-            <div class="field">
-              <label data-i18n="form.diag">Bisherige Diagnose (falls vorhanden)</label>
-              <textarea id="diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
-            </div>
-            <div class="field">
-              <label data-i18n="form.treat">Aktuelle Behandlung (falls vorhanden)</label>
-              <textarea id="treat" placeholder="z. B. Ibuprofen 400 bei Bedarf"></textarea>
-            </div>
-          </div>
-
-          <div class="fieldset-title" data-i18n="fs.document">Dokument (optional)</div>
+        <div class="sec-title" data-i18n="fs.symptoms">Beschwerden</div>
+        <div class="field">
+          <label for="symptoms" data-i18n="form.symptoms">Hauptsymptome (allgemein, ohne persönliche Details)</label>
+          <textarea id="symptoms" placeholder="z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit …"></textarea>
+        </div>
+        <div class="row2">
           <div class="field">
-            <label data-i18n="form.document">Arztbericht / Befund als Text (nur Beispieldaten!)</label>
-            <textarea id="document" class="big" placeholder="Text des Berichts hier einfügen, oder eine .txt-Datei laden …"></textarea>
-            <div class="doc-tools">
-              <input type="file" id="docFile" accept=".txt,text/plain" />
-              <span data-i18n="form.docfile">.txt-Datei laden (Inhalt wird ins Feld übernommen)</span>
-            </div>
-            <div class="charcount" id="docCount">0 / 6000</div>
+            <label for="duration" data-i18n="form.duration">Dauer der Beschwerden</label>
+            <input type="text" id="duration" placeholder="z. B. 3 Wochen" />
           </div>
+          <div class="field">
+            <label for="severity" data-i18n="form.severity">Schweregrad (selbst eingeschätzt)</label>
+            <select id="severity">
+              <option value="" data-i18n="form.sev.none">nicht angegeben</option>
+              <option value="mild" data-i18n="form.sev.mild">leicht</option>
+              <option value="moderate" data-i18n="form.sev.mod">mittel</option>
+              <option value="severe" data-i18n="form.sev.sev">stark</option>
+            </select>
+          </div>
+        </div>
 
-          <div class="submit-row">
-            <div class="cost-hint" data-i18n="form.cost">Kosten: wenige Cent GEN, Rest wird automatisch erstattet.</div>
-            <button class="btn seal" id="submitBtn" disabled data-i18n="form.submit">Fall einreichen</button>
+        <div class="sec-title" data-i18n="fs.history">Vorgeschichte</div>
+        <div class="field">
+          <label for="conditions" data-i18n="form.conditions">Vorerkrankungen</label>
+          <textarea id="conditions" placeholder="z. B. Bluthochdruck, Migräne"></textarea>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="medications" data-i18n="form.medications">Aktuelle Medikamente</label>
+            <textarea id="medications" placeholder="z. B. Ramipril"></textarea>
           </div>
+          <div class="field">
+            <label for="allergies" data-i18n="form.allergies">Allergien</label>
+            <textarea id="allergies" placeholder="z. B. Penicillin"></textarea>
+          </div>
+        </div>
+        <div class="field">
+          <label for="family" data-i18n="form.family">Relevante Familienanamnese</label>
+          <textarea id="family" placeholder="z. B. Herzinfarkt beim Vater mit 55"></textarea>
+        </div>
+
+        <div class="sec-title" data-i18n="fs.current">Bisherige Einordnung</div>
+        <div class="row2">
+          <div class="field">
+            <label for="diag" data-i18n="form.diag">Bisherige Diagnose (falls vorhanden)</label>
+            <textarea id="diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
+          </div>
+          <div class="field">
+            <label for="treat" data-i18n="form.treat">Aktuelle Behandlung (falls vorhanden)</label>
+            <textarea id="treat" placeholder="z. B. Ibuprofen bei Bedarf"></textarea>
+          </div>
+        </div>
+
+        <div class="sec-title" data-i18n="fs.document">Dokument (optional)</div>
+        <div class="field">
+          <label for="document" data-i18n="form.document">Arztbericht / Befund als Text (nur Beispieldaten!)</label>
+          <textarea id="document" class="big" placeholder="Text des Berichts hier einfügen, oder eine .txt-Datei laden …"></textarea>
+          <div class="doc-tools">
+            <input type="file" id="docFile" accept=".txt,text/plain" />
+            <span data-i18n="form.docfile">.txt-Datei laden (Inhalt wird ins Feld übernommen)</span>
+          </div>
+          <div class="charcount" id="docCount">0 / 6000</div>
+        </div>
+
+        <div class="submit-row">
+          <div class="cost-hint" data-i18n="form.cost">Kosten: wenige Cent GEN, Rest wird automatisch erstattet.</div>
+          <button class="btn" id="submitBtn" disabled data-i18n="form.submit">Fall einreichen</button>
         </div>
       </section>
 
-      <section>
-        <h2 data-i18n="mine.title">Meine Befunde</h2>
-        <div class="sechint" data-i18n="mine.hint">Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.</div>
-        <div class="caselist" id="caseList">
+      <!-- Findings -->
+      <section class="card">
+        <div class="panel-head">
+          <h2 data-i18n="mine.title">Meine Befunde</h2>
+          <p data-i18n="mine.hint">Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.</p>
+        </div>
+        <div id="caseList">
           <div class="empty" data-i18n="mine.empty">Noch keine Fälle. Erst Wallet verbinden.</div>
         </div>
       </section>
     </div>
 
-    <footer>
-      <div>
-        <span data-i18n="foot.contract">Contract</span>:
-        <span class="mono" id="contractAddrLabel"></span>
-        · <span data-i18n="foot.chain">Chain</span> studioDevnet (61997)
-      </div>
-      <div><span data-i18n="foot.pattern">Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch</span></div>
+    <footer class="footer">
+      <span><span data-i18n="foot.contract">Contract</span>: <span class="mono" id="contractAddrLabel"></span></span>
+      <span><span data-i18n="foot.chain">Chain</span> studioDevnet (61997)</span>
     </footer>
   </div>
 
+  <!-- Detail modal -->
   <div class="backdrop" id="detail">
     <div class="sheet" role="dialog" aria-modal="true">
-      <button class="close" id="detailClose" aria-label="close">×</button>
+      <button class="close" id="detailClose" aria-label="Schließen">×</button>
       <h3 id="detailId">SO-YYYY-NNNN</h3>
       <div class="filed" id="detailFiled"></div>
       <dl id="detailDl"></dl>
@@ -290,6 +313,7 @@
     </div>
   </div>
 
+  <!-- Wallet picker -->
   <div class="backdrop" id="picker">
     <div class="picker">
       <h4 data-i18n="picker.title">Wallet auswählen</h4>
@@ -309,7 +333,7 @@
     // Nach jedem Neu-Deploy hier die neue Adresse eintragen,
     // ODER die Seite mit ?contract=0x... öffnen.
     // ===================================================================
-    const CONTRACT_FALLBACK = '0x48e8243882f6422e9ed44a0F3487Dd257579f19F';
+    const CONTRACT_FALLBACK = '0x5243e4f82FC1E0d780Da36d4eeE69B0DC064B97d';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
     const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : CONTRACT_FALLBACK;
