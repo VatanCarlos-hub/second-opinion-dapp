@@ -739,41 +739,53 @@
         String(new Date().getFullYear()),
       ];
 
+      const year = String(new Date().getFullYear());
       const btn = document.getElementById('submitBtn'); btn.disabled = true;
       const bar = document.getElementById('statusbar'); const msg = document.getElementById('statusMsg');
+
+      const readCount = async () => {
+        try { return parseInt(await readContract('case_count', []), 10) || 0; }
+        catch (e) { console.warn('case_count failed', e); return -1; }
+      };
+      const pad4 = n => String(n).padStart(4, '0');
+
       try {
-        // Snapshot existing cases so we can detect the NEW one afterwards.
-        const beforeIds = new Set(await fetchMyIds());
+        const countBefore = await readCount();
 
         msg.textContent = t('status.sending'); toast(t('toast.sent'));
         const hash = await writeContract('submit_case', args);
-        // 'decided' resolves at ACCEPTED (status 5) - verdict is on-chain then.
-        // NOTE: 'decided' ALSO resolves on UNDETERMINED (no state written), so
-        // we must not claim success here - we verify by reading the case back.
+        // 'decided' resolves at ACCEPTED (status 5) AND at UNDETERMINED, so we
+        // do NOT trust it as success - we read contract state to see the truth.
         await state.client.waitForTransactionReceipt({ hash, waitUntil: 'decided', interval: 3000, retries: 40 });
 
-        // Poll for the actually-stored new case (handles read lag AND tells us
-        // honestly whether consensus wrote state at all).
-        let newCase = null;
-        for (let i = 0; i < 8 && !newCase; i++){
-          const ids = await fetchMyIds();
-          const fresh = ids.find(id => !beforeIds.has(id));
-          if (fresh){
-            try { newCase = JSON.parse(await readContract('get_case', [fresh])); } catch {}
-          }
-          if (!newCase) await new Promise(r => setTimeout(r, 2500));
+        // Poll the AUTHORITATIVE contract state: did case_count go up?
+        let countAfter = countBefore;
+        for (let i = 0; i < 10; i++){
+          countAfter = await readCount();
+          if (countAfter > countBefore) break;
+          await new Promise(r => setTimeout(r, 2500));
         }
 
-        if (newCase){
+        if (countAfter > countBefore){
+          // State WAS written. Reconstruct the new case id (contract builds it
+          // as SO-<year>-<count>), which sidesteps any address-key mismatch.
+          let newCase = null;
+          const candidateId = 'SO-' + year + '-' + pad4(countAfter);
+          try {
+            const j = JSON.parse(await readContract('get_case', [candidateId]));
+            if (j && !j.error) newCase = j;
+          } catch {}
           toast(t('toast.done'));
           ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
           updateDocCount();
           await renderCaseList();
-          showDetail(newCase); // open the verdict immediately
+          if (newCase) showDetail(newCase);
+          else toast('Fall gespeichert (Fälle gesamt: ' + countAfter + '). Er erscheint rechts in der Liste.', false);
+        } else if (countAfter === -1){
+          toast(t('toast.err') + ': case_count nicht lesbar', true);
         } else {
-          // Transaction went through but no case was stored -> no consensus
-          // (UNDETERMINED) or still settling. Be honest, don't fake a verdict.
-          toast(t('toast.nocons'), true);
+          // count unchanged -> genuinely no state written (real UNDETERMINED).
+          toast(t('toast.nocons') + ' (Fälle gesamt unverändert: ' + countAfter + ')', true);
           await renderCaseList();
         }
       } catch (e) {
