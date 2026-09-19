@@ -28,8 +28,8 @@
     /* Header */
     .top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 0 22px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:13px}
-    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,var(--brand),var(--brand-deep));display:grid;place-items:center;color:#fff;flex-shrink:0;box-shadow:0 4px 14px rgba(14,86,66,.28)}
-    .mark svg{width:22px;height:22px}
+    .mark{width:46px;height:46px;border-radius:14px;background:linear-gradient(150deg,var(--brand),var(--brand-deep));display:grid;place-items:center;color:#fff;flex-shrink:0;box-shadow:0 6px 18px rgba(14,86,66,.30)}
+    .mark svg{width:30px;height:30px}
     .brand h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1;margin:0;letter-spacing:-0.01em}
     .brand .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
     .top-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -153,7 +153,12 @@
     <header class="top">
       <div class="brand">
         <div class="mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="12.6" y="4" width="6.8" height="24" rx="3.4" fill="#fff"/>
+            <rect x="4" y="12.6" width="24" height="6.8" rx="3.4" fill="#fff"/>
+            <circle cx="23.8" cy="23.8" r="7.4" fill="#fff" stroke="var(--brand-deep)" stroke-width="2"/>
+            <path d="M20.5 24.0l2.3 2.3 4.2-4.5" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
         <div>
           <h1>Second Opinion</h1>
@@ -772,6 +777,14 @@
       if (!val) return '';
       return `<dt>${esc(t(labelKey))}</dt><dd>${esc(val)}</dd>`;
     }
+    function fmtAssessment(text){
+      let s = esc(text);                                   // escape HTML first (safe)
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); // **bold** -> <strong>
+      s = s.replace(/\*(?!\s)([^*\n]+?)\*/g, '<em>$1</em>');   // *italic* -> <em>
+      // bold section leads like "1) Titel:" at line start (if not already bold)
+      s = s.replace(/^(\s*\d\)\s[^\n:<]{1,70}:)/gm, '<strong>$1</strong>');
+      return s;
+    }
     function showDetail(c){
       document.getElementById('detailId').textContent = c.case_id || '—';
       document.getElementById('detailFiled').textContent = `${t('detail.filed')}: ${c.filed_by || '—'}`;
@@ -794,7 +807,7 @@
       const aBlock = document.getElementById('assessmentBlock');
       const aText = document.getElementById('assessmentText');
       if (c.assessment && String(c.assessment).trim()){
-        aText.textContent = c.assessment;
+        aText.innerHTML = fmtAssessment(c.assessment);
         aBlock.style.display = '';
       } else {
         aBlock.style.display = 'none';
