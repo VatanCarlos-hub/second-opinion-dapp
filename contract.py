@@ -187,73 +187,121 @@ class SecondOpinion(gl.contract.Contract):
             + doc_block
         )
 
+        # ---- Jury: tolerant consensus via prompt_non_comparative -----------
+        # strict_eq forces every validator LLM to produce the IDENTICAL word,
+        # which repeatedly went UNDETERMINED on subjective medical triage.
+        # prompt_non_comparative instead lets the leader produce the word and
+        # each validator judge whether it is a DEFENSIBLE classification for the
+        # case, so a validator accepts a reasonable answer even if it would have
+        # picked an adjacent label -> consensus is reached on subjective calls.
+        # fn returns the input the validator also sees; task drives the leader;
+        # criteria is how the validator judges the leader's output.
+        def case_input() -> str:
+            return case_text
+
         # ---- Jury question 1: plausibility ---------------------------------
-        # Prescriptive, ordered decision procedure: different validator LLMs
-        # converge on the SAME single word far more reliably than with an
-        # open-ended judgment, which keeps strict_eq consensus stable.
-        def get_plausibility() -> str:
-            prompt = (
-                "You are one member of a medical review panel giving a "
-                "non-binding second opinion. Decide whether the CURRENT "
-                "DIAGNOSIS in the case fits the reported symptoms and history.\n\n"
-                "Apply these rules IN ORDER and stop at the FIRST that matches:\n"
-                "1. If the reported symptoms are too few or too vague to judge "
-                "the diagnosis at all -> INSUFFICIENT_DATA\n"
-                "2. If at least one reported symptom is clearly NOT explained by "
-                "the current diagnosis, or a clearly more likely diagnosis fits "
-                "the symptoms better -> QUESTIONABLE\n"
-                "3. Otherwise, if the current diagnosis is a standard and "
-                "reasonable explanation for the reported symptoms -> PLAUSIBLE\n\n"
-                "Answer with EXACTLY ONE word, uppercase, no punctuation, no "
-                "explanation: PLAUSIBLE or QUESTIONABLE or INSUFFICIENT_DATA.\n\n"
-                "Case:\n" + case_text + "\n\n"
-                "One word only."
-            )
-            try:
-                raw = gl.nondet.exec_prompt(prompt)
-            except Exception:
-                return "UNREVIEWED"
-            token = _pick(raw, ["PLAUSIBLE", "QUESTIONABLE", "INSUFFICIENT_DATA"])
-            return token if token else "UNREVIEWED"
-
-        # ---- Jury question 2: urgency --------------------------------------
-        def get_urgency() -> str:
-            prompt = (
-                "You are one member of a medical review panel giving a "
-                "non-binding second opinion. Decide how urgently an in-person "
-                "specialist consultation is warranted.\n\n"
-                "Apply these rules IN ORDER and stop at the FIRST that matches:\n"
-                "1. If the case contains ANY red-flag feature -> URGENT. "
-                "Red flags include: sudden severe onset of a symptom; chest pain "
-                "or pressure; difficulty breathing; sudden neurological change "
-                "(weakness, vision loss, confusion, slurred speech); signs of "
-                "stroke or heart attack; uncontrolled bleeding; high fever with "
-                "a stiff neck.\n"
-                "2. Else, if symptoms are persistent, worsening, or clearly "
-                "affecting daily life -> MODERATE\n"
-                "3. Otherwise, if symptoms are mild, stable, or long-standing "
-                "with no concerning features -> ROUTINE\n\n"
-                "Answer with EXACTLY ONE word, uppercase, no punctuation, no "
-                "explanation: URGENT or MODERATE or ROUTINE.\n\n"
-                "Case:\n" + case_text + "\n\n"
-                "One word only."
-            )
-            try:
-                raw = gl.nondet.exec_prompt(prompt)
-            except Exception:
-                return "UNREVIEWED"
-            token = _pick(raw, ["URGENT", "MODERATE", "ROUTINE"])
-            return token if token else "UNREVIEWED"
-
-        # Deterministic guard: asking "is the diagnosis plausible" makes no
-        # sense when no diagnosis was provided. Set it deterministically so the
-        # jury is never split over an unanswerable question.
+        # Deterministic guard: no diagnosis -> no jury (unanswerable question).
         if diag_l:
-            plausibility = gl.eq_principle.strict_eq(get_plausibility)
+            try:
+                raw_p = gl.eq_principle.prompt_non_comparative(
+                    case_input,
+                    task=(
+                        "You are a medical review panel giving a non-binding "
+                        "second opinion. Decide whether the CURRENT DIAGNOSIS "
+                        "stated in the case fits the reported symptoms and "
+                        "history. Respond with EXACTLY ONE word and nothing "
+                        "else: PLAUSIBLE (the diagnosis reasonably fits), "
+                        "QUESTIONABLE (it does not fit well or is inconsistent), "
+                        "or INSUFFICIENT_DATA (not enough information to judge)."
+                    ),
+                    criteria=(
+                        "The answer must be exactly one of: PLAUSIBLE, "
+                        "QUESTIONABLE, INSUFFICIENT_DATA. Accept the answer if it "
+                        "is a medically DEFENSIBLE classification for the "
+                        "described case, even if another of the three labels "
+                        "could also be reasonably argued. Reject only if the "
+                        "classification is clearly indefensible given the case."
+                    ),
+                )
+            except Exception:
+                raw_p = ""
+            plausibility = _pick(
+                raw_p, ["PLAUSIBLE", "QUESTIONABLE", "INSUFFICIENT_DATA"]
+            ) or "UNREVIEWED"
         else:
             plausibility = "NO_DIAGNOSIS"
 
-        urgency = gl.eq_principle.strict_eq(get_urgency)
+        # ---- Jury question 2: urgency --------------------------------------
+        try:
+            raw_u = gl.eq_principle.prompt_non_comparative(
+                case_input,
+                task=(
+                    "You are a medical review panel giving a non-binding second "
+                    "opinion. Decide how urgently an in-person specialist "
+                    "consultation is warranted. Respond with EXACTLY ONE word "
+                    "and nothing else: URGENT (red-flag features present, e.g. "
+                    "sudden severe onset, chest pain, difficulty breathing, "
+                    "sudden neurological change, signs of stroke or heart "
+                    "attack, uncontrolled bleeding, high fever with stiff neck), "
+                    "MODERATE (persistent, worsening, or clearly affecting daily "
+                    "life), or ROUTINE (mild, stable, or long-standing with no "
+                    "concerning features)."
+                ),
+                criteria=(
+                    "The answer must be exactly one of: URGENT, MODERATE, "
+                    "ROUTINE. Accept the answer if it is a medically DEFENSIBLE "
+                    "urgency level for the described case, even if an adjacent "
+                    "level could also be argued. Reject only if the level is "
+                    "clearly wrong, e.g. ROUTINE despite clear red flags, or "
+                    "URGENT for plainly trivial and stable symptoms."
+                ),
+            )
+        except Exception:
+            raw_u = ""
+        urgency = _pick(raw_u, ["URGENT", "MODERATE", "ROUTINE"]) or "UNREVIEWED"
+
+        # ---- Jury question 3: structured assessment ------------------------
+        # Free-form text is exactly what prompt_non_comparative is best at: the
+        # leader writes the assessment, validators accept it if it is medically
+        # reasonable and appropriately cautious (no definitive diagnosis, no
+        # specific self-prescription).
+        try:
+            assessment = gl.eq_principle.prompt_non_comparative(
+                case_input,
+                task=(
+                    "You are a medical review panel providing a non-binding, "
+                    "educational second opinion for a layperson. You are NOT the "
+                    "treating physician and must NOT give a definitive diagnosis "
+                    "or prescribe. Based only on the case, write a concise, "
+                    "clearly structured assessment IN THE SAME LANGUAGE as the "
+                    "symptoms text, with these four short sections:\n"
+                    "1) Possible explanations: 2-4 conditions that could fit, "
+                    "each with a one-sentence reason. Present them as "
+                    "possibilities to investigate, NOT as a confirmed diagnosis.\n"
+                    "2) What this could mean: 1-2 plain-language sentences.\n"
+                    "3) What to do next: which type of doctor or specialist to "
+                    "see, what to monitor, and any warning signs that mean urgent "
+                    "care is needed.\n"
+                    "4) Treatment to discuss with a doctor: general approaches or "
+                    "medication CLASSES a physician might consider. Do NOT give "
+                    "specific drug names with doses and do NOT tell the patient to "
+                    "self-medicate; state clearly that only a doctor can "
+                    "prescribe. Keep the whole answer under about 180 words."
+                ),
+                criteria=(
+                    "Accept the assessment if it is medically reasonable, grounded "
+                    "in the described case, appropriately cautious (frames "
+                    "possibilities as possibilities, does NOT assert a single "
+                    "definitive diagnosis, does NOT give specific prescription "
+                    "doses or instruct self-medication), and includes sensible "
+                    "next steps. Reject it only if it is dangerous, fabricated, "
+                    "asserts a definitive diagnosis, or instructs specific "
+                    "self-medication with doses."
+                ),
+            )
+            assessment = str(assessment).strip()
+        except Exception:
+            assessment = ""
 
         # ---- Deterministic case_id + storage -------------------------------
         idx = self._load_index()
@@ -278,6 +326,7 @@ class SecondOpinion(gl.contract.Contract):
             "document": document_l,
             "plausibility": plausibility,
             "urgency": urgency,
+            "assessment": assessment,
             "version": 2,
         }
         self.cases[case_id] = json.dumps(payload)
