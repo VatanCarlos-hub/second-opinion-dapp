@@ -112,6 +112,10 @@
     .sheet dt{font-size:12px;color:var(--muted);padding-top:3px}
     .sheet dd{margin:0;white-space:pre-wrap}
     @media (max-width:560px){.sheet dl{grid-template-columns:1fr;gap:3px 0}.sheet dd{margin-bottom:8px}}
+    .assessment{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:0 0 22px}
+    .assessment .alabel{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--brand-deep);margin-bottom:8px}
+    .assessment .atext{font-size:14.5px;line-height:1.6;white-space:pre-wrap}
+    .assessment .anote{font-size:12px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
     .verdictblock{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     @media (max-width:560px){.verdictblock{grid-template-columns:1fr}}
     .verdict{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:14px;padding:18px;background:var(--surface-2)}
@@ -298,6 +302,11 @@
       <h3 id="detailId">SO-YYYY-NNNN</h3>
       <div class="filed" id="detailFiled"></div>
       <dl id="detailDl"></dl>
+      <div class="assessment" id="assessmentBlock" style="display:none">
+        <div class="alabel" data-i18n="detail.assessment">Einschätzung</div>
+        <div class="atext" id="assessmentText"></div>
+        <div class="anote" data-i18n="detail.anote">Keine Diagnose. Nur ein Arzt kann diagnostizieren und verordnen.</div>
+      </div>
       <div class="verdictblock">
         <div class="verdict" id="vPlaus">
           <div class="vlabel" data-i18n="detail.vplaus">Plausibilität der Diagnose</div>
@@ -333,7 +342,7 @@
     // Nach jedem Neu-Deploy hier die neue Adresse eintragen,
     // ODER die Seite mit ?contract=0x... öffnen.
     // ===================================================================
-    const CONTRACT_FALLBACK = '0x5243e4f82FC1E0d780Da36d4eeE69B0DC064B97d';
+    const CONTRACT_FALLBACK = '0x62C4C91290c5C28c11d603254E9f09fa9A169Ac1';
     const CONTRACT_REGEX = /^0x[a-fA-F0-9]{40}$/;
     const urlContract = new URLSearchParams(location.search).get('contract');
     const CONTRACT_ADDRESS = (urlContract && CONTRACT_REGEX.test(urlContract)) ? urlContract : CONTRACT_FALLBACK;
@@ -379,7 +388,7 @@
         'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch',
         'picker.title':'Wallet auswählen','picker.cancel':'abbrechen','picker.none':'Keine Wallet gefunden. Bitte MetaMask oder Rabby installieren.',
         'd.age':'Alter','d.sex':'Geschlecht','d.symptoms':'Symptome','d.duration':'Dauer','d.severity':'Schweregrad','d.conditions':'Vorerkrankungen','d.medications':'Medikamente','d.allergies':'Allergien','d.family':'Familienanamnese','d.diag':'Diagnose','d.treat':'Behandlung','d.document':'Dokument',
-        'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt','detail.filed':'Eingereicht von',
+        'detail.vplaus':'Plausibilität der Diagnose','detail.vurg':'Dringlichkeit Facharzt','detail.filed':'Eingereicht von','detail.assessment':'Einschätzung','detail.anote':'Keine Diagnose. Nur ein Arzt kann diagnostizieren und verordnen.',
         'vhint.PLAUSIBLE':'Die vorgeschlagene Diagnose passt zum Fall.','vhint.QUESTIONABLE':'Die vorgeschlagene Diagnose passt nicht gut. Weitere Abklärung sinnvoll.','vhint.INSUFFICIENT_DATA':'Zu wenig Information für ein Urteil.','vhint.NO_DIAGNOSIS':'Keine Diagnose angegeben – nur die Dringlichkeit wurde bewertet.',
         'vhint.URGENT':'Facharztkonsultation innerhalb 24–48 h.','vhint.MODERATE':'Facharztkonsultation innerhalb 1–2 Wochen.','vhint.ROUTINE':'Keine akute Facharztkonsultation nötig.','vhint.UNREVIEWED':'Jury lieferte keine eindeutige Antwort.',
         'toast.fields':'Bitte mindestens Alter und Symptome ausfüllen.','toast.doclong':'Dokument ist zu lang und wurde gekürzt.',
@@ -415,7 +424,7 @@
         'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Consensus: 2× strict_eq · single-word answers · rest deterministic',
         'picker.title':'Select wallet','picker.cancel':'cancel','picker.none':'No wallet found. Please install MetaMask or Rabby.',
         'd.age':'Age','d.sex':'Sex','d.symptoms':'Symptoms','d.duration':'Duration','d.severity':'Severity','d.conditions':'Conditions','d.medications':'Medications','d.allergies':'Allergies','d.family':'Family history','d.diag':'Diagnosis','d.treat':'Treatment','d.document':'Document',
-        'detail.vplaus':'Plausibility of diagnosis','detail.vurg':'Specialist urgency','detail.filed':'Filed by',
+        'detail.vplaus':'Plausibility of diagnosis','detail.vurg':'Specialist urgency','detail.filed':'Filed by','detail.assessment':'Assessment','detail.anote':'Not a diagnosis. Only a doctor can diagnose and prescribe.',
         'vhint.PLAUSIBLE':'The proposed diagnosis fits the case.','vhint.QUESTIONABLE':'The proposed diagnosis does not fit well. Further review advised.','vhint.INSUFFICIENT_DATA':'Not enough information to judge.','vhint.NO_DIAGNOSIS':'No diagnosis provided – only urgency was assessed.',
         'vhint.URGENT':'Specialist consultation within 24–48h.','vhint.MODERATE':'Specialist consultation within 1–2 weeks.','vhint.ROUTINE':'No acute specialist consultation needed.','vhint.UNREVIEWED':'Jury returned no clear answer.',
         'toast.fields':'Please fill in at least age and symptoms.','toast.doclong':'Document too long and was truncated.',
@@ -451,7 +460,7 @@
         'foot.contract':'Sözleşme','foot.chain':'Ağ','foot.pattern':'Uzlaşı: 2× strict_eq · tek kelime · gerisi deterministik',
         'picker.title':'Cüzdan seç','picker.cancel':'iptal','picker.none':'Cüzdan bulunamadı. Lütfen MetaMask veya Rabby kurun.',
         'd.age':'Yaş','d.sex':'Cinsiyet','d.symptoms':'Belirtiler','d.duration':'Süre','d.severity':'Şiddet','d.conditions':'Hastalıklar','d.medications':'İlaçlar','d.allergies':'Alerjiler','d.family':'Aile öyküsü','d.diag':'Tanı','d.treat':'Tedavi','d.document':'Belge',
-        'detail.vplaus':'Tanının makullüğü','detail.vurg':'Uzman aciliyeti','detail.filed':'Gönderen',
+        'detail.vplaus':'Tanının makullüğü','detail.vurg':'Uzman aciliyeti','detail.filed':'Gönderen','detail.assessment':'Değerlendirme','detail.anote':'Tanı değildir. Yalnızca bir doktor tanı koyabilir ve reçete yazabilir.',
         'vhint.PLAUSIBLE':'Önerilen tanı vakayla uyumlu.','vhint.QUESTIONABLE':'Önerilen tanı iyi uyuşmuyor. Daha fazla değerlendirme önerilir.','vhint.INSUFFICIENT_DATA':'Yargı için yeterli bilgi yok.','vhint.NO_DIAGNOSIS':'Tanı girilmedi – yalnızca aciliyet değerlendirildi.',
         'vhint.URGENT':'24–48 saat içinde uzman görüşü.','vhint.MODERATE':'1–2 hafta içinde uzman görüşü.','vhint.ROUTINE':'Acil uzman görüşü gerekmez.','vhint.UNREVIEWED':'Jüri net yanıt vermedi.',
         'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.','toast.doclong':'Belge çok uzun, kısaltıldı.',
@@ -705,6 +714,14 @@
       document.getElementById('vUrgWord').textContent = uWord;
       document.getElementById('vPlausHint').textContent = t('vhint.'+pWord) || '';
       document.getElementById('vUrgHint').textContent = t('vhint.'+uWord) || '';
+      const aBlock = document.getElementById('assessmentBlock');
+      const aText = document.getElementById('assessmentText');
+      if (c.assessment && String(c.assessment).trim()){
+        aText.textContent = c.assessment;
+        aBlock.style.display = '';
+      } else {
+        aBlock.style.display = 'none';
+      }
       document.getElementById('detail').classList.add('open');
     }
     document.getElementById('detailClose').addEventListener('click', ()=>document.getElementById('detail').classList.remove('open'));
