@@ -624,21 +624,38 @@
     }
 
     // ---- Case list ----
-    // Query list_cases_by with BOTH address casings (the contract stores the
-    // sender as str(gl.message.sender_address); MetaMask may hand us a
-    // differently-cased string, and TreeMap keys match exactly).
-    async function fetchMyIds(){
-      if (!state.address) return [];
-      const variants = [...new Set([state.address, state.address.toLowerCase()])];
-      const seen = new Set(); const ids = [];
-      for (const a of variants){
+    // Read cases straight from contract state and match by the stored filed_by
+    // field (case-insensitive). This sidesteps the address key-casing mismatch
+    // that made list_cases_by return nothing even for stored cases.
+    async function readCount(){
+      try { return parseInt(await readContract('case_count', []), 10) || 0; }
+      catch (e) { console.warn('case_count failed', e); return -1; }
+    }
+    const CASE_YEARS = () => {
+      const y = new Date().getFullYear();
+      return [String(y), String(y - 1), '0000'];
+    };
+    async function getCaseByNumber(n){
+      const num = String(n).padStart(4, '0');
+      for (const y of CASE_YEARS()){
         try {
-          const raw = await readContract('list_cases_by', [a]);
-          const arr = JSON.parse(raw || '[]');
-          if (Array.isArray(arr)) for (const id of arr){ if (!seen.has(id)){ seen.add(id); ids.push(id); } }
-        } catch (e) { console.warn('list_cases_by failed for', a, e); }
+          const j = JSON.parse(await readContract('get_case', ['SO-' + y + '-' + num]));
+          if (j && !j.error) return j;
+        } catch {}
       }
-      return ids;
+      return null;
+    }
+    async function fetchRecentMine(){
+      if (!state.address) return [];
+      const count = await readCount();
+      if (count <= 0) return [];
+      const me = state.address.toLowerCase();
+      const out = [];
+      for (let n = count; n >= Math.max(1, count - 49); n--){
+        const c = await getCaseByNumber(n);
+        if (c && (c.filed_by || '').toLowerCase() === me) out.push(c);
+      }
+      return out;
     }
 
     async function renderCaseList(){
@@ -646,13 +663,10 @@
       if (!state.address){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
       list.innerHTML = `<div class="empty">${esc(t('mine.loading'))}</div>`;
       try {
-        const ids = await fetchMyIds();
-        if (!ids.length){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
-        const rows = await Promise.all(ids.map(async id => {
-          try { return JSON.parse(await readContract('get_case', [id])); } catch { return null; }
-        }));
+        const rows = await fetchRecentMine();
+        if (!rows.length){ list.innerHTML = `<div class="empty">${esc(t('mine.empty'))}</div>`; return; }
         list.innerHTML = '';
-        rows.filter(Boolean).reverse().forEach(c => {
+        rows.forEach(c => {
           const row = document.createElement('div'); row.className='case-row';
           const summary = (c.symptoms || '').slice(0, 55);
           row.innerHTML = `<span class="case-id">${esc(c.case_id)}</span>
@@ -743,12 +757,6 @@
       const btn = document.getElementById('submitBtn'); btn.disabled = true;
       const bar = document.getElementById('statusbar'); const msg = document.getElementById('statusMsg');
 
-      const readCount = async () => {
-        try { return parseInt(await readContract('case_count', []), 10) || 0; }
-        catch (e) { console.warn('case_count failed', e); return -1; }
-      };
-      const pad4 = n => String(n).padStart(4, '0');
-
       try {
         const countBefore = await readCount();
 
@@ -767,19 +775,13 @@
         }
 
         if (countAfter > countBefore){
-          // State WAS written. Reconstruct the new case id (contract builds it
-          // as SO-<year>-<count>), which sidesteps any address-key mismatch.
-          let newCase = null;
-          const candidateId = 'SO-' + year + '-' + pad4(countAfter);
-          try {
-            const j = JSON.parse(await readContract('get_case', [candidateId]));
-            if (j && !j.error) newCase = j;
-          } catch {}
-          toast(t('toast.done'));
+          // State WAS written. Fetch the newest case (tries the plausible year
+          // prefixes), which sidesteps any address-key mismatch entirely.
+          const newCase = await getCaseByNumber(countAfter);
           ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
           updateDocCount();
           await renderCaseList();
-          if (newCase) showDetail(newCase);
+          if (newCase){ toast(t('toast.done')); showDetail(newCase); }
           else toast('Fall gespeichert (Fälle gesamt: ' + countAfter + '). Er erscheint rechts in der Liste.', false);
         } else if (countAfter === -1){
           toast(t('toast.err') + ': case_count nicht lesbar', true);
