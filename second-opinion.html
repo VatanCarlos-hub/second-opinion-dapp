@@ -217,12 +217,12 @@
         <div class="sec-title" data-i18n="fs.symptoms">Beschwerden</div>
         <div class="field">
           <label for="symptoms" data-i18n="form.symptoms">Hauptsymptome (allgemein, ohne persönliche Details)</label>
-          <textarea id="symptoms" placeholder="z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit …"></textarea>
+          <textarea id="symptoms" data-i18n-ph="ph.symptoms" placeholder="z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit …"></textarea>
         </div>
         <div class="row2">
           <div class="field">
             <label for="duration" data-i18n="form.duration">Dauer der Beschwerden</label>
-            <input type="text" id="duration" placeholder="z. B. 3 Wochen" />
+            <input type="text" id="duration" data-i18n-ph="ph.duration" placeholder="z. B. 3 Wochen" />
           </div>
           <div class="field">
             <label for="severity" data-i18n="form.severity">Schweregrad (selbst eingeschätzt)</label>
@@ -238,39 +238,39 @@
         <div class="sec-title" data-i18n="fs.history">Vorgeschichte</div>
         <div class="field">
           <label for="conditions" data-i18n="form.conditions">Vorerkrankungen</label>
-          <textarea id="conditions" placeholder="z. B. Bluthochdruck, Migräne"></textarea>
+          <textarea id="conditions" data-i18n-ph="ph.conditions" placeholder="z. B. Bluthochdruck, Migräne"></textarea>
         </div>
         <div class="row2">
           <div class="field">
             <label for="medications" data-i18n="form.medications">Aktuelle Medikamente</label>
-            <textarea id="medications" placeholder="z. B. Ramipril"></textarea>
+            <textarea id="medications" data-i18n-ph="ph.medications" placeholder="z. B. Ramipril"></textarea>
           </div>
           <div class="field">
             <label for="allergies" data-i18n="form.allergies">Allergien</label>
-            <textarea id="allergies" placeholder="z. B. Penicillin"></textarea>
+            <textarea id="allergies" data-i18n-ph="ph.allergies" placeholder="z. B. Penicillin"></textarea>
           </div>
         </div>
         <div class="field">
           <label for="family" data-i18n="form.family">Relevante Familienanamnese</label>
-          <textarea id="family" placeholder="z. B. Herzinfarkt beim Vater mit 55"></textarea>
+          <textarea id="family" data-i18n-ph="ph.family" placeholder="z. B. Herzinfarkt beim Vater mit 55"></textarea>
         </div>
 
         <div class="sec-title" data-i18n="fs.current">Bisherige Einordnung</div>
         <div class="row2">
           <div class="field">
             <label for="diag" data-i18n="form.diag">Bisherige Diagnose (falls vorhanden)</label>
-            <textarea id="diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
+            <textarea id="diag" data-i18n-ph="ph.diag" placeholder="z. B. Spannungskopfschmerz"></textarea>
           </div>
           <div class="field">
             <label for="treat" data-i18n="form.treat">Aktuelle Behandlung (falls vorhanden)</label>
-            <textarea id="treat" placeholder="z. B. Ibuprofen bei Bedarf"></textarea>
+            <textarea id="treat" data-i18n-ph="ph.treat" placeholder="z. B. Ibuprofen bei Bedarf"></textarea>
           </div>
         </div>
 
         <div class="sec-title" data-i18n="fs.document">Dokument (optional)</div>
         <div class="field">
           <label for="document" data-i18n="form.document">Arztbericht / Befund als Text (nur Beispieldaten!)</label>
-          <textarea id="document" class="big" placeholder="Text des Berichts hier einfügen, oder eine .txt-Datei laden …"></textarea>
+          <textarea id="document" class="big" data-i18n-ph="ph.document" placeholder="Text des Berichts hier einfügen, oder eine .txt-Datei laden …"></textarea>
           <div class="doc-tools">
             <input type="file" id="docFile" accept=".txt,text/plain" />
             <span data-i18n="form.docfile">.txt-Datei laden (Inhalt wird ins Feld übernommen)</span>
@@ -390,6 +390,7 @@
         'form.document':'Arztbericht / Befund als Text (nur Beispieldaten!)',
         'form.docfile':'.txt-Datei laden (Inhalt wird ins Feld übernommen)',
         'form.cost':'Kosten: wenige Cent GEN, Rest wird automatisch erstattet.','form.submit':'Fall einreichen',
+        'ph.symptoms':'z. B. seit Wochen morgendliche Kopfschmerzen, Übelkeit …','ph.duration':'z. B. 3 Wochen','ph.conditions':'z. B. Bluthochdruck, Migräne','ph.medications':'z. B. Ramipril','ph.allergies':'z. B. Penicillin','ph.family':'z. B. Herzinfarkt beim Vater mit 55','ph.diag':'z. B. Spannungskopfschmerz','ph.treat':'z. B. Ibuprofen bei Bedarf','ph.document':'Text des Berichts hier einfügen, oder eine .txt-Datei laden …',
         'mine.title':'Meine Befunde','mine.hint':'Nur Fälle, die diese Wallet eingereicht hat. On-chain trotzdem öffentlich lesbar.',
         'mine.empty':'Noch keine Fälle. Erst Wallet verbinden.','mine.loading':'lädt …',
         'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Konsens: 2× strict_eq · 1-Wort-Antworten · Rest deterministisch',
@@ -426,6 +427,7 @@
         'form.document':'Doctor\u2019s report / findings as text (sample data only!)',
         'form.docfile':'Load a .txt file (content copied into the field)',
         'form.cost':'Cost: a few cents of GEN, remainder refunded automatically.','form.submit':'Submit case',
+        'ph.symptoms':'e.g. morning headaches and nausea for weeks …','ph.duration':'e.g. 3 weeks','ph.conditions':'e.g. high blood pressure, migraine','ph.medications':'e.g. Ramipril','ph.allergies':'e.g. penicillin','ph.family':'e.g. father had a heart attack at 55','ph.diag':'e.g. tension headache','ph.treat':'e.g. ibuprofen as needed','ph.document':'Paste the report text here, or load a .txt file …',
         'mine.title':'My findings','mine.hint':'Only cases this wallet submitted. Still publicly readable on-chain.',
         'mine.empty':'No cases yet. Connect a wallet first.','mine.loading':'loading …',
         'foot.contract':'Contract','foot.chain':'Chain','foot.pattern':'Consensus: 2× strict_eq · single-word answers · rest deterministic',
@@ -462,6 +464,7 @@
         'form.document':'Doktor raporu / bulgu metni (yalnızca örnek veri!)',
         'form.docfile':'.txt dosyası yükle (içerik alana kopyalanır)',
         'form.cost':'Ücret: birkaç sent GEN, kalanı otomatik iade edilir.','form.submit':'Davayı gönder',
+        'ph.symptoms':'ör. haftalardır sabah baş ağrısı, bulantı …','ph.duration':'ör. 3 hafta','ph.conditions':'ör. yüksek tansiyon, migren','ph.medications':'ör. Ramipril','ph.allergies':'ör. penisilin','ph.family':'ör. babada 55 yaşında kalp krizi','ph.diag':'ör. gerilim tipi baş ağrısı','ph.treat':'ör. gerektiğinde ibuprofen','ph.document':'Rapor metnini buraya yapıştırın veya bir .txt dosyası yükleyin …',
         'mine.title':'Bulgularım','mine.hint':'Sadece bu cüzdanın gönderdiği davalar. Zincir üstünde yine herkese açık.',
         'mine.empty':'Henüz dava yok. Önce cüzdan bağlayın.','mine.loading':'yükleniyor …',
         'foot.contract':'Sözleşme','foot.chain':'Ağ','foot.pattern':'Uzlaşı: 2× strict_eq · tek kelime · gerisi deterministik',
@@ -498,6 +501,7 @@
         'form.document':'Informe médico / hallazgos como texto (¡solo datos de ejemplo!)',
         'form.docfile':'Cargar un archivo .txt (el contenido se copia en el campo)',
         'form.cost':'Coste: unos céntimos de GEN, el resto se reembolsa automáticamente.','form.submit':'Enviar caso',
+        'ph.symptoms':'p. ej. dolores de cabeza matutinos y náuseas desde hace semanas …','ph.duration':'p. ej. 3 semanas','ph.conditions':'p. ej. hipertensión, migraña','ph.medications':'p. ej. Ramipril','ph.allergies':'p. ej. penicilina','ph.family':'p. ej. infarto del padre a los 55','ph.diag':'p. ej. cefalea tensional','ph.treat':'p. ej. ibuprofeno si es necesario','ph.document':'Pega aquí el texto del informe, o carga un archivo .txt …',
         'mine.title':'Mis resultados','mine.hint':'Solo los casos enviados por esta cartera. Aun así, legibles públicamente on-chain.',
         'mine.empty':'Aún no hay casos. Conecta una cartera primero.','mine.loading':'cargando …',
         'foot.contract':'Contrato','foot.chain':'Red','foot.pattern':'Consenso: respuestas de una palabra · resto determinista',
@@ -534,6 +538,7 @@
         'form.document':'Заключение врача / результаты как текст (только тестовые данные!)',
         'form.docfile':'Загрузить файл .txt (содержимое вставится в поле)',
         'form.cost':'Стоимость: несколько центов GEN, остаток возвращается автоматически.','form.submit':'Отправить случай',
+        'ph.symptoms':'напр. утренние головные боли и тошнота уже несколько недель …','ph.duration':'напр. 3 недели','ph.conditions':'напр. гипертония, мигрень','ph.medications':'напр. Рамиприл','ph.allergies':'напр. пенициллин','ph.family':'напр. инфаркт у отца в 55 лет','ph.diag':'напр. головная боль напряжения','ph.treat':'напр. ибупрофен при необходимости','ph.document':'Вставьте сюда текст заключения или загрузите файл .txt …',
         'mine.title':'Мои результаты','mine.hint':'Только случаи, отправленные этим кошельком. Всё равно публично читаемы в блокчейне.',
         'mine.empty':'Пока нет случаев. Сначала подключите кошелёк.','mine.loading':'загрузка …',
         'foot.contract':'Контракт','foot.chain':'Сеть','foot.pattern':'Консенсус: ответы из одного слова · остальное детерминировано',
@@ -555,6 +560,7 @@
     function applyI18n(){
       document.documentElement.lang = lang;
       document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
       document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
       updateWalletUI(); updateStatus();
       if (state.address) renderCaseList();
