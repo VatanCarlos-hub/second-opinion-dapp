@@ -792,13 +792,15 @@
         }
 
         if (countAfter > countBefore){
-          // State WAS written. Fetch the newest case (tries the plausible year
-          // prefixes), which sidesteps any address-key mismatch entirely.
-          const newCase = await getCaseByNumber(countAfter);
+          // State WAS written. Open only MY newest case: fetchRecentMine is
+          // filtered by filed_by == my wallet, so a concurrent submit from
+          // another wallet can never be shown here (its number might be the
+          // higher one, but it is not mine).
           ['age','symptoms','duration','conditions','medications','allergies','family','diag','treat','document'].forEach(id => document.getElementById(id).value = '');
           updateDocCount();
+          const mine = await fetchRecentMine(); // newest of mine first
           await renderCaseList();
-          if (newCase){ toast(t('toast.done')); showDetail(newCase); }
+          if (mine.length){ toast(t('toast.done')); showDetail(mine[0]); }
           else toast('Fall gespeichert (Fälle gesamt: ' + countAfter + '). Er erscheint rechts in der Liste.', false);
         } else if (countAfter === -1){
           toast(t('toast.err') + ': case_count nicht lesbar', true);
