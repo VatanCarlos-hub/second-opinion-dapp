@@ -165,6 +165,8 @@
           <button data-lang="de" class="active">DE</button>
           <button data-lang="en">EN</button>
           <button data-lang="tr">TR</button>
+          <button data-lang="es">ES</button>
+          <button data-lang="ru">RU</button>
         </div>
         <div class="wallet-line" id="walletLine"></div>
       </div>
@@ -466,8 +468,83 @@
         'toast.fields':'Lütfen en az yaş ve belirtileri doldurun.','toast.doclong':'Belge çok uzun, kısaltıldı.',
         'toast.sent':'İşlem gönderildi — bekleniyor …','toast.done':'Dava kaydedildi — bulgu gösteriliyor.','toast.nocons':'İşlem geçti ama dava kaydedilmedi — jüri uzlaşıya varamadı (UNDETERMINED). Lütfen tekrar deneyin veya daha net bir vaka girin.','toast.err':'Hata',
       },
+      es: {
+        'brand.subtitle':'Segunda opinión on-chain · GenLayer Studio NEXT',
+        'net.disconnected':'no conectado','net.wrong':'red incorrecta','net.ok':'studioDevnet',
+        'wallet.connect':'Conectar cartera','wallet.switch':'Cambiar de red','wallet.disconnect':'desconectar',
+        'warn.title':'No sustituye a un médico.',
+        'warn.body':' Esta aplicación solo ofrece una segunda opinión de IA no vinculante y no es una herramienta de diagnóstico. Ante síntomas graves, acuda siempre a un médico.',
+        'warn2.title':'Privacidad — léelo con atención:',
+        'warn2.body':' Todos los datos, incluidos los documentos, se guardan sin cifrar y de forma permanente en una blockchain pública y cualquiera puede leerlos. No es posible borrarlos. Los datos de salud son una categoría especial de datos personales. Usa solo datos de ejemplo ficticios — nunca datos reales de pacientes, nombres, fechas de nacimiento o direcciones.',
+        'status.connect':'No conectado. Conecta una cartera.',
+        'status.switch':'Red incorrecta. Cambia a studioDevnet.',
+        'status.ready':'Listo. Puedes enviar un caso.',
+        'status.sending':'Transacción en curso — esperando la finalización …',
+        'form.title':'Enviar un caso nuevo','form.hint':'Anamnesis completa. El jurado devuelve dos veredictos de una palabra.',
+        'fs.basics':'Datos básicos','fs.symptoms':'Molestias','fs.history':'Antecedentes','fs.current':'Valoración actual','fs.document':'Documento (opcional)',
+        'form.age':'Edad (años)','form.sex':'Sexo',
+        'form.sex.unspec':'sin especificar','form.sex.f':'mujer','form.sex.m':'hombre','form.sex.o':'otro',
+        'form.symptoms':'Síntomas principales (generales, sin datos personales)',
+        'form.duration':'Duración de las molestias','form.severity':'Gravedad (autoevaluada)',
+        'form.sev.none':'sin especificar','form.sev.mild':'leve','form.sev.mod':'moderada','form.sev.sev':'grave',
+        'form.conditions':'Enfermedades previas','form.medications':'Medicación actual','form.allergies':'Alergias',
+        'form.family':'Antecedentes familiares relevantes',
+        'form.diag':'Diagnóstico actual (si lo hay)','form.treat':'Tratamiento actual (si lo hay)',
+        'form.document':'Informe médico / hallazgos como texto (¡solo datos de ejemplo!)',
+        'form.docfile':'Cargar un archivo .txt (el contenido se copia en el campo)',
+        'form.cost':'Coste: unos céntimos de GEN, el resto se reembolsa automáticamente.','form.submit':'Enviar caso',
+        'mine.title':'Mis resultados','mine.hint':'Solo los casos enviados por esta cartera. Aun así, legibles públicamente on-chain.',
+        'mine.empty':'Aún no hay casos. Conecta una cartera primero.','mine.loading':'cargando …',
+        'foot.contract':'Contrato','foot.chain':'Red','foot.pattern':'Consenso: respuestas de una palabra · resto determinista',
+        'picker.title':'Elegir cartera','picker.cancel':'cancelar','picker.none':'No se encontró ninguna cartera. Instala MetaMask o Rabby.',
+        'd.age':'Edad','d.sex':'Sexo','d.symptoms':'Síntomas','d.duration':'Duración','d.severity':'Gravedad','d.conditions':'Enfermedades previas','d.medications':'Medicación','d.allergies':'Alergias','d.family':'Antecedentes familiares','d.diag':'Diagnóstico','d.treat':'Tratamiento','d.document':'Documento',
+        'detail.vplaus':'Plausibilidad del diagnóstico','detail.vurg':'Urgencia de especialista','detail.filed':'Enviado por','detail.assessment':'Valoración','detail.anote':'No es un diagnóstico. Solo un médico puede diagnosticar y recetar.',
+        'vhint.PLAUSIBLE':'El diagnóstico propuesto encaja con el caso.','vhint.QUESTIONABLE':'El diagnóstico propuesto no encaja bien. Se aconseja una revisión adicional.','vhint.INSUFFICIENT_DATA':'Información insuficiente para juzgar.','vhint.NO_DIAGNOSIS':'No se indicó diagnóstico – solo se evaluó la urgencia.',
+        'vhint.URGENT':'Consulta con especialista en 24–48 h.','vhint.MODERATE':'Consulta con especialista en 1–2 semanas.','vhint.ROUTINE':'No se necesita consulta urgente con especialista.','vhint.UNREVIEWED':'El jurado no dio una respuesta clara.',
+        'toast.fields':'Rellena al menos la edad y los síntomas.','toast.doclong':'El documento es demasiado largo y se recortó.',
+        'toast.sent':'Transacción enviada — esperando la finalización …','toast.done':'Caso guardado — mostrando el resultado.','toast.nocons':'La transacción se realizó pero no se guardó ningún caso — el jurado no alcanzó consenso (UNDETERMINED). Inténtalo de nuevo o usa un caso más claro.','toast.err':'Error',
+      },
+      ru: {
+        'brand.subtitle':'Второе мнение on-chain · GenLayer Studio NEXT',
+        'net.disconnected':'не подключено','net.wrong':'неверная сеть','net.ok':'studioDevnet',
+        'wallet.connect':'Подключить кошелёк','wallet.switch':'Сменить сеть','wallet.disconnect':'отключить',
+        'warn.title':'Не заменяет врача.',
+        'warn.body':' Это приложение даёт лишь необязательное второе мнение ИИ и не является диагностическим инструментом. При серьёзных симптомах всегда обращайтесь к врачу.',
+        'warn2.title':'Конфиденциальность — внимательно прочитайте:',
+        'warn2.body':' Все данные, включая документы, хранятся в незашифрованном виде и навсегда в публичном блокчейне и доступны для чтения любому. Удаление невозможно. Данные о здоровье — особая категория персональных данных. Используйте только вымышленные примеры — никогда реальные данные пациентов, имена, даты рождения или адреса.',
+        'status.connect':'Не подключено. Подключите кошелёк.',
+        'status.switch':'Неверная сеть. Переключитесь на studioDevnet.',
+        'status.ready':'Готово. Можно отправить случай.',
+        'status.sending':'Транзакция выполняется — ожидание завершения …',
+        'form.title':'Отправить новый случай','form.hint':'Полный сбор анамнеза. Жюри возвращает два вердикта из одного слова.',
+        'fs.basics':'Основные данные','fs.symptoms':'Жалобы','fs.history':'Анамнез','fs.current':'Текущая оценка','fs.document':'Документ (необязательно)',
+        'form.age':'Возраст (лет)','form.sex':'Пол',
+        'form.sex.unspec':'не указано','form.sex.f':'женский','form.sex.m':'мужской','form.sex.o':'другое',
+        'form.symptoms':'Основные симптомы (в общем, без личных данных)',
+        'form.duration':'Длительность жалоб','form.severity':'Тяжесть (самооценка)',
+        'form.sev.none':'не указано','form.sev.mild':'лёгкая','form.sev.mod':'средняя','form.sev.sev':'тяжёлая',
+        'form.conditions':'Сопутствующие заболевания','form.medications':'Текущие лекарства','form.allergies':'Аллергии',
+        'form.family':'Значимый семейный анамнез',
+        'form.diag':'Текущий диагноз (если есть)','form.treat':'Текущее лечение (если есть)',
+        'form.document':'Заключение врача / результаты как текст (только тестовые данные!)',
+        'form.docfile':'Загрузить файл .txt (содержимое вставится в поле)',
+        'form.cost':'Стоимость: несколько центов GEN, остаток возвращается автоматически.','form.submit':'Отправить случай',
+        'mine.title':'Мои результаты','mine.hint':'Только случаи, отправленные этим кошельком. Всё равно публично читаемы в блокчейне.',
+        'mine.empty':'Пока нет случаев. Сначала подключите кошелёк.','mine.loading':'загрузка …',
+        'foot.contract':'Контракт','foot.chain':'Сеть','foot.pattern':'Консенсус: ответы из одного слова · остальное детерминировано',
+        'picker.title':'Выбрать кошелёк','picker.cancel':'отмена','picker.none':'Кошелёк не найден. Установите MetaMask или Rabby.',
+        'd.age':'Возраст','d.sex':'Пол','d.symptoms':'Симптомы','d.duration':'Длительность','d.severity':'Тяжесть','d.conditions':'Заболевания','d.medications':'Лекарства','d.allergies':'Аллергии','d.family':'Семейный анамнез','d.diag':'Диагноз','d.treat':'Лечение','d.document':'Документ',
+        'detail.vplaus':'Правдоподобность диагноза','detail.vurg':'Срочность к специалисту','detail.filed':'Отправитель','detail.assessment':'Оценка','detail.anote':'Не диагноз. Только врач может ставить диагноз и назначать лечение.',
+        'vhint.PLAUSIBLE':'Предложенный диагноз соответствует случаю.','vhint.QUESTIONABLE':'Предложенный диагноз плохо подходит. Рекомендуется дополнительная проверка.','vhint.INSUFFICIENT_DATA':'Недостаточно информации для оценки.','vhint.NO_DIAGNOSIS':'Диагноз не указан – оценена только срочность.',
+        'vhint.URGENT':'Консультация специалиста в течение 24–48 ч.','vhint.MODERATE':'Консультация специалиста в течение 1–2 недель.','vhint.ROUTINE':'Срочная консультация специалиста не требуется.','vhint.UNREVIEWED':'Жюри не дало чёткого ответа.',
+        'toast.fields':'Заполните хотя бы возраст и симптомы.','toast.doclong':'Документ слишком длинный и был обрезан.',
+        'toast.sent':'Транзакция отправлена — ожидание завершения …','toast.done':'Случай сохранён — показываю результат.','toast.nocons':'Транзакция прошла, но случай не сохранён — жюри не достигло консенсуса (UNDETERMINED). Попробуйте снова или используйте более ясный случай.','toast.err':'Ошибка',
+      },
     };
-    let lang = localStorage.getItem('so_lang') || 'de';
+    let lang = localStorage.getItem('so_lang') || (() => {
+      const n = (navigator.language || 'de').slice(0, 2).toLowerCase();
+      return ['de', 'en', 'tr', 'es', 'ru'].includes(n) ? n : 'de';
+    })();
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const t = key => (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
     function applyI18n(){
