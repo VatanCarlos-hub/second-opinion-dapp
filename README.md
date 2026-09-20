@@ -11,9 +11,10 @@ on-chain.
 > doctor.
 
 - **Repository:** https://github.com/VatanCarlos-hub/second-opinion-dapp
-- **Live demo:** `TODO: add Vercel URL`
+- **Live demo:** https://second-opinion-v2.vercel.app/second-opinion.html
 - **Network:** GenLayer Studio NEXT — `studioDevnet`, chain id `61997`, RPC `https://studio-dev.genlayer.com/api`
 - **Contract address:** `0x62C4C91290c5C28c11d603254E9f09fa9A169Ac1`
+- **Explorer:** https://explorer-studio-dev.genlayer.com/address/0x62C4C91290c5C28c11d603254E9f09fa9A169Ac1
 - **Category:** Project
 
 ---
@@ -135,7 +136,7 @@ Single self-contained file: `second-opinion.html` (no build step).
   round decides but writes nothing), and reads the new case back to display it.
 - **"My findings":** cases are matched to the connected wallet by comparing the stored
   `filed_by` field case-insensitively, so address-casing differences never hide a stored case.
-- **Languages:** German, English, Turkish, switchable in the header.
+- **Languages:** German, English, Turkish, Spanish, Russian (switchable) in the header.
 
 ---
 
@@ -189,7 +190,7 @@ submit a case.
 - Example `submit_case` transaction (finalized): `TODO: tx hash / explorer link`
 - Expected success signals: `statusName: FINALIZED`, `resultName: MAJORITY_AGREE`,
   `txExecutionResultName: FINISHED_WITH_RETURN`
-- Example stored case id: `TODO`
+- Example stored case id: `SO-2026-0001` (readable via `get_case("SO-2026-0001")`)
 - Screenshots / short video: `TODO`
 
 ## Limitations and roadmap
@@ -218,4 +219,4 @@ vercel.json            # Vercel deployment config
 
 ## License
 
-`TODO: choose a license (e.g. MIT) and add a LICENSE file`
+MIT — see the `LICENSE` file.
